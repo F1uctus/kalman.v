@@ -160,7 +160,6 @@ Qed.
 (* ================================================================== *)
 
 (* Инновационная ковариация *)
-
 Definition innov_cov (P_pred : 'M[R]_n) : 'M[R]_m :=
   H *m P_pred *m H^T + Rcov.
 
@@ -202,25 +201,21 @@ Proof.
 Qed.
 
 (* Усиление (коэффициент) Калмана *)
-
 Definition kalman_gain (P_pred : 'M[R]_n) : 'M[R]_(n, m) :=
   P_pred *m H^T *m invmx (innov_cov P_pred).
 
 (* Обновление состояния *)
-
 Definition update_state (P_pred : 'M[R]_n)
     (x_pred : 'cV[R]_n) (z : 'cV[R]_m) : 'cV[R]_n :=
   let K := kalman_gain P_pred in
   x_pred + K *m (z - H *m x_pred).
 
 (* Обновление ковариации (стандартная форма) *)
-
 Definition update_cov (P_pred : 'M[R]_n) : 'M[R]_n :=
   let K := kalman_gain P_pred in
   (1%:M - K *m H) *m P_pred.
 
 (* Форма Джозефа (алгебраически эквивалентна, удобна для доказательств) *)
-
 Definition joseph_form (P_pred : 'M[R]_n) : 'M[R]_n :=
   let K := kalman_gain P_pred in
   let ImKH := 1%:M - K *m H in
@@ -230,10 +225,25 @@ Definition joseph_form (P_pred : 'M[R]_n) : 'M[R]_n :=
 Lemma joseph_eq_update (P_pred : 'M[R]_n) :
   psd P_pred ->
   joseph_form P_pred = update_cov P_pred.
-Proof. Admitted.
+Proof.
+  move=> psdP.
+  have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
+  set K := kalman_gain P_pred.
+  have KS : K *m innov_cov P_pred = P_pred *m H^T.
+    by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+  have hE : K *m H *m P_pred *m H^T + K *m Rcov = P_pred *m H^T.
+    by move: KS; rewrite /innov_cov mulmxDr !mulmxA.
+  have KR : K *m Rcov = (1%:M - K *m H) *m P_pred *m H^T.
+    by rewrite 2!mulmxBl !mul1mx -hE addrC addKr.
+  rewrite /joseph_form /update_cov -/K.
+  rewrite [K *m Rcov]KR.
+  rewrite -[X in _ + X]mulmxA.
+  rewrite -mulmxDr.
+  rewrite linearB /= trmx1 trmx_mul.
+  by rewrite subrK mulmx1.
+Qed.
 
-(* Сохранение PSD через обновление (центральный результат) *)
-
+(* Сохранение PSD через обновление *)
 Lemma update_cov_psd (P_pred : 'M[R]_n) :
   psd P_pred -> psd (joseph_form P_pred).
 Proof.
@@ -248,7 +258,6 @@ Lemma update_cov_sym (P_pred : 'M[R]_n) :
 Proof. Admitted.
 
 (* Монотонность ковариации: след не возрастает *)
-
 Lemma update_cov_trace_le (P_pred : 'M[R]_n) :
   psd P_pred ->
   \tr (update_cov P_pred) <= \tr P_pred.
@@ -317,7 +326,6 @@ Admitted.
 
 (* Для любого альтернативного усиления K' след апостериорной ковариации
    не меньше, чем при усилении Калмана. *)
-
 Definition alt_update_cov (K' : 'M[R]_(n, m)) (P_pred : 'M[R]_n) : 'M[R]_n :=
   let ImKH := 1%:M - K' *m H in
   ImKH *m P_pred *m ImKH^T + K' *m Rcov *m K'^T.
