@@ -310,15 +310,75 @@ Definition x_hat (u : nat -> 'cV[R]_p) (z : nat -> 'cV[R]_m)
 (* Ошибка оценивания *)
 Definition err u z Ps k := x_true u k - x_hat u z Ps k.
 
+(* Вспомогательные леммы о линейности E *)
+
+Lemma Exp_zero r c : Exp (0 : 'M[R]_(r, c)) = 0.
+Proof.
+  have e := Exp_scale (0 : R) (0 : 'M[R]_(r, c)).
+  by rewrite !scale0r in e.
+Qed.
+
+Lemma Exp_opp r c (A : 'M[R]_(r, c)) : Exp (- A) = - Exp A.
+Proof.
+  have -> : -A = (-1) *: A by rewrite scaleN1r.
+  by rewrite Exp_scale scaleN1r.
+Qed.
+
+Lemma Exp_sub r c (A1 A2 : 'M[R]_(r, c)) : Exp (A1 - A2) = Exp A1 - Exp A2.
+Proof. by rewrite Exp_add Exp_opp. Qed.
+
+(* Чисто абелева перегруппировка, используемая ниже *)
+Lemma abelian_swap_cancel (G : zmodType) (a b c d e : G) :
+  a + b + c - (d + b + e) = a - d + c - e.
+Proof.
+  rewrite !opprD !addrA.
+  rewrite (addrAC _ _ (- b)) (addrAC _ c (- b)) addrK.
+  by rewrite (addrAC _ c (- d)).
+Qed.
+
+(* Рекурсия для ошибки оценивания.  Уравнение измерения предполагает,
+   что наблюдение есть линейная комбинация истинного состояния и шума. *)
+Lemma err_recursion u z Ps k :
+  (forall j, z j = H *m x_true u j + v j) ->
+  err u z Ps k.+1 =
+    F *m err u z Ps k + w k.+1 -
+    kalman_gain (predict_cov (Ps k)) *m
+      (H *m F *m err u z Ps k + H *m w k.+1 + v k.+1).
+Proof.
+  move=> Hzm.
+  rewrite /err /= /update_state /predict_state.
+  rewrite (Hzm k.+1) /=.
+  set Kk := kalman_gain (predict_cov (Ps k)).
+  set xt := x_true u k.
+  set xh := x_hat u z Ps k.
+  (* Внутреннее выражение: H * x_true k.+1 + v k.+1 - H * (F*xh + B*u k)
+     = H *m F *m (xt - xh) + H *m w k.+1 + v k.+1 *)
+  have inner :
+    H *m (F *m xt + B *m u k + w k.+1) + v k.+1 -
+      H *m (F *m xh + B *m u k) =
+    H *m F *m (xt - xh) + H *m w k.+1 + v k.+1.
+  { rewrite mulmxBr !mulmxDr !mulmxA addrAC opprD !addrA.
+    rewrite (addrAC _ _ (- (H *m B *m u k))).
+    rewrite (addrAC _ (H *m w k.+1)) addrK.
+    by rewrite [X in X + _ = _]addrAC. }
+  rewrite inner.
+  (* Внешнее выражение: применяем абелеву перегруппировку и
+     раскладываем F через ошибку *)
+  by rewrite abelian_swap_cancel [in RHS]mulmxBr.
+Qed.
+
 (* Несмещённость: E[ошибка] = 0 на каждом шаге *)
 Theorem unbiased u z Ps :
+  (forall j, z j = H *m x_true u j + v j) ->
   Exp (err u z Ps 0) = 0 ->
   forall k, Exp (err u z Ps k) = 0.
 Proof.
-  (* Набросок: индукция по k. Ошибка на шаге k+1 раскладывается через
-     уравнения состояния и обновления в линейную комбинацию ошибки на
-     шаге k (ноль по предположению индукции) и шумов w, v (ноль по гипотезе). *)
-Admitted.
+  move=> Hzm E0; elim=> [//|k IH].
+  rewrite (err_recursion _ _ Hzm).
+  rewrite Exp_sub Exp_add Exp_mulmx_l IH mulmx0 add0r Exp_w_zero add0r.
+  rewrite Exp_mulmx_l 2!Exp_add Exp_mulmx_l Exp_mulmx_l.
+  by rewrite IH mulmx0 Exp_w_zero mulmx0 Exp_v_zero !addr0 mulmx0 oppr0.
+Qed.
 
 (* ================================================================== *)
 (* §4  Оптимальность усиления Калмана                                 *)
