@@ -6,3 +6,5 @@ _build/
 **/*.vo
 **/*.vok
 **/*.vos
+**/.coq-native/
+**/.rocq-native/

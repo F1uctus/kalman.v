@@ -148,10 +148,10 @@ Lemma predict_cov_psd (P : 'M[R]_n) :
 Proof.
   move=> psdP.
   have h1 : psd (F *m P *m F^T) := @psd_mulmx_row R n n P F psdP.
-have h2 : psd Q := Q_psd.
-have hsum : psd (F *m P *m F^T + Q) := psd_add h1 h2.
-rewrite /predict_cov.
-exact: hsum.
+  have h2 : psd Q := Q_psd.
+  have hsum : psd (F *m P *m F^T + Q) := psd_add h1 h2.
+  rewrite /predict_cov.
+  exact: hsum.
 Qed.
 
 (* ================================================================== *)
@@ -413,14 +413,88 @@ Definition alt_update_cov (K' : 'M[R]_(n, m)) (P_pred : 'M[R]_n) : 'M[R]_n :=
   let ImKH := 1%:M - K' *m H in
   ImKH *m P_pred *m ImKH^T + K' *m Rcov *m K'^T.
 
+(* Тождество отделения полного квадрата:
+   alt_update_cov K' = update_cov + (K' - K) S (K' - K)^T,
+   где K — усиление Калмана, S — инновационная ковариация. *)
+Lemma alt_update_cov_diff (P_pred : 'M[R]_n) (K' : 'M[R]_(n, m)) :
+  psd P_pred ->
+  alt_update_cov K' P_pred =
+    update_cov P_pred
+    + (K' - kalman_gain P_pred) *m innov_cov P_pred
+                                *m (K' - kalman_gain P_pred)^T.
+Proof.
+  move=> psdP.
+  set K := kalman_gain P_pred.
+  set S := innov_cov P_pred.
+  set dK := K' - K.
+  have Sunit : S \in unitmx := innov_cov_inv psdP.
+  have Psym : P_pred = P_pred^T := psdP.1.
+  have Ssym : S = S^T := (pd_psd (innov_cov_pd psdP)).1.
+  have KS : K *m S = P_pred *m H^T.
+    by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+  have HPeq : S *m K^T = H *m P_pred.
+    have := congr1 trmx KS.
+    by rewrite !trmx_mul trmxK -Psym -Ssym.
+  (* Шаг 1: раскрываем alt_update_cov K' P в виде
+     P + K' S K'^T - K' H P - P H^T K'^T *)
+  have alt_e : alt_update_cov K' P_pred =
+    P_pred + K' *m S *m K'^T
+           - K' *m H *m P_pred
+           - P_pred *m H^T *m K'^T.
+    rewrite /alt_update_cov /S /innov_cov.
+    rewrite linearB /= trmx1 trmx_mul.
+    rewrite mulmxBl mul1mx mulmxBl !mulmxBr !mulmx1 opprB.
+    rewrite [P_pred *m (H^T *m K'^T)]mulmxA.
+    rewrite [K' *m H *m P_pred *m (H^T *m K'^T)]mulmxA.
+    rewrite -[K' *m (H *m P_pred *m H^T + Rcov) *m K'^T]mulmxA.
+    rewrite mulmxDl mulmxDr.
+    rewrite (mulmxA K' Rcov K'^T) (mulmxA K' (H *m P_pred *m H^T) K'^T).
+    rewrite (mulmxA K' (H *m P_pred) H^T) (mulmxA K' H P_pred).
+    rewrite !addrA.
+    rewrite [P_pred - P_pred *m H^T *m K'^T + K' *m H *m P_pred *m H^T *m K'^T]addrAC.
+    rewrite [P_pred + K' *m H *m P_pred *m H^T *m K'^T
+             - P_pred *m H^T *m K'^T - K' *m H *m P_pred]addrAC.
+    rewrite [_ - K' *m H *m P_pred - P_pred *m H^T *m K'^T + K' *m Rcov *m K'^T]addrAC.
+    by rewrite [_ - K' *m H *m P_pred + K' *m Rcov *m K'^T]addrAC.
+  (* Шаг 2: раскрываем update_cov *)
+  have upd_e : update_cov P_pred = P_pred - K *m H *m P_pred.
+    by rewrite /update_cov -/K mulmxBl mul1mx.
+  (* Шаг 3: раскрываем dK *m S *m dK^T *)
+  have dK_e : dK *m S *m dK^T =
+    K' *m S *m K'^T - K' *m H *m P_pred
+    - P_pred *m H^T *m K'^T + K *m H *m P_pred.
+    rewrite /dK linearB /= mulmxBl mulmxBl !mulmxBr opprB.
+    (* (K'S - KS)*(K'^T - K^T) разворачивается в:
+       K'SK'^T - K'SK^T + (KSK^T - KSK'^T) *)
+    have e1 : K' *m S *m K^T = K' *m H *m P_pred.
+      by rewrite -mulmxA HPeq mulmxA.
+    have e2 : K *m S *m K'^T = P_pred *m H^T *m K'^T.
+      by rewrite KS.
+    have e3 : K *m S *m K^T = K *m H *m P_pred.
+      by rewrite -mulmxA HPeq mulmxA.
+    rewrite e1 e2 e3 addrA.
+    by rewrite [_ + K *m H *m P_pred]addrAC.
+  rewrite alt_e dK_e -/K -/S -/dK upd_e.
+  (* Цель: P + α - β - γ = (P - δ) + (α - β - γ + δ),
+     где α = K'SK'^T, β = K'HP, γ = PH^T K'^T, δ = KHP. *)
+  rewrite !addrA.
+  rewrite [P_pred - K *m H *m P_pred + K' *m S *m K'^T]addrAC.
+  rewrite [P_pred + K' *m S *m K'^T - K *m H *m P_pred - K' *m H *m P_pred]addrAC.
+  rewrite [P_pred + K' *m S *m K'^T - K' *m H *m P_pred - K *m H *m P_pred
+          - P_pred *m H^T *m K'^T]addrAC.
+  by rewrite subrK.
+Qed.
+
 Theorem kalman_gain_optimal (P_pred : 'M[R]_n) (K' : 'M[R]_(n, m)) :
   psd P_pred ->
   \tr (update_cov P_pred) <= \tr (alt_update_cov K' P_pred).
 Proof.
-  (* Набросок: раскрыть alt_update_cov с K' = K + dK, выделить полный
-     квадрат; перекрёстные члены обнуляются для усиления Калмана,
-     остаётся PSD-остаток с неотрицательным следом. *)
-Admitted.
+  move=> psdP.
+  rewrite (alt_update_cov_diff K' psdP) linearD /=.
+  rewrite -[X in X <= _]addr0 lerD2l.
+  apply: psd_tr_ge0.
+  exact: psd_mulmx_row _ (pd_psd (innov_cov_pd psdP)).
+Qed.
 
 (* Характеристика через производную: dTr(P+)/dK = 0 при усилении Калмана *)
 Theorem gain_stationary_point (P_pred : 'M[R]_n) :
