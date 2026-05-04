@@ -247,21 +247,44 @@ Qed.
 Lemma update_cov_psd (P_pred : 'M[R]_n) :
   psd P_pred -> psd (joseph_form P_pred).
 Proof.
-  (* Набросок: joseph_form = (I-KH) P (I-KH)^T + K R K^T.
-     Первое слагаемое PSD по psd_congruence; второе PSD по
-     psd_congruence на R; сумма PSD по psd_add. *)
-Admitted.
+  move=> psdP.
+  rewrite /joseph_form.
+  apply: psd_add.
+  - exact: psd_mulmx_row _ psdP.
+  - exact: psd_mulmx_row _ (pd_psd R_pd).
+Qed.
 
 (* Симметричность обновлённой ковариации *)
 Lemma update_cov_sym (P_pred : 'M[R]_n) :
   psd P_pred -> joseph_form P_pred = (joseph_form P_pred)^T.
-Proof. Admitted.
+Proof.
+  move=> psdP.
+  exact: (update_cov_psd psdP).1.
+Qed.
 
 (* Монотонность ковариации: след не возрастает *)
 Lemma update_cov_trace_le (P_pred : 'M[R]_n) :
   psd P_pred ->
   \tr (update_cov P_pred) <= \tr P_pred.
-Proof. Admitted.
+Proof.
+  move=> psdP.
+  have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
+  set K := kalman_gain P_pred.
+  have KS : K *m innov_cov P_pred = P_pred *m H^T.
+    by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+  have Psym : P_pred = P_pred^T := psdP.1.
+  have Ssym : innov_cov P_pred = (innov_cov P_pred)^T
+    := (innov_cov_pd psdP).1.
+  have hHP : innov_cov P_pred *m K^T = H *m P_pred.
+    have := congr1 trmx KS.
+    by rewrite !trmx_mul trmxK -Ssym -Psym.
+  have eq_KHP : K *m H *m P_pred = K *m innov_cov P_pred *m K^T.
+    by rewrite -[LHS]mulmxA -hHP mulmxA.
+  rewrite /update_cov -/K mulmxBl mul1mx linearB /=.
+  rewrite lerBlDr lerDl eq_KHP.
+  apply: psd_tr_ge0.
+  exact: psd_mulmx_row _ (pd_psd (innov_cov_pd psdP)).
+Qed.
 
 (* ================================================================== *)
 (* §3  Несмещённость                                                  *)
