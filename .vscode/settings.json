@@ -7,7 +7,8 @@
     "**/*.aux": true,
     "**/*.vo": true,
     "**/*.vok": true,
-    "**/*.vos": true
+    "**/*.vos": true,
+    "**/*.coq-native": true
   },
   "editor.lineNumbers": "off",
   "vsrocq.completion.enable": true,
