@@ -1,2 +1,5 @@
 -R theories Top
+theories/psd_base.v
+theories/psd_order.v
+theories/spectral.v
 theories/kalman.v

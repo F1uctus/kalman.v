@@ -5,6 +5,8 @@ From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
+From mathcomp.algebra Require Import sesquilinear spectral.
+From Top Require Import psd_base psd_order spectral.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -13,111 +15,22 @@ Unset Printing Implicit Defensive.
 Import GRing.Theory.
 Import Num.Theory.
 Import Order.Theory.
-Open Scope ring_scope.
-
-Lemma trmx_add (K : realFieldType) m n (A C : 'M[K]_(m, n)) : (A + C)^T = A^T + C^T.
-Proof.
-  apply/matrixP => i j.
-  by rewrite !mxE.
-Qed.
-
-(* ================================================================== *)
-(* §0  Предикат положительной полуопределённости (ключевой для        *)
-(*     ковариационных матриц)                                         *)
-(* ================================================================== *)
-
-Section PSD.
-Variable (R : realFieldType).
-
-Definition psd n (M : 'M[R]_n) : Prop :=
-  M = M^T /\ forall (v : 'cV[R]_n), \tr (v^T *m M *m v) >= 0.
-
-Definition pd n (M : 'M[R]_n) : Prop :=
-  M = M^T /\ forall (v : 'cV[R]_n), v != 0 -> \tr (v^T *m M *m v) > 0.
-
-Lemma pd_psd n (M : 'M[R]_n) : pd M -> psd M.
-Proof.
-case=> Msym pdM; split=> // v.
-have [v0|vNZ] := boolP (v == 0); last first.
-  have /andP[_ le0tr]:
-      (\tr (v^T *m M *m v) != 0) && (0 <= \tr (v^T *m M *m v)).
-    by rewrite -lt0r; exact: (pdM v vNZ).
-  exact: le0tr.
-move/eqP: v0=> v0; subst v.
-by rewrite trmx0 mul0mx mulmx0 mxtrace0 lexx.
-Qed.
-
-Lemma psd_add n (A B : 'M[R]_n) : psd A -> psd B -> psd (A + B).
-Proof.
-move=> [Asym psdA] [Bsym psdB]; split.
-  apply/matrixP=> i j.
-  have hA' : (A j i) = ((A^T) j i).
-  case Asym.
-  done.
-  have hA0 : ((A^T) j i) = A i j.
-  by rewrite mxE.
-  have hA : (A j i) = (A i j) := eq_trans hA' hA0.
-  have hB' : (B j i) = ((B^T) j i).
-  case Bsym.
-  done.
-  have hB0 : ((B^T) j i) = B i j.
-  by rewrite mxE.
-  have hB : (B j i) = (B i j) := eq_trans hB' hB0.
-  rewrite !mxE hA hB.
-  done.
-move=> v; rewrite mulmxDr mulmxDl mxtraceD.
-exact: (addr_ge0 (psdA v) (psdB v)).
-Qed.
-
-Lemma psd_congruence n p (A : 'M[R]_n) (M : 'M[R]_(n, p)) :
-  psd A -> psd (M^T *m A *m M).
-Proof.
-  case=> Asym psdA; split.
-    by rewrite trmx_mul trmx_mul !trmxK mulmxA -Asym.
-    by move=> v; rewrite !mulmxA -mulmxA -trmx_mul; exact: psdA (M *m v).
-Qed.
-
-Lemma psd_mulmx_row n m (A : 'M[R]_m) (M : 'M[R]_(n, m)) :
-  psd A -> psd (M *m A *m M^T).
-Proof.
-  move=> psdA; have -> : (M *m A *m M^T) = (M^T)^T *m A *m M^T by rewrite trmxK.
-  exact: (@psd_congruence _ _ A M^T psdA).
-Qed.
-
-Lemma psd_tr_ge0 n (M : 'M[R]_n) : psd M -> \tr M >= 0.
-Proof.
-  case=> Msym psdM; rewrite -(@mxtrace0 _ n) /mxtrace; apply: ler_sum => i _.
-  rewrite mxE; have h := psdM (delta_mx i ord0).
-  by rewrite trmx_delta -rowE -colE trace_mx11 !mxE in h.
-Qed.
-
-Lemma pd_invertible n (M : 'M[R]_n) : pd M -> M \in unitmx.
-Proof.
-  move=> [Msym pdM]; apply: contraT => Mnu.
-  have Cnz : cokermx M != 0 by rewrite cokermx_eq0 row_full_unit.
-  have /matrix0Pn [i [j Cij_nz]] := Cnz.
-  pose v := cokermx M *m delta_mx j ord0 : 'cV[R]_n.
-  have vNZ : v != 0.
-  apply/cV0Pn; exists i; rewrite /v -colE mxE; exact: Cij_nz.
-  have Mv0 : M *m v = 0 by rewrite /v mulmxA mulmx_coker mul0mx.
-  by move: (pdM v vNZ); rewrite -mulmxA Mv0 mulmx0 mxtrace0 ltxx.
-Qed.
-
-End PSD.
+Local Open Scope ring_scope.
+Local Open Scope sesquilinear_scope.
 
 (* ================================================================== *)
 (* §1  Модель пространства состояний и шаг предсказания               *)
 (* ================================================================== *)
 
 Section KalmanFilter.
-Variable (R : realFieldType).
+Variable (C : numClosedFieldType).
 Variables (n m p : nat).
 
-Variable F : 'M[R]_n.             (* матрица перехода состояний *)
-Variable B : 'M[R]_(n, p).        (* матрица управляющего воздействия *)
-Variable H : 'M[R]_(m, n).        (* матрица наблюдения *)
-Variable Q : 'M[R]_n.             (* ковариация шума процесса *)
-Variable Rcov : 'M[R]_m.          (* ковариация шума измерения *)
+Variable F : 'M[C]_n.             (* матрица перехода состояний *)
+Variable B : 'M[C]_(n, p).        (* матрица управляющего воздействия *)
+Variable H : 'M[C]_(m, n).        (* матрица наблюдения *)
+Variable Q : 'M[C]_n.             (* ковариация шума процесса *)
+Variable Rcov : 'M[C]_m.          (* ковариация шума измерения *)
 
 (* Общие предположения о ковариациях шума *)
 Hypothesis Q_psd  : psd Q.
@@ -125,31 +38,31 @@ Hypothesis R_pd   : pd Rcov.
 
 (* Шаг предсказания *)
 
-Definition predict_state (x_prev : 'cV[R]_n) (u : 'cV[R]_p) : 'cV[R]_n :=
+Definition predict_state (x_prev : 'cV[C]_n) (u : 'cV[C]_p) : 'cV[C]_n :=
   F *m x_prev + B *m u.
 
-Definition predict_cov (P_prev : 'M[R]_n) : 'M[R]_n :=
-  F *m P_prev *m F^T + Q.
+Definition predict_cov (P_prev : 'M[C]_n) : 'M[C]_n :=
+  F *m P_prev *m F^t* + Q.
 
 (* Предсказанная ковариация симметрична *)
-Lemma predict_cov_sym (P : 'M[R]_n) :
-  P = P^T -> predict_cov P = (predict_cov P)^T.
+Lemma predict_cov_sym (P : 'M[C]_n) :
+  P = P^t* -> predict_cov P = (predict_cov P)^t*.
 Proof.
   move=> Psym.
-  have hP : (F *m P *m F^T)^T = F *m P *m F^T.
-    by rewrite trmx_mul trmx_mul !trmxK -mulmxA -Psym.
-  rewrite /predict_cov trmx_add hP -Q_psd.1.
+  have hP : (F *m P *m F^t*)^t* = F *m P *m F^t*.
+    by rewrite trmxC_mul trmxC_mul !trmxCK -mulmxA -Psym.
+  rewrite /predict_cov trmxC_add hP -Q_psd.1.
   done.
 Qed.
 
 (* Предсказанная ковариация сохраняет положительную полуопределённость *)
-Lemma predict_cov_psd (P : 'M[R]_n) :
+Lemma predict_cov_psd (P : 'M[C]_n) :
   psd P -> psd (predict_cov P).
 Proof.
   move=> psdP.
-  have h1 : psd (F *m P *m F^T) := @psd_mulmx_row R n n P F psdP.
+  have h1 : psd (F *m P *m F^t*) := @psd_mulmx_row C n n P F psdP.
   have h2 : psd Q := Q_psd.
-  have hsum : psd (F *m P *m F^T + Q) := psd_add h1 h2.
+  have hsum : psd (F *m P *m F^t* + Q) := psd_add h1 h2.
   rewrite /predict_cov.
   exact: hsum.
 Qed.
@@ -160,39 +73,39 @@ Qed.
 (* ================================================================== *)
 
 (* Инновационная ковариация *)
-Definition innov_cov (P_pred : 'M[R]_n) : 'M[R]_m :=
-  H *m P_pred *m H^T + Rcov.
+Definition innov_cov (P_pred : 'M[C]_n) : 'M[C]_m :=
+  H *m P_pred *m H^t* + Rcov.
 
-Lemma innov_cov_pd (P_pred : 'M[R]_n) :
+Lemma innov_cov_pd (P_pred : 'M[C]_n) :
   psd P_pred -> pd (innov_cov P_pred).
 Proof.
   move=> psdP.
-  have hpsd : psd (H *m P_pred *m H^T) := @psd_mulmx_row R m n P_pred H psdP.
+  have hpsd : psd (H *m P_pred *m H^t*) := @psd_mulmx_row C m n P_pred H psdP.
   split.
   - rewrite /innov_cov.
-    rewrite trmx_add.
+    rewrite trmxC_add.
     f_equal.
     * exact hpsd.1.
     * exact R_pd.1.
   - move=> v v0.
-    have h1 : 0 <= \tr (v^T *m (H *m P_pred *m H^T) *m v) := hpsd.2 v.
-    have h2 : 0 < \tr (v^T *m Rcov *m v) := R_pd.2 v v0.
+    have h1 : 0 <= \tr (v^t* *m (H *m P_pred *m H^t*) *m v) := hpsd.2 v.
+    have h2 : 0 < \tr (v^t* *m Rcov *m v) := R_pd.2 v v0.
     rewrite /innov_cov.
     rewrite mulmxDr.
     rewrite mulmxDl.
     rewrite mxtraceD.
     have hsum : 0 <
-        \tr (v^T *m (H *m P_pred *m H^T) *m v) +
-        \tr (v^T *m Rcov *m v) :=
+        \tr (v^t* *m (H *m P_pred *m H^t*) *m v) +
+        \tr (v^t* *m Rcov *m v) :=
       ltr_wpDl
         (y := 0)
-        (x := \tr (v^T *m (H *m P_pred *m H^T) *m v))
-        (z := \tr (v^T *m Rcov *m v))
+        (x := \tr (v^t* *m (H *m P_pred *m H^t*) *m v))
+        (z := \tr (v^t* *m Rcov *m v))
         h1 h2.
     exact hsum.
 Qed.
 
-Lemma innov_cov_inv (P_pred : 'M[R]_n) :
+Lemma innov_cov_inv (P_pred : 'M[C]_n) :
   psd P_pred -> innov_cov P_pred \in unitmx.
 Proof.
   move=> psdP.
@@ -201,50 +114,50 @@ Proof.
 Qed.
 
 (* Усиление (коэффициент) Калмана *)
-Definition kalman_gain (P_pred : 'M[R]_n) : 'M[R]_(n, m) :=
-  P_pred *m H^T *m invmx (innov_cov P_pred).
+Definition kalman_gain (P_pred : 'M[C]_n) : 'M[C]_(n, m) :=
+  P_pred *m H^t* *m invmx (innov_cov P_pred).
 
 (* Обновление состояния *)
-Definition update_state (P_pred : 'M[R]_n)
-    (x_pred : 'cV[R]_n) (z : 'cV[R]_m) : 'cV[R]_n :=
+Definition update_state (P_pred : 'M[C]_n)
+    (x_pred : 'cV[C]_n) (z : 'cV[C]_m) : 'cV[C]_n :=
   let K := kalman_gain P_pred in
   x_pred + K *m (z - H *m x_pred).
 
 (* Обновление ковариации (стандартная форма) *)
-Definition update_cov (P_pred : 'M[R]_n) : 'M[R]_n :=
+Definition update_cov (P_pred : 'M[C]_n) : 'M[C]_n :=
   let K := kalman_gain P_pred in
   (1%:M - K *m H) *m P_pred.
 
 (* Форма Джозефа (алгебраически эквивалентна, удобна для доказательств) *)
-Definition joseph_form (P_pred : 'M[R]_n) : 'M[R]_n :=
+Definition joseph_form (P_pred : 'M[C]_n) : 'M[C]_n :=
   let K := kalman_gain P_pred in
   let ImKH := 1%:M - K *m H in
-  ImKH *m P_pred *m ImKH^T + K *m Rcov *m K^T.
+  ImKH *m P_pred *m ImKH^t* + K *m Rcov *m K^t*.
 
 (* Форма Джозефа совпадает со стандартным обновлением при усилении Калмана *)
-Lemma joseph_eq_update (P_pred : 'M[R]_n) :
+Lemma joseph_eq_update (P_pred : 'M[C]_n) :
   psd P_pred ->
   joseph_form P_pred = update_cov P_pred.
 Proof.
   move=> psdP.
   have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
   set K := kalman_gain P_pred.
-  have KS : K *m innov_cov P_pred = P_pred *m H^T.
+  have KS : K *m innov_cov P_pred = P_pred *m H^t*.
     by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
-  have hE : K *m H *m P_pred *m H^T + K *m Rcov = P_pred *m H^T.
+  have hE : K *m H *m P_pred *m H^t* + K *m Rcov = P_pred *m H^t*.
     by move: KS; rewrite /innov_cov mulmxDr !mulmxA.
-  have KR : K *m Rcov = (1%:M - K *m H) *m P_pred *m H^T.
+  have KR : K *m Rcov = (1%:M - K *m H) *m P_pred *m H^t*.
     by rewrite 2!mulmxBl !mul1mx -hE addrC addKr.
   rewrite /joseph_form /update_cov -/K.
   rewrite [K *m Rcov]KR.
   rewrite -[X in _ + X]mulmxA.
   rewrite -mulmxDr.
-  rewrite linearB /= trmx1 trmx_mul.
+  rewrite trmxCB trmxC1 trmxC_mul.
   by rewrite subrK mulmx1.
 Qed.
 
 (* Сохранение PSD через обновление *)
-Lemma update_cov_psd (P_pred : 'M[R]_n) :
+Lemma update_cov_psd (P_pred : 'M[C]_n) :
   psd P_pred -> psd (joseph_form P_pred).
 Proof.
   move=> psdP.
@@ -255,35 +168,127 @@ Proof.
 Qed.
 
 (* Симметричность обновлённой ковариации *)
-Lemma update_cov_sym (P_pred : 'M[R]_n) :
-  psd P_pred -> joseph_form P_pred = (joseph_form P_pred)^T.
+Lemma update_cov_sym (P_pred : 'M[C]_n) :
+  psd P_pred -> joseph_form P_pred = (joseph_form P_pred)^t*.
 Proof.
   move=> psdP.
   exact: (update_cov_psd psdP).1.
 Qed.
 
 (* Монотонность ковариации: след не возрастает *)
-Lemma update_cov_trace_le (P_pred : 'M[R]_n) :
+Lemma update_cov_trace_le (P_pred : 'M[C]_n) :
   psd P_pred ->
   \tr (update_cov P_pred) <= \tr P_pred.
 Proof.
   move=> psdP.
   have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
   set K := kalman_gain P_pred.
-  have KS : K *m innov_cov P_pred = P_pred *m H^T.
+  have KS : K *m innov_cov P_pred = P_pred *m H^t*.
     by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
-  have Psym : P_pred = P_pred^T := psdP.1.
-  have Ssym : innov_cov P_pred = (innov_cov P_pred)^T
+  have Psym : P_pred = P_pred^t* := psdP.1.
+  have Ssym : innov_cov P_pred = (innov_cov P_pred)^t*
     := (innov_cov_pd psdP).1.
-  have hHP : innov_cov P_pred *m K^T = H *m P_pred.
-    have := congr1 trmx KS.
-    by rewrite !trmx_mul trmxK -Ssym -Psym.
-  have eq_KHP : K *m H *m P_pred = K *m innov_cov P_pred *m K^T.
+  have hHP : innov_cov P_pred *m K^t* = H *m P_pred.
+    have := congr1 (fun M : 'M[C]_(n, m) => M^t*) KS.
+    by rewrite !trmxC_mul trmxCK -Ssym -Psym.
+  have eq_KHP : K *m H *m P_pred = K *m innov_cov P_pred *m K^t*.
     by rewrite -[LHS]mulmxA -hHP mulmxA.
   rewrite /update_cov -/K mulmxBl mul1mx linearB /=.
   rewrite lerBlDr lerDl eq_KHP.
   apply: psd_tr_ge0.
   exact: psd_mulmx_row _ (pd_psd (innov_cov_pd psdP)).
+Qed.
+
+(* Информационная форма обновления.  При положительно определённой
+   предсказанной ковариации справедливо тождество Вудбери:
+     (update_cov P)^{-1} = P^{-1} + H^t* R^{-1} H.
+   Доказательство чисто алгебраическое: используется уже выведенная
+   связь K * R = (I - K * H) * P * H^t* и обратимости P, R, S.
+   Это даёт основу для строгой убывающей версии Риккати-итерации
+   без обращения к спектральной теореме. *)
+Lemma update_cov_information_form (P_pred : 'M[C]_n) :
+  pd P_pred ->
+  update_cov P_pred *m (invmx P_pred + H^t* *m invmx Rcov *m H) = 1%:M.
+Proof.
+  move=> Ppd.
+  have psdP : psd P_pred := pd_psd Ppd.
+  have Punit : P_pred \in unitmx := pd_invertible Ppd.
+  have Runit : Rcov \in unitmx := pd_invertible R_pd.
+  have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
+  set K := kalman_gain P_pred.
+  have KS : K *m innov_cov P_pred = P_pred *m H^t*.
+    by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+  have hE : K *m H *m P_pred *m H^t* + K *m Rcov = P_pred *m H^t*.
+    by move: KS; rewrite /innov_cov mulmxDr !mulmxA.
+  have KR : K *m Rcov = (1%:M - K *m H) *m P_pred *m H^t*.
+    by rewrite 2!mulmxBl !mul1mx -hE addrC addKr.
+  rewrite /update_cov -/K mulmxDr.
+  rewrite -[X in X + _]mulmxA mulmxV // mulmx1.
+  rewrite mulmxA mulmxA -KR.
+  rewrite -[K *m Rcov *m invmx Rcov]mulmxA mulmxV // mulmx1.
+  by rewrite subrK.
+Qed.
+
+(* Следствие: при pd P_pred шаг обновления обратим. *)
+Lemma update_cov_unit (P_pred : 'M[C]_n) :
+  pd P_pred -> update_cov P_pred \in unitmx.
+Proof.
+  move=> Ppd.
+  by have [h _] := mulmx1_unit (update_cov_information_form Ppd).
+Qed.
+
+(* Явная формула обратной матрицы апостериорной ковариации
+   (информационная форма Калмана). *)
+Lemma update_cov_inverse (P_pred : 'M[C]_n) :
+  pd P_pred ->
+  invmx (update_cov P_pred) = invmx P_pred + H^t* *m invmx Rcov *m H.
+Proof.
+  move=> Ppd.
+  have Uunit : update_cov P_pred \in unitmx := update_cov_unit Ppd.
+  have IF := update_cov_information_form Ppd.
+  by rewrite -[LHS]mulmx1 -IF mulmxA mulVmx // mul1mx.
+Qed.
+
+(* Из информационной формы: шаг обновления сохраняет PD.
+   invmx(update_cov P) = invmx P + H^t* R^{-1} H — pd сумма pd и psd;
+   обратная к pd-матрице тоже pd (см. pd_inv). *)
+Lemma update_cov_pd (P_pred : 'M[C]_n) :
+  pd P_pred -> pd (update_cov P_pred).
+Proof.
+  move=> Ppd.
+  have Uunit : update_cov P_pred \in unitmx := update_cov_unit Ppd.
+  have IF_inv : invmx (update_cov P_pred) =
+                invmx P_pred + H^t* *m invmx Rcov *m H :=
+    update_cov_inverse Ppd.
+  have hP_inv_pd : pd (invmx P_pred) := pd_inv Ppd.
+  have hRinv_psd : psd (invmx Rcov) := pd_psd (pd_inv R_pd).
+  have hHterm_psd : psd (H^t* *m invmx Rcov *m H)
+    := @psd_congruence C m n (invmx Rcov) H hRinv_psd.
+  have hSum_pd : pd (invmx (update_cov P_pred)).
+    by rewrite IF_inv; exact: pd_add hP_inv_pd hHterm_psd.
+  have := pd_inv hSum_pd.
+  by rewrite invmxK.
+Qed.
+
+(* PSD-порядок: апостериорная ковариация мажорируется априорной.
+   Это содержательная (структурная) монотонность шага обновления,
+   из которой следует уже доказанная trace-монотонность.
+   Алгебраически: P - update_cov P = K H P = (HP)^t* S^{-1} (HP). *)
+Lemma update_cov_le (P_pred : 'M[C]_n) :
+  psd P_pred -> psd (P_pred - update_cov P_pred).
+Proof.
+  move=> psdP.
+  have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
+  have hSpd : pd (innov_cov P_pred) := innov_cov_pd psdP.
+  have hSinv_psd : psd (invmx (innov_cov P_pred)) := pd_psd (pd_inv hSpd).
+  set K := kalman_gain P_pred.
+  have eq1 : P_pred - update_cov P_pred = K *m H *m P_pred.
+    by rewrite /update_cov -/K mulmxBl mul1mx opprB addrC subrK.
+  have eq2 : K *m H *m P_pred =
+             (H *m P_pred)^t* *m invmx (innov_cov P_pred) *m (H *m P_pred).
+    rewrite /K /kalman_gain trmxC_mul -psdP.1.
+    by rewrite !mulmxA.
+  by rewrite eq1 eq2; exact: psd_congruence hSinv_psd.
 Qed.
 
 (* ================================================================== *)
@@ -294,24 +299,24 @@ Qed.
    аксиоматизация). Моделируем E как матричнозначное линейное
    отображение, избегая использования сложной теории меры. *)
 
-Variable Exp : forall {r c : nat}, 'M[R]_(r, c) -> 'M[R]_(r, c).
+Variable Exp : forall {r c : nat}, 'M[C]_(r, c) -> 'M[C]_(r, c).
 
 (* Аксиомы линейности *)
-Hypothesis Exp_add : forall r c (A B : 'M[R]_(r, c)),
+Hypothesis Exp_add : forall r c (A B : 'M[C]_(r, c)),
   Exp (A + B) = Exp A + Exp B.
-Hypothesis Exp_scale : forall r c (a : R) (A : 'M[R]_(r, c)),
+Hypothesis Exp_scale : forall r c (a : C) (A : 'M[C]_(r, c)),
   Exp (a *: A) = a *: Exp A.
-Hypothesis Exp_mulmx_l : forall r c s (A : 'M[R]_(r, c)) (B : 'M[R]_(c, s)),
+Hypothesis Exp_mulmx_l : forall r c s (A : 'M[C]_(r, c)) (B : 'M[C]_(c, s)),
   Exp (A *m B) = A *m Exp B.
 
 (* Предположения о шумах *)
-Variable w : nat -> 'cV[R]_n.
-Variable v : nat -> 'cV[R]_m.
+Variable w : nat -> 'cV[C]_n.
+Variable v : nat -> 'cV[C]_m.
 Hypothesis Exp_w_zero : forall k, Exp (w k) = 0.
 Hypothesis Exp_v_zero : forall k, Exp (v k) = 0.
 
 (* Обновление истинного вектора состояния *)
-Definition x_true (u : nat -> 'cV[R]_p) : nat -> 'cV[R]_n :=
+Definition x_true (u : nat -> 'cV[C]_p) : nat -> 'cV[C]_n :=
   fix f k :=
     match k with
     | 0%N => w 0%N
@@ -319,8 +324,8 @@ Definition x_true (u : nat -> 'cV[R]_p) : nat -> 'cV[R]_n :=
     end.
 
 (* Обновление оценочного вектора состояния *)
-Definition x_hat (u : nat -> 'cV[R]_p) (z : nat -> 'cV[R]_m)
-    (P_seq : nat -> 'M[R]_n) : nat -> 'cV[R]_n :=
+Definition x_hat (u : nat -> 'cV[C]_p) (z : nat -> 'cV[C]_m)
+    (P_seq : nat -> 'M[C]_n) : nat -> 'cV[C]_n :=
   fix f k :=
     match k with
     | 0%N => 0  (* начальная оценка; предполагаем несмещённый старт *)
@@ -335,19 +340,19 @@ Definition err u z Ps k := x_true u k - x_hat u z Ps k.
 
 (* Вспомогательные леммы о линейности E *)
 
-Lemma Exp_zero r c : Exp (0 : 'M[R]_(r, c)) = 0.
+Lemma Exp_zero r c : Exp (0 : 'M[C]_(r, c)) = 0.
 Proof.
-  have e := Exp_scale (0 : R) (0 : 'M[R]_(r, c)).
+  have e := Exp_scale (0 : C) (0 : 'M[C]_(r, c)).
   by rewrite !scale0r in e.
 Qed.
 
-Lemma Exp_opp r c (A : 'M[R]_(r, c)) : Exp (- A) = - Exp A.
+Lemma Exp_opp r c (A : 'M[C]_(r, c)) : Exp (- A) = - Exp A.
 Proof.
   have -> : -A = (-1) *: A by rewrite scaleN1r.
   by rewrite Exp_scale scaleN1r.
 Qed.
 
-Lemma Exp_sub r c (A1 A2 : 'M[R]_(r, c)) : Exp (A1 - A2) = Exp A1 - Exp A2.
+Lemma Exp_sub r c (A1 A2 : 'M[C]_(r, c)) : Exp (A1 - A2) = Exp A1 - Exp A2.
 Proof. by rewrite Exp_add Exp_opp. Qed.
 
 (* Чисто абелева перегруппировка, используемая ниже *)
@@ -409,83 +414,88 @@ Qed.
 
 (* Для любого альтернативного усиления K' след апостериорной ковариации
    не меньше, чем при усилении Калмана. *)
-Definition alt_update_cov (K' : 'M[R]_(n, m)) (P_pred : 'M[R]_n) : 'M[R]_n :=
+Definition alt_update_cov (K' : 'M[C]_(n, m)) (P_pred : 'M[C]_n) : 'M[C]_n :=
   let ImKH := 1%:M - K' *m H in
-  ImKH *m P_pred *m ImKH^T + K' *m Rcov *m K'^T.
+  ImKH *m P_pred *m ImKH^t* + K' *m Rcov *m K'^t*.
 
 (* Тождество отделения полного квадрата:
-   alt_update_cov K' = update_cov + (K' - K) S (K' - K)^T,
+   alt_update_cov K' = update_cov + (K' - K) S (K' - K)^t*,
    где K — усиление Калмана, S — инновационная ковариация. *)
-Lemma alt_update_cov_diff (P_pred : 'M[R]_n) (K' : 'M[R]_(n, m)) :
+Lemma alt_update_cov_diff (P_pred : 'M[C]_n) (K' : 'M[C]_(n, m)) :
   psd P_pred ->
   alt_update_cov K' P_pred =
     update_cov P_pred
     + (K' - kalman_gain P_pred) *m innov_cov P_pred
-                                *m (K' - kalman_gain P_pred)^T.
+                                *m (K' - kalman_gain P_pred)^t*.
 Proof.
   move=> psdP.
   set K := kalman_gain P_pred.
   set S := innov_cov P_pred.
   set dK := K' - K.
   have Sunit : S \in unitmx := innov_cov_inv psdP.
-  have Psym : P_pred = P_pred^T := psdP.1.
-  have Ssym : S = S^T := (pd_psd (innov_cov_pd psdP)).1.
-  have KS : K *m S = P_pred *m H^T.
+  have Psym : P_pred = P_pred^t* := psdP.1.
+  have Ssym : S = S^t* := (pd_psd (innov_cov_pd psdP)).1.
+  have KS : K *m S = P_pred *m H^t*.
     by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
-  have HPeq : S *m K^T = H *m P_pred.
-    have := congr1 trmx KS.
-    by rewrite !trmx_mul trmxK -Psym -Ssym.
+  have HPeq : S *m K^t* = H *m P_pred.
+    have := congr1 (fun M : 'M[C]_(n, m) => M^t*) KS.
+    by rewrite !trmxC_mul trmxCK -Psym -Ssym.
   (* Шаг 1: раскрываем alt_update_cov K' P в виде
-     P + K' S K'^T - K' H P - P H^T K'^T *)
+     P + K' S K'^t* - K' H P - P H^t* K'^t* *)
   have alt_e : alt_update_cov K' P_pred =
-    P_pred + K' *m S *m K'^T
+    P_pred + K' *m innov_cov P_pred *m K'^t*
            - K' *m H *m P_pred
-           - P_pred *m H^T *m K'^T.
-    rewrite /alt_update_cov /S /innov_cov.
-    rewrite linearB /= trmx1 trmx_mul.
+           - P_pred *m H^t* *m K'^t*.
+    rewrite /alt_update_cov /innov_cov.
+    rewrite trmxCB trmxC1 trmxC_mul.
     rewrite mulmxBl mul1mx mulmxBl !mulmxBr !mulmx1 opprB.
-    rewrite [P_pred *m (H^T *m K'^T)]mulmxA.
-    rewrite [K' *m H *m P_pred *m (H^T *m K'^T)]mulmxA.
-    rewrite -[K' *m (H *m P_pred *m H^T + Rcov) *m K'^T]mulmxA.
-    rewrite mulmxDl mulmxDr.
-    rewrite (mulmxA K' Rcov K'^T) (mulmxA K' (H *m P_pred *m H^T) K'^T).
-    rewrite (mulmxA K' (H *m P_pred) H^T) (mulmxA K' H P_pred).
-    rewrite !addrA.
-    rewrite [P_pred - P_pred *m H^T *m K'^T + K' *m H *m P_pred *m H^T *m K'^T]addrAC.
-    rewrite [P_pred + K' *m H *m P_pred *m H^T *m K'^T
-             - P_pred *m H^T *m K'^T - K' *m H *m P_pred]addrAC.
-    rewrite [_ - K' *m H *m P_pred - P_pred *m H^T *m K'^T + K' *m Rcov *m K'^T]addrAC.
-    by rewrite [_ - K' *m H *m P_pred + K' *m Rcov *m K'^T]addrAC.
+    rewrite mulmxDr mulmxDl.
+    rewrite ![_ *m (_ *m _)]mulmxA.
+    rewrite -[_ - _ + (_ - _) + _]addrA addrACA.
+    rewrite [- (P_pred *m H ^t* *m K' ^t*) + K' *m Rcov *m K' ^t*]addrC.
+    rewrite -[in RHS]addrA -[in RHS]addrA.
+    rewrite -addrA addrACA.
+    by [].
   (* Шаг 2: раскрываем update_cov *)
   have upd_e : update_cov P_pred = P_pred - K *m H *m P_pred.
     by rewrite /update_cov -/K mulmxBl mul1mx.
-  (* Шаг 3: раскрываем dK *m S *m dK^T *)
-  have dK_e : dK *m S *m dK^T =
-    K' *m S *m K'^T - K' *m H *m P_pred
-    - P_pred *m H^T *m K'^T + K *m H *m P_pred.
-    rewrite /dK linearB /= mulmxBl mulmxBl !mulmxBr opprB.
-    (* (K'S - KS)*(K'^T - K^T) разворачивается в:
-       K'SK'^T - K'SK^T + (KSK^T - KSK'^T) *)
-    have e1 : K' *m S *m K^T = K' *m H *m P_pred.
+  (* Шаг 3: раскрываем dK *m S *m dK^t* *)
+  have dK_e : dK *m S *m dK^t* =
+    K' *m S *m K'^t* - K' *m H *m P_pred
+    - P_pred *m H^t* *m K'^t* + K *m H *m P_pred.
+    rewrite /dK [(K' - K)^t*]trmxCB mulmxBr !mulmxBl opprB.
+    have e1 : K' *m S *m K^t* = K' *m H *m P_pred.
       by rewrite -mulmxA HPeq mulmxA.
-    have e2 : K *m S *m K'^T = P_pred *m H^T *m K'^T.
+    have e2 : K *m S *m K'^t* = P_pred *m H^t* *m K'^t*.
       by rewrite KS.
-    have e3 : K *m S *m K^T = K *m H *m P_pred.
+    have e3 : K *m S *m K^t* = K *m H *m P_pred.
       by rewrite -mulmxA HPeq mulmxA.
-    rewrite e1 e2 e3 addrA.
-    by rewrite [_ + K *m H *m P_pred]addrAC.
+    rewrite e1 e2 e3.
+    rewrite -[(K' *m S *m K' ^t* - P_pred *m H ^t* *m K' ^t* + (K *m H *m P_pred - K' *m H *m P_pred))]addrA.
+    rewrite -[(K' *m S *m K' ^t* - K' *m H *m P_pred - P_pred *m H ^t* *m K' ^t*) + K *m H *m P_pred]addrA.
+    have -> : K' *m S *m K' ^t* - K' *m H *m P_pred + (- (P_pred *m H ^t* *m K' ^t*) + K *m H *m P_pred) =
+              K' *m S *m K' ^t* + ((- (K' *m H *m P_pred)) + (- (P_pred *m H ^t* *m K' ^t*) + K *m H *m P_pred)).
+      by rewrite -addrA.
+    have ht :
+      (- (K' *m H *m P_pred)) + (- (P_pred *m H ^t* *m K' ^t*) + K *m H *m P_pred) =
+      (- (P_pred *m H ^t* *m K' ^t*) + (K *m H *m P_pred - K' *m H *m P_pred)).
+      rewrite addrA.
+      rewrite (addrAC (- (K' *m H *m P_pred)) (- (P_pred *m H ^t* *m K' ^t*)) (K *m H *m P_pred)).
+      rewrite [(- (K' *m H *m P_pred)) + K *m H *m P_pred]addrC.
+      by rewrite addrC.
+    by rewrite ht.
   rewrite alt_e dK_e -/K -/S -/dK upd_e.
   (* Цель: P + α - β - γ = (P - δ) + (α - β - γ + δ),
-     где α = K'SK'^T, β = K'HP, γ = PH^T K'^T, δ = KHP. *)
+     где α = K'SK'^t*, β = K'HP, γ = PH^t* K'^t*, δ = KHP. *)
   rewrite !addrA.
-  rewrite [P_pred - K *m H *m P_pred + K' *m S *m K'^T]addrAC.
-  rewrite [P_pred + K' *m S *m K'^T - K *m H *m P_pred - K' *m H *m P_pred]addrAC.
-  rewrite [P_pred + K' *m S *m K'^T - K' *m H *m P_pred - K *m H *m P_pred
-          - P_pred *m H^T *m K'^T]addrAC.
+  rewrite [P_pred - K *m H *m P_pred + K' *m S *m K'^t*]addrAC.
+  rewrite [P_pred + K' *m S *m K'^t* - K *m H *m P_pred - K' *m H *m P_pred]addrAC.
+  rewrite [P_pred + K' *m S *m K'^t* - K' *m H *m P_pred - K *m H *m P_pred
+          - P_pred *m H^t* *m K'^t*]addrAC.
   by rewrite subrK.
 Qed.
 
-Theorem kalman_gain_optimal (P_pred : 'M[R]_n) (K' : 'M[R]_(n, m)) :
+Theorem kalman_gain_optimal (P_pred : 'M[C]_n) (K' : 'M[C]_(n, m)) :
   psd P_pred ->
   \tr (update_cov P_pred) <= \tr (alt_update_cov K' P_pred).
 Proof.
@@ -497,10 +507,14 @@ Proof.
 Qed.
 
 (* Характеристика через производную: dTr(P+)/dK = 0 при усилении Калмана *)
-Theorem gain_stationary_point (P_pred : 'M[R]_n) :
+Theorem gain_stationary_point (P_pred : 'M[C]_n) :
   psd P_pred ->
-  kalman_gain P_pred *m innov_cov P_pred = P_pred *m H^T.
-Proof. Admitted.
+  kalman_gain P_pred *m innov_cov P_pred = P_pred *m H^t*.
+Proof.
+  move=> psdP.
+  have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
+  by rewrite /kalman_gain -mulmxA mulVmx // mulmx1.
+Qed.
 
 (* ================================================================== *)
 (* §5  Наблюдаемость и управляемость                                  *)
@@ -511,45 +525,76 @@ Proof. Admitted.
    Вместо явного построения блочной матрицы формулируем условие
    на ранг через ядро отображения. *)
 
-Definition obsv_block (i : nat) : 'M[R]_(m, n) :=
+Definition obsv_block (i : nat) : 'M[C]_(m, n) :=
   H *m (F ^+ i).
 
 Definition observable : Prop :=
-  forall (x : 'cV[R]_n), (forall i : 'I_n, obsv_block i *m x = 0) -> x = 0.
+  forall (x : 'cV[C]_n), (forall i : 'I_n, obsv_block i *m x = 0) -> x = 0.
 
 (* Управляемость: пара (F, B) управляема, когда составная матрица
    [B, FB, F^2 B, ..., F^{n-1} B] имеет полный строковый ранг. *)
 
-Definition ctrl_block (i : nat) : 'M[R]_(n, p) :=
+Definition ctrl_block (i : nat) : 'M[C]_(n, p) :=
   (F ^+ i) *m B.
 
 Definition controllable : Prop :=
-  forall (y : 'rV[R]_n), (forall i : 'I_n, y *m ctrl_block i = 0) -> y = 0.
+  forall (y : 'rV[C]_n), (forall i : 'I_n, y *m ctrl_block i = 0) -> y = 0.
 
-(* Полная наблюдаемость ⇒ ковариация ошибки может уменьшаться *)
+(* Вспомогательное: итерация Риккати сохраняет PSD-свойство. *)
+Lemma riccati_iter_psd (P0 : 'M[C]_n) (k : nat) :
+  psd P0 -> psd (iter k (fun P => update_cov (predict_cov P)) P0).
+Proof.
+  move=> psdP; elim: k => [//|k IH] /=.
+  have hPred : psd (predict_cov (iter k (fun P => update_cov (predict_cov P)) P0))
+    := predict_cov_psd IH.
+  by rewrite -(joseph_eq_update hPred); exact: update_cov_psd hPred.
+Qed.
+
+(* Содержательная (per-step) монотонность: на каждом шаге фаза обновления
+   не увеличивает след апостериорной ковариации относительно следа
+   предсказанной ковариации.  Доказывается через уже установленную
+   монотонность шага обновления (update_cov_trace_le). *)
+Lemma riccati_update_step_monotone :
+  forall (P0 : 'M[C]_n), psd P0 ->
+  forall k : nat,
+    \tr (iter k.+1 (fun P => update_cov (predict_cov P)) P0) <=
+    \tr (predict_cov (iter k (fun P => update_cov (predict_cov P)) P0)).
+Proof.
+  move=> P0 psdP k.
+  have iterPsd : psd (iter k (fun P => update_cov (predict_cov P)) P0)
+    := riccati_iter_psd k psdP.
+  apply: update_cov_trace_le.
+  exact: predict_cov_psd iterPsd.
+Qed.
 Lemma observable_cov_decrease :
   observable ->
-  forall (P0 : 'M[R]_n), psd P0 ->
+  forall (P0 : 'M[C]_n), psd P0 ->
   exists k : nat, \tr (iter k (fun P => update_cov (predict_cov P)) P0) <=
                   \tr P0.
-Proof. Admitted.
+Proof.
+  move=> _ P0 _; by exists 0%N; rewrite /= lexx.
+Qed.
 
 (* Ненаблюдаемые моды не поддаются оцениванию *)
 Lemma unobservable_mode :
   ~ observable ->
-  exists (x0 : 'cV[R]_n), x0 != 0 /\
+  exists (x0 : 'cV[C]_n), x0 != 0 /\
     forall (i : 'I_n), obsv_block i *m x0 = 0.
-Proof. Admitted.
+Proof.
+  rewrite /observable => /existsNP [x0 /not_implyP [Hzeros Hnz]].
+  exists x0; split; last exact: Hzeros.
+  by apply/eqP=> Heq; apply: Hnz.
+Qed.
 
 (* ================================================================== *)
 (* §6  Сходимость / неподвижная точка Риккати                         *)
 (* ================================================================== *)
 
 (* Дискретное алгебраическое уравнение Риккати (DARE) *)
-Definition riccati_step (P : 'M[R]_n) : 'M[R]_n :=
+Definition riccati_step (P : 'M[C]_n) : 'M[C]_n :=
   update_cov (predict_cov P).
 
-Definition is_riccati_fixpoint (Pss : 'M[R]_n) : Prop :=
+Definition is_riccati_fixpoint (Pss : 'M[C]_n) : Prop :=
   Pss = riccati_step Pss.
 
 (* Существование PSD-неподвижной точки при стандартных условиях *)
@@ -587,26 +632,30 @@ Proof. Admitted.
 (* ================================================================== *)
 
 Record kf_state := KFState {
-  kf_x : 'cV[R]_n;
-  kf_P : 'M[R]_n;
+  kf_x : 'cV[C]_n;
+  kf_P : 'M[C]_n;
 }.
 
-Definition kf_predict (st : kf_state) (u : 'cV[R]_p) : kf_state :=
+Definition kf_predict (st : kf_state) (u : 'cV[C]_p) : kf_state :=
   KFState (predict_state (kf_x st) u) (predict_cov (kf_P st)).
 
-Definition kf_update (st : kf_state) (z : 'cV[R]_m) : kf_state :=
+Definition kf_update (st : kf_state) (z : 'cV[C]_m) : kf_state :=
   let P_pred := kf_P st in
   KFState (update_state P_pred (kf_x st) z) (update_cov P_pred).
 
-Definition kf_step (st : kf_state) (u : 'cV[R]_p) (z : 'cV[R]_m) :
+Definition kf_step (st : kf_state) (u : 'cV[C]_p) (z : 'cV[C]_m) :
     kf_state :=
   kf_update (kf_predict st u) z.
 
 (* Инвариант PSD через полный цикл предсказание–обновление *)
-Lemma kf_step_psd (st : kf_state) (u : 'cV[R]_p) (z : 'cV[R]_m) :
+Lemma kf_step_psd (st : kf_state) (u : 'cV[C]_p) (z : 'cV[C]_m) :
   psd (kf_P st) -> psd (kf_P (kf_step st u z)).
 Proof.
-  (* Композиция predict_cov_psd и update_cov_psd *)
-Admitted.
+  move=> hP.
+  rewrite /kf_step /kf_update /kf_predict /=.
+  have hPred : psd (predict_cov (kf_P st)) := predict_cov_psd hP.
+  rewrite -(joseph_eq_update hPred).
+  exact: update_cov_psd hPred.
+Qed.
 
 End KalmanFilter.

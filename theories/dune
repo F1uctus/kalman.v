@@ -3,9 +3,7 @@
 (rocq.theory
  (name Top)
  (mode vo)
- (modules kalman)
+ (modules psd_base psd_order spectral kalman)
  (theories Stdlib HB mathcomp.boot mathcomp.algebra mathcomp.order
-           mathcomp.fingroup)
- (flags :standard
-   -Q /root/.opam/CP.2025.08.0~9.0~2025.08/lib/coq/user-contrib/elpi elpi
-   -Q /root/.opam/CP.2025.08.0~9.0~2025.08/lib/coq/user-contrib/elpi_elpi elpi_elpi))
+           mathcomp.fingroup mathcomp.classical mathcomp.reals
+           mathcomp.analysis))
