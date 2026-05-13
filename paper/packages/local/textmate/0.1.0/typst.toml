@@ -1,0 +1,10 @@
+[package]
+name = "textmate"
+version = "0.1.0"
+entrypoint = "lib.typ"
+authors = ["Ilya I. Nikitin <ilya.i.nikitin@proton.me>"]
+license = "GPL-3.0-or-later"
+description = "Convert TextMate tmLanguage grammars to sublime-syntax in pure Typst"
+repository = "https://github.com/F1uctus/textmate.typ"
+homepage = "https://github.com/F1uctus/textmate.typ"
+keywords = ["typst", "textmate", "syntax", "highlighting"]

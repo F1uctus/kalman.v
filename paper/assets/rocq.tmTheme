@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>name</key>
+    <string>Rocq Prover</string>
+    <key>settings</key>
+    <array>
+      <dict>
+        <key>settings</key>
+        <dict>
+          <key>background</key>
+          <string>#ffffff</string>
+          <key>foreground</key>
+          <string>#1f2933</string>
+          <key>caret</key>
+          <string>#0f172a</string>
+          <key>lineHighlight</key>
+          <string>#f1f5f9</string>
+          <key>selection</key>
+          <string>#e2e8f0</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Keywords</string>
+        <key>scope</key>
+        <string>keyword.source.rocq, keyword.control.import.rocq, keyword.control.gallina,
+          keyword.control.ltac, keyword.debug.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#0f4c81</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Declaration Keywords</string>
+        <key>scope</key>
+        <string>keyword</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#0369a1</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Gallina Core</string>
+        <key>scope</key>
+        <string>keyword.control.gallina, keyword.operator.rocq, support.type.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#be185d</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Entities</string>
+        <key>scope</key>
+        <string>entity.name.function.theorem.rocq, entity.name.function.ltac.rocq,
+          entity.name.type.rocq, entity.name.assumption.rocq, support.function.builtin.ltac</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#0f766e</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Strings</string>
+        <key>scope</key>
+        <string>string.quoted.double.rocq, punctuation.definition.string.begin.rocq,
+          punctuation.definition.string.end.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#15803d</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Comments</string>
+        <key>scope</key>
+        <string>comment.block.rocq, comment.doc.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#64748b</string>
+          <key>fontStyle</key>
+          <string>italic</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Numbers</string>
+        <key>scope</key>
+        <string>constant.numeric.gallina</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#7c3aed</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Builtins</string>
+        <key>scope</key>
+        <string>constant.language.constructor.rocq, constant.language.wildcard.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#b45309</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Invalid / Admit</string>
+        <key>scope</key>
+        <string>invalid.illegal.admit.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#b91c1c</string>
+          <key>fontStyle</key>
+          <string>italic bold</string>
+        </dict>
+      </dict>
+    </array>
+  </dict>
+</plist>
