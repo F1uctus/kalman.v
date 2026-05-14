@@ -19,7 +19,7 @@ Local Open Scope ring_scope.
 Local Open Scope sesquilinear_scope.
 
 (* ================================================================== *)
-(* §1  Модель пространства состояний и шаг предсказания               *)
+(* Sec. 1.2. The Optimum Transient Observer                           *)
 (* ================================================================== *)
 
 Section KalmanFilter.
@@ -27,7 +27,7 @@ Variable (C : numClosedFieldType).
 Variables (n m p : nat).
 
 Variable F : 'M[C]_n.             (* матрица перехода состояний *)
-Variable B : 'M[C]_(n, p).        (* матрица управляющего воздействия *)
+Variable G : 'M[C]_(n, p).        (* матрица управляющего воздействия *)
 Variable H : 'M[C]_(m, n).        (* матрица наблюдения *)
 Variable Q : 'M[C]_n.             (* ковариация шума процесса *)
 Variable Rcov : 'M[C]_m.          (* ковариация шума измерения *)
@@ -39,7 +39,7 @@ Hypothesis R_pd   : pd Rcov.
 (* Шаг предсказания *)
 
 Definition predict_state (x_prev : 'cV[C]_n) (u : 'cV[C]_p) : 'cV[C]_n :=
-  F *m x_prev + B *m u.
+  F *m x_prev + G *m u.
 
 Definition predict_cov (P_prev : 'M[C]_n) : 'M[C]_n :=
   F *m P_prev *m F^t* + Q.
@@ -68,8 +68,7 @@ Proof.
 Qed.
 
 (* ================================================================== *)
-(* §2  Инновационная ковариация, усиление Калмана,                    *)
-(*     обновление ковариации                                          *)
+(* Sec. 1.4. The Innovations Process                                  *)
 (* ================================================================== *)
 
 (* Инновационная ковариация *)
@@ -320,7 +319,7 @@ Definition x_true (u : nat -> 'cV[C]_p) : nat -> 'cV[C]_n :=
   fix f k :=
     match k with
     | 0%N => w 0%N
-    | k'.+1 => F *m f k' + B *m u k' + w k'.+1
+    | k'.+1 => F *m f k' + G *m u k' + w k'.+1
     end.
 
 (* Обновление оценочного вектора состояния *)
@@ -356,7 +355,7 @@ Lemma Exp_sub r c (A1 A2 : 'M[C]_(r, c)) : Exp (A1 - A2) = Exp A1 - Exp A2.
 Proof. by rewrite Exp_add Exp_opp. Qed.
 
 (* Чисто абелева перегруппировка, используемая ниже *)
-Lemma abelian_swap_cancel (G : zmodType) (a b c d e : G) :
+Lemma abelian_swap_cancel (M : zmodType) (a b c d e : M) :
   a + b + c - (d + b + e) = a - d + c - e.
 Proof.
   rewrite !opprD !addrA.
@@ -379,14 +378,14 @@ Proof.
   set Kk := kalman_gain (predict_cov (Ps k)).
   set xt := x_true u k.
   set xh := x_hat u z Ps k.
-  (* Внутреннее выражение: H * x_true k.+1 + v k.+1 - H * (F*xh + B*u k)
+  (* Внутреннее выражение: H * x_true k.+1 + v k.+1 - H * (F*xh + G*u k)
      = H *m F *m (xt - xh) + H *m w k.+1 + v k.+1 *)
   have inner :
-    H *m (F *m xt + B *m u k + w k.+1) + v k.+1 -
-      H *m (F *m xh + B *m u k) =
+    H *m (F *m xt + G *m u k + w k.+1) + v k.+1 -
+      H *m (F *m xh + G *m u k) =
     H *m F *m (xt - xh) + H *m w k.+1 + v k.+1.
   { rewrite mulmxBr !mulmxDr !mulmxA addrAC opprD !addrA.
-    rewrite (addrAC _ _ (- (H *m B *m u k))).
+    rewrite (addrAC _ _ (- (H *m G *m u k))).
     rewrite (addrAC _ (H *m w k.+1)) addrK.
     by rewrite [X in X + _ = _]addrAC. }
   rewrite inner.
@@ -531,11 +530,11 @@ Definition obsv_block (i : nat) : 'M[C]_(m, n) :=
 Definition observable : Prop :=
   forall (x : 'cV[C]_n), (forall i : 'I_n, obsv_block i *m x = 0) -> x = 0.
 
-(* Управляемость: пара (F, B) управляема, когда составная матрица
-   [B, FB, F^2 B, ..., F^{n-1} B] имеет полный строковый ранг. *)
+(* Управляемость: пара (F, G) управляема, когда составная матрица
+   [G, F G, F^2 G, ..., F^{n-1} G] имеет полный строковый ранг. *)
 
 Definition ctrl_block (i : nat) : 'M[C]_(n, p) :=
-  (F ^+ i) *m B.
+  (F ^+ i) *m G.
 
 Definition controllable : Prop :=
   forall (y : 'rV[C]_n), (forall i : 'I_n, y *m ctrl_block i = 0) -> y = 0.
