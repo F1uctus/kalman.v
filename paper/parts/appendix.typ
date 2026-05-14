@@ -9,7 +9,7 @@
 #show: phd-appendix
 
 #let rocqSyntax = to-sublime-syntax(json(bytes(read("../assets/rocq.tmLanguage.json"))))
-#let source = read("../theories/kalman.v")
+#let source = read("../../theories/kalman.v")
 #show raw: set text(font: "Iosevka")
 
 = Примеры вставки листингов программного кода <app:A>

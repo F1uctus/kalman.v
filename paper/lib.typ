@@ -343,9 +343,6 @@
 }
 
 #let Rocq = box(
-  image("images/logo-rocq-black.svg"),
+  image("images/logo-rocq-black-text.svg"),
   height: 0.65em,
 )
-
-#let Mat = "Mat"
-
