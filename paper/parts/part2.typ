@@ -61,12 +61,16 @@ $ x_(k+1) = F x_k + B u_k + w_(k+1), quad z_k = H x_k + v_k, $
 где $Q succ.curly.eq 0$, матрица $R$ положительно определена ковариации
 (или их аналоги) шумов процесса и измерения. Для симметричной
 $P_k^- succ.curly.eq 0$ _предсказание_:
-$ hat(x)_k^- = F hat(x)_(k-1)^+ + B u_(k-1), quad
-  P_k^- = F P_(k-1)^+ F^top + Q. $
+$
+  hat(x)_k^- = F hat(x)_(k-1)^+ + B u_(k-1), quad
+  P_k^- = F P_(k-1)^+ F^top + Q.
+$
 Инновационная ковариация $S_k = H P_k^- H^top + R$, усиление Калмана
 $K_k = P_k^- H^top S_k^(-1)$, _обновление_:
-$ hat(x)_k^+ = hat(x)_k^- + K_k (z_k - H hat(x)_k^-), quad
-  P_k^+ = (E_n - K_k H) P_k^-. $
+$
+  hat(x)_k^+ = hat(x)_k^- + K_k (z_k - H hat(x)_k^-), quad
+  P_k^+ = (E_n - K_k H) P_k^-.
+$
 Эквивалентная _форма Джозефа_:
 $ P_k^+ = (E_n - K_k H) P_k^- (E_n - K_k H)^top + K_k R K_k^top. $
 
@@ -129,5 +133,5 @@ $"Tr" P^+(K) <= "Tr" P^+(K')$.
 `kalman_gain_optimal`; стационарное условие `gain_stationary_point`
 ($K S = P^- H^top$ в матричной записи).
 
-Условие минимума следа с $E_n$ (см. @sec:prelim-model):
+Условие минимума следа с $E_n$:
 $ "Tr"((E_n - K H) P^-) <= "Tr"((E_n - K' H) P^- (E_n - K' H)^top + K' R K'^top). $
