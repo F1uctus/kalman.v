@@ -24,13 +24,13 @@ Local Open Scope sesquilinear_scope.
 
 Section KalmanFilter.
 Variable (C : numClosedFieldType).
-Variables (n m p : nat).
+Variables (m n p : nat).
 
 Variable F : 'M[C]_n.             (* матрица перехода состояний *)
-Variable G : 'M[C]_(n, p).        (* матрица управляющего воздействия *)
-Variable H : 'M[C]_(m, n).        (* матрица наблюдения *)
+Variable G : 'M[C]_(n, m).        (* матрица управляющего воздействия *)
+Variable H : 'M[C]_(p, n).        (* матрица наблюдения *)
 Variable Q : 'M[C]_n.             (* ковариация шума процесса *)
-Variable Rcov : 'M[C]_m.          (* ковариация шума измерения *)
+Variable Rcov : 'M[C]_p.          (* ковариация шума измерения *)
 
 (* Общие предположения о ковариациях шума *)
 Hypothesis Q_psd  : psd Q.
@@ -38,7 +38,7 @@ Hypothesis R_pd   : pd Rcov.
 
 (* Шаг предсказания *)
 
-Definition predict_state (x_prev : 'cV[C]_n) (u : 'cV[C]_p) : 'cV[C]_n :=
+Definition predict_state (x_prev : 'cV[C]_n) (u : 'cV[C]_m) : 'cV[C]_n :=
   F *m x_prev + G *m u.
 
 Definition predict_cov (P_prev : 'M[C]_n) : 'M[C]_n :=
@@ -72,14 +72,14 @@ Qed.
 (* ================================================================== *)
 
 (* Инновационная ковариация *)
-Definition innov_cov (P_pred : 'M[C]_n) : 'M[C]_m :=
+Definition innov_cov (P_pred : 'M[C]_n) : 'M[C]_p :=
   H *m P_pred *m H^t* + Rcov.
 
 Lemma innov_cov_pd (P_pred : 'M[C]_n) :
   psd P_pred -> pd (innov_cov P_pred).
 Proof.
   move=> psdP.
-  have hpsd : psd (H *m P_pred *m H^t*) := @psd_mulmx_row C m n P_pred H psdP.
+  have hpsd : psd (H *m P_pred *m H^t*) := @psd_mulmx_row C p n P_pred H psdP.
   split.
   - rewrite /innov_cov.
     rewrite trmxC_add.
@@ -113,12 +113,12 @@ Proof.
 Qed.
 
 (* Усиление (коэффициент) Калмана *)
-Definition kalman_gain (P_pred : 'M[C]_n) : 'M[C]_(n, m) :=
+Definition kalman_gain (P_pred : 'M[C]_n) : 'M[C]_(n, p) :=
   P_pred *m H^t* *m invmx (innov_cov P_pred).
 
 (* Обновление состояния *)
 Definition update_state (P_pred : 'M[C]_n)
-    (x_pred : 'cV[C]_n) (z : 'cV[C]_m) : 'cV[C]_n :=
+    (x_pred : 'cV[C]_n) (z : 'cV[C]_p) : 'cV[C]_n :=
   let K := kalman_gain P_pred in
   x_pred + K *m (z - H *m x_pred).
 
@@ -262,7 +262,7 @@ Proof.
   have hP_inv_pd : pd (invmx P_pred) := pd_inv Ppd.
   have hRinv_psd : psd (invmx Rcov) := pd_psd (pd_inv R_pd).
   have hHterm_psd : psd (H^t* *m invmx Rcov *m H)
-    := @psd_congruence C m n (invmx Rcov) H hRinv_psd.
+    := @psd_congruence C p n (invmx Rcov) H hRinv_psd.
   have hSum_pd : pd (invmx (update_cov P_pred)).
     by rewrite IF_inv; exact: pd_add hP_inv_pd hHterm_psd.
   have := pd_inv hSum_pd.
@@ -310,12 +310,12 @@ Hypothesis Exp_mulmx_l : forall r c s (A : 'M[C]_(r, c)) (B : 'M[C]_(c, s)),
 
 (* Предположения о шумах *)
 Variable w : nat -> 'cV[C]_n.
-Variable v : nat -> 'cV[C]_m.
+Variable v : nat -> 'cV[C]_p.
 Hypothesis Exp_w_zero : forall k, Exp (w k) = 0.
 Hypothesis Exp_v_zero : forall k, Exp (v k) = 0.
 
 (* Обновление истинного вектора состояния *)
-Definition x_true (u : nat -> 'cV[C]_p) : nat -> 'cV[C]_n :=
+Definition x_true (u : nat -> 'cV[C]_m) : nat -> 'cV[C]_n :=
   fix f k :=
     match k with
     | 0%N => w 0%N
@@ -323,7 +323,7 @@ Definition x_true (u : nat -> 'cV[C]_p) : nat -> 'cV[C]_n :=
     end.
 
 (* Обновление оценочного вектора состояния *)
-Definition x_hat (u : nat -> 'cV[C]_p) (z : nat -> 'cV[C]_m)
+Definition x_hat (u : nat -> 'cV[C]_m) (z : nat -> 'cV[C]_p)
     (P_seq : nat -> 'M[C]_n) : nat -> 'cV[C]_n :=
   fix f k :=
     match k with
@@ -413,14 +413,14 @@ Qed.
 
 (* Для любого альтернативного усиления K' след апостериорной ковариации
    не меньше, чем при усилении Калмана. *)
-Definition alt_update_cov (K' : 'M[C]_(n, m)) (P_pred : 'M[C]_n) : 'M[C]_n :=
+Definition alt_update_cov (K' : 'M[C]_(n, p)) (P_pred : 'M[C]_n) : 'M[C]_n :=
   let ImKH := 1%:M - K' *m H in
   ImKH *m P_pred *m ImKH^t* + K' *m Rcov *m K'^t*.
 
 (* Тождество отделения полного квадрата:
    alt_update_cov K' = update_cov + (K' - K) S (K' - K)^t*,
    где K — усиление Калмана, S — инновационная ковариация. *)
-Lemma alt_update_cov_diff (P_pred : 'M[C]_n) (K' : 'M[C]_(n, m)) :
+Lemma alt_update_cov_diff (P_pred : 'M[C]_n) (K' : 'M[C]_(n, p)) :
   psd P_pred ->
   alt_update_cov K' P_pred =
     update_cov P_pred
@@ -437,7 +437,7 @@ Proof.
   have KS : K *m S = P_pred *m H^t*.
     by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
   have HPeq : S *m K^t* = H *m P_pred.
-    have := congr1 (fun M : 'M[C]_(n, m) => M^t*) KS.
+    have := congr1 (fun M : 'M[C]_(n, p) => M^t*) KS.
     by rewrite !trmxC_mul trmxCK -Psym -Ssym.
   (* Шаг 1: раскрываем alt_update_cov K' P в виде
      P + K' S K'^t* - K' H P - P H^t* K'^t* *)
@@ -494,7 +494,7 @@ Proof.
   by rewrite subrK.
 Qed.
 
-Theorem kalman_gain_optimal (P_pred : 'M[C]_n) (K' : 'M[C]_(n, m)) :
+Theorem kalman_gain_optimal (P_pred : 'M[C]_n) (K' : 'M[C]_(n, p)) :
   psd P_pred ->
   \tr (update_cov P_pred) <= \tr (alt_update_cov K' P_pred).
 Proof.
@@ -524,7 +524,7 @@ Qed.
    Вместо явного построения блочной матрицы формулируем условие
    на ранг через ядро отображения. *)
 
-Definition obsv_block (i : nat) : 'M[C]_(m, n) :=
+Definition obsv_block (i : nat) : 'M[C]_(p, n) :=
   H *m (F ^+ i).
 
 Definition observable : Prop :=
@@ -533,7 +533,7 @@ Definition observable : Prop :=
 (* Управляемость: пара (F, G) управляема, когда составная матрица
    [G, F G, F^2 G, ..., F^{n-1} G] имеет полный строковый ранг. *)
 
-Definition ctrl_block (i : nat) : 'M[C]_(n, p) :=
+Definition ctrl_block (i : nat) : 'M[C]_(n, m) :=
   (F ^+ i) *m G.
 
 Definition controllable : Prop :=
@@ -635,20 +635,20 @@ Record kf_state := KFState {
   kf_P : 'M[C]_n;
 }.
 
-Definition kf_predict (st : kf_state) (u : 'cV[C]_p) : kf_state :=
+Definition kf_predict (st : kf_state) (u : 'cV[C]_m) : kf_state :=
   KFState (predict_state (kf_x st) u) (predict_cov (kf_P st)).
 
-Definition kf_update (st : kf_state) (z : 'cV[C]_m) : kf_state :=
+Definition kf_update (st : kf_state) (y : 'cV[C]_p) : kf_state :=
   let P_pred := kf_P st in
-  KFState (update_state P_pred (kf_x st) z) (update_cov P_pred).
+  KFState (update_state P_pred (kf_x st) y) (update_cov P_pred).
 
-Definition kf_step (st : kf_state) (u : 'cV[C]_p) (z : 'cV[C]_m) :
+Definition kf_step (st : kf_state) (u : 'cV[C]_m) (y : 'cV[C]_p) :
     kf_state :=
-  kf_update (kf_predict st u) z.
+  kf_update (kf_predict st u) y.
 
 (* Инвариант PSD через полный цикл предсказание–обновление *)
-Lemma kf_step_psd (st : kf_state) (u : 'cV[C]_p) (z : 'cV[C]_m) :
-  psd (kf_P st) -> psd (kf_P (kf_step st u z)).
+Lemma kf_step_psd (st : kf_state) (u : 'cV[C]_p) (y : 'cV[C]_p) :
+  psd (kf_P st) -> psd (kf_P (kf_step st u y)).
 Proof.
   move=> hP.
   rewrite /kf_step /kf_update /kf_predict /=.
