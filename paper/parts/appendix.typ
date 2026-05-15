@@ -1,24 +1,14 @@
 #import "../lib.typ": *
-#import "../packages/local/textmate/0.1.0/lib.typ": to-sublime-syntax
-#import "@preview/codly:1.3.0": *
-#show: codly-init
-
-#import "@preview/codly-languages:0.1.10": *
-#codly(languages: codly-languages)
 
 #show: phd-appendix
-
-#let rocqSyntax = to-sublime-syntax(json(bytes(read("../assets/rocq.tmLanguage.json"))))
-#let source = read("../../theories/kalman.v")
-#show raw: set text(font: "Iosevka")
 
 = Примеры вставки листингов программного кода <app:A>
 
 #figure(
   raw(
-    source,
+    rocq-src("kalman.v"),
     lang: "rocq",
-    syntaxes: bytes(rocqSyntax),
+    syntaxes: bytes(rocq-syntax),
     theme: "../assets/rocq.tmTheme",
     block: true,
   ),

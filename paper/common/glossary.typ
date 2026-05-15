@@ -17,6 +17,6 @@
   (
     key: "psd",
     short: "PSD",
-    description: "Positive-semidefinite (Положительно полуопределённая матрица)",
+    description: "Positive-semidefinite (Неотрицательно определённая матрица)",
   ),
 )

@@ -1,10 +1,12 @@
-(*  Положительная (полу)определённость над numClosedFieldType.        *)
-(*                                                                     *)
-(*  Эрмитова форма: M = M^t*  (где ^t* = (^T)^conjC из                 *)
-(*  mathcomp.algebra.sesquilinear).                                    *)
-(*                                                                     *)
-(*  Скелет доказательств адаптирован из CoqQ/src/mxpred.v              *)
-(*  (psdmxD, psdmx_bimap_closed_gen, psdmx_dot).                       *)
+(*  Положительная/неотрицательная определённость над numClosedFieldType. *)
+(*                                                                       *)
+(*  Эрмитова форма: M = M^t*  (где ^t* = (^T)^conjC из                   *)
+(*  mathcomp.algebra.sesquilinear).                                      *)
+(*                                                                       *)
+(*  Скелет доказательств адаптирован из CoqQ/src/mxpred.v                *)
+(*  (psdmxD, psdmx_bimap_closed_gen, psdmx_dot).                         *)
+
+Set Warnings "-notation-overridden,-coercions,-default".
 
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
@@ -120,6 +122,7 @@ Proof.
   by rewrite -(qf_delta M i); exact: psdM.
 Qed.
 
+(* Положительно определённая матрица обратима. *)
 Lemma pd_invertible n (M : 'M[C]_n) : pd M -> M \in unitmx.
 Proof.
   move=> [Msym pdM]; apply: contraT => Mnu.
@@ -132,6 +135,8 @@ Proof.
   by move: (pdM v vNZ); rewrite -mulmxA Mv0 mulmx0 mxtrace0 ltxx.
 Qed.
 
+(* Сумма положительно определённых матриц также
+   положительно определена. *)
 Lemma pd_add n (A B : 'M[C]_n) : pd A -> psd B -> pd (A + B).
 Proof.
   move=> [Asym pdA] [Bsym psdB]; split.
@@ -141,6 +146,8 @@ Proof.
   exact: ltr_wpDl (psdB v) (pdA v vNZ).
 Qed.
 
+(* Обратная матрица к положительно определённой
+   также определена положительно. *)
 Lemma pd_inv n (M : 'M[C]_n) : pd M -> pd (invmx M).
 Proof.
   move=> pdM; have Munit : M \in unitmx := pd_invertible pdM.
