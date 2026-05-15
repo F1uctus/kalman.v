@@ -13,3 +13,6 @@ jobs:
         uses: coq-community/docker-coq-action@v1
         with:
           custom_image: "mathcomp/mathcomp:2.5.0-rocq-prover-9.1"
+          custom_script: |
+            eval $(opam env)
+            dune build
