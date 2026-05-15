@@ -73,9 +73,9 @@ Definition kalman_gain (P_pred : 'M[C]_n) : 'M[C]_(n, p) :=
 
 (* Обновление состояния *)
 Definition update_state (P_pred : 'M[C]_n)
-    (x_pred : 'cV[C]_n) (z : 'cV[C]_p) : 'cV[C]_n :=
+    (x_pred : 'cV[C]_n) (y : 'cV[C]_p) : 'cV[C]_n :=
   let K := kalman_gain P_pred in
-  x_pred + K *m (z - H *m x_pred).
+  x_pred + K *m (y - H *m x_pred).
 
 (* Обновление ковариации (стандартная форма) *)
 Definition update_cov (P_pred : 'M[C]_n) : 'M[C]_n :=
@@ -115,7 +115,7 @@ Definition x_true (u : nat -> 'cV[C]_m) : nat -> 'cV[C]_n :=
     end.
 
 (* Обновление оценочного вектора состояния *)
-Definition x_hat (u : nat -> 'cV[C]_m) (z : nat -> 'cV[C]_p)
+Definition x_hat (u : nat -> 'cV[C]_m) (y : nat -> 'cV[C]_p)
     (P_seq : nat -> 'M[C]_n) : nat -> 'cV[C]_n :=
   fix f k :=
     match k with
@@ -123,11 +123,11 @@ Definition x_hat (u : nat -> 'cV[C]_m) (z : nat -> 'cV[C]_p)
     | k'.+1 =>
       let x_pred := predict_state (f k') (u k') in
       let P_pred := predict_cov (P_seq k') in
-      update_state P_pred x_pred (z k'.+1)
+      update_state P_pred x_pred (y k'.+1)
     end.
 
 (* Ошибка оценивания *)
-Definition err u z Ps k := x_true u k - x_hat u z Ps k.
+Definition err u y Ps k := x_true u k - x_hat u y Ps k.
 
 (* Вспомогательные леммы о линейности E *)
 
@@ -157,19 +157,19 @@ Qed.
 
 (* Рекурсия для ошибки оценивания.  Уравнение измерения предполагает,
    что наблюдение есть линейная комбинация истинного состояния и шума. *)
-Lemma err_recursion u z Ps k :
-  (forall j, z j = H *m x_true u j + v j) ->
-  err u z Ps k.+1 =
-    F *m err u z Ps k + w k.+1 -
+Lemma err_recursion u y Ps k :
+  (forall j, y j = H *m x_true u j + v j) ->
+  err u y Ps k.+1 =
+    F *m err u y Ps k + w k.+1 -
     kalman_gain (predict_cov (Ps k)) *m
-      (H *m F *m err u z Ps k + H *m w k.+1 + v k.+1).
+      (H *m F *m err u y Ps k + H *m w k.+1 + v k.+1).
 Proof.
   move=> Hzm.
   rewrite /err /= /update_state /predict_state.
   rewrite (Hzm k.+1) /=.
   set Kk := kalman_gain (predict_cov (Ps k)).
   set xt := x_true u k.
-  set xh := x_hat u z Ps k.
+  set xh := x_hat u y Ps k.
   (* Внутреннее выражение: H * x_true k.+1 + v k.+1 - H * (F*xh + G*u k)
      = H *m F *m (xt - xh) + H *m w k.+1 + v k.+1 *)
   have inner :
@@ -187,10 +187,10 @@ Proof.
 Qed.
 
 (* Несмещённость: E[ошибка] = 0 на каждом шаге *)
-Theorem unbiased u z Ps :
-  (forall j, z j = H *m x_true u j + v j) ->
-  Exp (err u z Ps 0) = 0 ->
-  forall k, Exp (err u z Ps k) = 0.
+Theorem unbiased u y Ps :
+  (forall j, y j = H *m x_true u j + v j) ->
+  Exp (err u y Ps 0) = 0 ->
+  forall k, Exp (err u y Ps k) = 0.
 Proof.
   move=> Hzm E0; elim=> [//|k IH].
   rewrite (err_recursion _ _ Hzm).
