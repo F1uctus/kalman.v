@@ -167,6 +167,10 @@ $
 #rocq-snippet("kalman.v", "Hypothesis Q_psd ")
 #rocq-snippet("kalman.v", "Hypothesis R_pd ")
 
+Для таких матриц далее укажем основные свойства
+что пригодятся нам в дальнейшем, и докажем эти
+свойства.
+
 == Знакоопределённые и знакополуопределённые матрицы
 
 #definition[
@@ -178,7 +182,6 @@ $
   ($M succ 0$),
   если дополнительно потребовать
   $forall v != 0 : v^top M v > 0$.
-  При таком условии $M$ обратима.
 ]
 
 #rocq-snippet("psd_base.v", "Definition psd ")
