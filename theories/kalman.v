@@ -67,6 +67,138 @@ Proof.
   exact: hsum.
 Qed.
 
+(* Усиление (коэффициент) Калмана *)
+Definition kalman_gain (P_pred : 'M[C]_n) : 'M[C]_(n, p) :=
+  P_pred *m H^t* *m invmx (innov_cov P_pred).
+
+(* Обновление состояния *)
+Definition update_state (P_pred : 'M[C]_n)
+    (x_pred : 'cV[C]_n) (z : 'cV[C]_p) : 'cV[C]_n :=
+  let K := kalman_gain P_pred in
+  x_pred + K *m (z - H *m x_pred).
+
+(* Обновление ковариации (стандартная форма) *)
+Definition update_cov (P_pred : 'M[C]_n) : 'M[C]_n :=
+  let K := kalman_gain P_pred in
+  (1%:M - K *m H) *m P_pred.
+
+(* ================================================================== *)
+(* Несмещённость                                                      *)
+(* ================================================================== *)
+
+(* Абстрактный оператор математического ожидания
+   (алгебраическая аксиоматизация).
+   Моделируем как матричнозначное линейное отображение. *)
+
+Variable Exp : forall {r c : nat}, 'M[C]_(r, c) -> 'M[C]_(r, c).
+
+(* Аксиомы линейности *)
+Hypothesis Exp_add : forall r c (A B : 'M[C]_(r, c)),
+  Exp (A + B) = Exp A + Exp B.
+Hypothesis Exp_scale : forall r c (a : C) (A : 'M[C]_(r, c)),
+  Exp (a *: A) = a *: Exp A.
+Hypothesis Exp_mulmx_l : forall r c s (A : 'M[C]_(r, c)) (B : 'M[C]_(c, s)),
+  Exp (A *m B) = A *m Exp B.
+
+(* Предположения о шумах *)
+Variable w : nat -> 'cV[C]_n.
+Variable v : nat -> 'cV[C]_p.
+Hypothesis Exp_w_zero : forall k, Exp (w k) = 0.
+Hypothesis Exp_v_zero : forall k, Exp (v k) = 0.
+
+(* Обновление истинного вектора состояния *)
+Definition x_true (u : nat -> 'cV[C]_m) : nat -> 'cV[C]_n :=
+  fix f k :=
+    match k with
+    | 0%N => w 0%N
+    | k'.+1 => F *m f k' + G *m u k' + w k'.+1
+    end.
+
+(* Обновление оценочного вектора состояния *)
+Definition x_hat (u : nat -> 'cV[C]_m) (z : nat -> 'cV[C]_p)
+    (P_seq : nat -> 'M[C]_n) : nat -> 'cV[C]_n :=
+  fix f k :=
+    match k with
+    | 0%N => 0  (* начальная оценка; предполагаем несмещённый старт *)
+    | k'.+1 =>
+      let x_pred := predict_state (f k') (u k') in
+      let P_pred := predict_cov (P_seq k') in
+      update_state P_pred x_pred (z k'.+1)
+    end.
+
+(* Ошибка оценивания *)
+Definition err u z Ps k := x_true u k - x_hat u z Ps k.
+
+(* Вспомогательные леммы о линейности E *)
+
+Lemma Exp_zero r c : Exp (0 : 'M[C]_(r, c)) = 0.
+Proof.
+  have e := Exp_scale (0 : C) (0 : 'M[C]_(r, c)).
+  by rewrite !scale0r in e.
+Qed.
+
+Lemma Exp_opp r c (A : 'M[C]_(r, c)) : Exp (- A) = - Exp A.
+Proof.
+  have -> : -A = (-1) *: A by rewrite scaleN1r.
+  by rewrite Exp_scale scaleN1r.
+Qed.
+
+Lemma Exp_sub r c (A1 A2 : 'M[C]_(r, c)) : Exp (A1 - A2) = Exp A1 - Exp A2.
+Proof. by rewrite Exp_add Exp_opp. Qed.
+
+(* Чисто абелева перегруппировка, используемая ниже *)
+Lemma abelian_swap_cancel (M : zmodType) (a b c d e : M) :
+  a + b + c - (d + b + e) = a - d + c - e.
+Proof.
+  rewrite !opprD !addrA.
+  rewrite (addrAC _ _ (- b)) (addrAC _ c (- b)) addrK.
+  by rewrite (addrAC _ c (- d)).
+Qed.
+
+(* Рекурсия для ошибки оценивания.  Уравнение измерения предполагает,
+   что наблюдение есть линейная комбинация истинного состояния и шума. *)
+Lemma err_recursion u z Ps k :
+  (forall j, z j = H *m x_true u j + v j) ->
+  err u z Ps k.+1 =
+    F *m err u z Ps k + w k.+1 -
+    kalman_gain (predict_cov (Ps k)) *m
+      (H *m F *m err u z Ps k + H *m w k.+1 + v k.+1).
+Proof.
+  move=> Hzm.
+  rewrite /err /= /update_state /predict_state.
+  rewrite (Hzm k.+1) /=.
+  set Kk := kalman_gain (predict_cov (Ps k)).
+  set xt := x_true u k.
+  set xh := x_hat u z Ps k.
+  (* Внутреннее выражение: H * x_true k.+1 + v k.+1 - H * (F*xh + G*u k)
+     = H *m F *m (xt - xh) + H *m w k.+1 + v k.+1 *)
+  have inner :
+    H *m (F *m xt + G *m u k + w k.+1) + v k.+1 -
+      H *m (F *m xh + G *m u k) =
+    H *m F *m (xt - xh) + H *m w k.+1 + v k.+1.
+  { rewrite mulmxBr !mulmxDr !mulmxA addrAC opprD !addrA.
+    rewrite (addrAC _ _ (- (H *m G *m u k))).
+    rewrite (addrAC _ (H *m w k.+1)) addrK.
+    by rewrite [X in X + _ = _]addrAC. }
+  rewrite inner.
+  (* Внешнее выражение: применяем абелеву перегруппировку и
+     раскладываем F через ошибку *)
+  by rewrite abelian_swap_cancel [in RHS]mulmxBr.
+Qed.
+
+(* Несмещённость: E[ошибка] = 0 на каждом шаге *)
+Theorem unbiased u z Ps :
+  (forall j, z j = H *m x_true u j + v j) ->
+  Exp (err u z Ps 0) = 0 ->
+  forall k, Exp (err u z Ps k) = 0.
+Proof.
+  move=> Hzm E0; elim=> [//|k IH].
+  rewrite (err_recursion _ _ Hzm).
+  rewrite Exp_sub Exp_add Exp_mulmx_l IH mulmx0 add0r Exp_w_zero add0r.
+  rewrite Exp_mulmx_l 2!Exp_add Exp_mulmx_l Exp_mulmx_l.
+  by rewrite IH mulmx0 Exp_w_zero mulmx0 Exp_v_zero !addr0 mulmx0 oppr0.
+Qed.
+
 (* ================================================================== *)
 (* Sec. 1.4. The Innovations Process                                  *)
 (* ================================================================== *)
@@ -111,21 +243,6 @@ Proof.
   have hpd : pd (innov_cov P_pred) := innov_cov_pd psdP.
   exact: pd_invertible hpd.
 Qed.
-
-(* Усиление (коэффициент) Калмана *)
-Definition kalman_gain (P_pred : 'M[C]_n) : 'M[C]_(n, p) :=
-  P_pred *m H^t* *m invmx (innov_cov P_pred).
-
-(* Обновление состояния *)
-Definition update_state (P_pred : 'M[C]_n)
-    (x_pred : 'cV[C]_n) (z : 'cV[C]_p) : 'cV[C]_n :=
-  let K := kalman_gain P_pred in
-  x_pred + K *m (z - H *m x_pred).
-
-(* Обновление ковариации (стандартная форма) *)
-Definition update_cov (P_pred : 'M[C]_n) : 'M[C]_n :=
-  let K := kalman_gain P_pred in
-  (1%:M - K *m H) *m P_pred.
 
 (* Форма Джозефа (алгебраически эквивалентна, удобна для доказательств) *)
 Definition joseph_form (P_pred : 'M[C]_n) : 'M[C]_n :=
@@ -288,123 +405,6 @@ Proof.
     rewrite /K /kalman_gain trmxC_mul -psdP.1.
     by rewrite !mulmxA.
   by rewrite eq1 eq2; exact: psd_congruence hSinv_psd.
-Qed.
-
-(* ================================================================== *)
-(* §3  Несмещённость                                                  *)
-(* ================================================================== *)
-
-(* Абстрактный оператор математического ожидания (алгебраическая
-   аксиоматизация). Моделируем E как матричнозначное линейное
-   отображение, избегая использования сложной теории меры. *)
-
-Variable Exp : forall {r c : nat}, 'M[C]_(r, c) -> 'M[C]_(r, c).
-
-(* Аксиомы линейности *)
-Hypothesis Exp_add : forall r c (A B : 'M[C]_(r, c)),
-  Exp (A + B) = Exp A + Exp B.
-Hypothesis Exp_scale : forall r c (a : C) (A : 'M[C]_(r, c)),
-  Exp (a *: A) = a *: Exp A.
-Hypothesis Exp_mulmx_l : forall r c s (A : 'M[C]_(r, c)) (B : 'M[C]_(c, s)),
-  Exp (A *m B) = A *m Exp B.
-
-(* Предположения о шумах *)
-Variable w : nat -> 'cV[C]_n.
-Variable v : nat -> 'cV[C]_p.
-Hypothesis Exp_w_zero : forall k, Exp (w k) = 0.
-Hypothesis Exp_v_zero : forall k, Exp (v k) = 0.
-
-(* Обновление истинного вектора состояния *)
-Definition x_true (u : nat -> 'cV[C]_m) : nat -> 'cV[C]_n :=
-  fix f k :=
-    match k with
-    | 0%N => w 0%N
-    | k'.+1 => F *m f k' + G *m u k' + w k'.+1
-    end.
-
-(* Обновление оценочного вектора состояния *)
-Definition x_hat (u : nat -> 'cV[C]_m) (z : nat -> 'cV[C]_p)
-    (P_seq : nat -> 'M[C]_n) : nat -> 'cV[C]_n :=
-  fix f k :=
-    match k with
-    | 0%N => 0  (* начальная оценка; предполагаем несмещённый старт *)
-    | k'.+1 =>
-      let x_pred := predict_state (f k') (u k') in
-      let P_pred := predict_cov (P_seq k') in
-      update_state P_pred x_pred (z k'.+1)
-    end.
-
-(* Ошибка оценивания *)
-Definition err u z Ps k := x_true u k - x_hat u z Ps k.
-
-(* Вспомогательные леммы о линейности E *)
-
-Lemma Exp_zero r c : Exp (0 : 'M[C]_(r, c)) = 0.
-Proof.
-  have e := Exp_scale (0 : C) (0 : 'M[C]_(r, c)).
-  by rewrite !scale0r in e.
-Qed.
-
-Lemma Exp_opp r c (A : 'M[C]_(r, c)) : Exp (- A) = - Exp A.
-Proof.
-  have -> : -A = (-1) *: A by rewrite scaleN1r.
-  by rewrite Exp_scale scaleN1r.
-Qed.
-
-Lemma Exp_sub r c (A1 A2 : 'M[C]_(r, c)) : Exp (A1 - A2) = Exp A1 - Exp A2.
-Proof. by rewrite Exp_add Exp_opp. Qed.
-
-(* Чисто абелева перегруппировка, используемая ниже *)
-Lemma abelian_swap_cancel (M : zmodType) (a b c d e : M) :
-  a + b + c - (d + b + e) = a - d + c - e.
-Proof.
-  rewrite !opprD !addrA.
-  rewrite (addrAC _ _ (- b)) (addrAC _ c (- b)) addrK.
-  by rewrite (addrAC _ c (- d)).
-Qed.
-
-(* Рекурсия для ошибки оценивания.  Уравнение измерения предполагает,
-   что наблюдение есть линейная комбинация истинного состояния и шума. *)
-Lemma err_recursion u z Ps k :
-  (forall j, z j = H *m x_true u j + v j) ->
-  err u z Ps k.+1 =
-    F *m err u z Ps k + w k.+1 -
-    kalman_gain (predict_cov (Ps k)) *m
-      (H *m F *m err u z Ps k + H *m w k.+1 + v k.+1).
-Proof.
-  move=> Hzm.
-  rewrite /err /= /update_state /predict_state.
-  rewrite (Hzm k.+1) /=.
-  set Kk := kalman_gain (predict_cov (Ps k)).
-  set xt := x_true u k.
-  set xh := x_hat u z Ps k.
-  (* Внутреннее выражение: H * x_true k.+1 + v k.+1 - H * (F*xh + G*u k)
-     = H *m F *m (xt - xh) + H *m w k.+1 + v k.+1 *)
-  have inner :
-    H *m (F *m xt + G *m u k + w k.+1) + v k.+1 -
-      H *m (F *m xh + G *m u k) =
-    H *m F *m (xt - xh) + H *m w k.+1 + v k.+1.
-  { rewrite mulmxBr !mulmxDr !mulmxA addrAC opprD !addrA.
-    rewrite (addrAC _ _ (- (H *m G *m u k))).
-    rewrite (addrAC _ (H *m w k.+1)) addrK.
-    by rewrite [X in X + _ = _]addrAC. }
-  rewrite inner.
-  (* Внешнее выражение: применяем абелеву перегруппировку и
-     раскладываем F через ошибку *)
-  by rewrite abelian_swap_cancel [in RHS]mulmxBr.
-Qed.
-
-(* Несмещённость: E[ошибка] = 0 на каждом шаге *)
-Theorem unbiased u z Ps :
-  (forall j, z j = H *m x_true u j + v j) ->
-  Exp (err u z Ps 0) = 0 ->
-  forall k, Exp (err u z Ps k) = 0.
-Proof.
-  move=> Hzm E0; elim=> [//|k IH].
-  rewrite (err_recursion _ _ Hzm).
-  rewrite Exp_sub Exp_add Exp_mulmx_l IH mulmx0 add0r Exp_w_zero add0r.
-  rewrite Exp_mulmx_l 2!Exp_add Exp_mulmx_l Exp_mulmx_l.
-  by rewrite IH mulmx0 Exp_w_zero mulmx0 Exp_v_zero !addr0 mulmx0 oppr0.
 Qed.
 
 (* ================================================================== *)
