@@ -16,4 +16,5 @@ jobs:
           custom_script: |
             sudo chown -R $(id -u):$(id -g) .
             eval $(opam env)
+            opam install -y dune=3.21.0
             dune build
