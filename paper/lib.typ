@@ -2,7 +2,6 @@
 #import "@preview/codly:1.3.0": *
 #import "@preview/tablex:0.0.9": *
 #import "@preview/physica:0.9.5": *
-#import "@preview/indenta:0.0.3": fix-indent
 #import "@preview/great-theorems:0.1.2": *
 #import "@preview/rich-counters:0.2.2": *
 #import "@preview/glossarium:0.5.6": *
@@ -87,7 +86,7 @@
     justify: true,
     linebreaks: "optimized",
     // Абзацный отступ. Одинаков по всему тексту и равен пяти знакам (ГОСТ Р 7.0.11-2011, 5.3.7).
-    first-line-indent: 2.5em,
+    first-line-indent: (amount: 2.5em, all: true),
     // Полуторный интервал (ГОСТ 7.0.11-2011, 5.3.6)
     leading: 1em,
   )
