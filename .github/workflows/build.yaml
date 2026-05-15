@@ -16,5 +16,6 @@ jobs:
           custom_script: |
             sudo chown -R $(id -u):$(id -g) .
             eval $(opam env)
+            opam pin remove dune -y
             opam install -y dune=3.21.0
             dune build
