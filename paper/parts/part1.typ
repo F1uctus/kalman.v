@@ -14,7 +14,18 @@ $
   quad "где" quad
   hat(y) = H hat(x).
 $
-
+Заметим, что теперь ошибка оценки подчинена уравнению:
+$
+  tilde(x)_(k+1)
+  = F tilde(x)_k - K tilde(y)_k
+  = (F - K H) tilde(x)_k,
+$
+поэтому
+$
+  tilde(x)_(k)
+  = (F tilde(x)_k - K H)^k tilde(x)_0
+$
+и подбором матрицы $K$ можно добиться $tilde(x)_k -> 0$.
 
 #rocq-snippet("kalman.v", "Definition predict_state ")
 
