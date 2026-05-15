@@ -1,0 +1,15 @@
+name: Rocq MathComp CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Build and Test
+        uses: coq-community/docker-coq-action@v1
+        with:
+          custom_image: "mathcomp/mathcomp:2.5.0-rocq-prover-9.1"
