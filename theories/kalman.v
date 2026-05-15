@@ -67,6 +67,10 @@ Proof.
   exact: hsum.
 Qed.
 
+(* Инновационная ковариация *)
+Definition innov_cov (P_pred : 'M[C]_n) : 'M[C]_p :=
+  H *m P_pred *m H^t* + Rcov.
+
 (* Усиление (коэффициент) Калмана *)
 Definition kalman_gain (P_pred : 'M[C]_n) : 'M[C]_(n, p) :=
   P_pred *m H^t* *m invmx (innov_cov P_pred).
@@ -203,10 +207,6 @@ Qed.
 (* Sec. 1.4. The Innovations Process                                  *)
 (* ================================================================== *)
 
-(* Инновационная ковариация *)
-Definition innov_cov (P_pred : 'M[C]_n) : 'M[C]_p :=
-  H *m P_pred *m H^t* + Rcov.
-
 Lemma innov_cov_pd (P_pred : 'M[C]_n) :
   psd P_pred -> pd (innov_cov P_pred).
 Proof.
@@ -218,22 +218,14 @@ Proof.
     f_equal.
     * exact hpsd.1.
     * exact R_pd.1.
-  - move=> v v0.
-    have h1 : 0 <= \tr (v^t* *m (H *m P_pred *m H^t*) *m v) := hpsd.2 v.
-    have h2 : 0 < \tr (v^t* *m Rcov *m v) := R_pd.2 v v0.
+  - move=> z z0.
+    have h1 : 0 <= \tr (z^t* *m (H *m P_pred *m H^t*) *m z) := hpsd.2 z.
+    have h2 : 0 < \tr (z^t* *m Rcov *m z) := R_pd.2 z z0.
     rewrite /innov_cov.
     rewrite mulmxDr.
     rewrite mulmxDl.
     rewrite mxtraceD.
-    have hsum : 0 <
-        \tr (v^t* *m (H *m P_pred *m H^t*) *m v) +
-        \tr (v^t* *m Rcov *m v) :=
-      ltr_wpDl
-        (y := 0)
-        (x := \tr (v^t* *m (H *m P_pred *m H^t*) *m v))
-        (z := \tr (v^t* *m Rcov *m v))
-        h1 h2.
-    exact hsum.
+    exact: ltr_wpDl h1 h2.
 Qed.
 
 Lemma innov_cov_inv (P_pred : 'M[C]_n) :
@@ -305,7 +297,7 @@ Proof.
   have Ssym : innov_cov P_pred = (innov_cov P_pred)^t*
     := (innov_cov_pd psdP).1.
   have hHP : innov_cov P_pred *m K^t* = H *m P_pred.
-    have := congr1 (fun M : 'M[C]_(n, m) => M^t*) KS.
+    have := congr1 (fun M : 'M[C]_(n, p) => M^t*) KS.
     by rewrite !trmxC_mul trmxCK -Ssym -Psym.
   have eq_KHP : K *m H *m P_pred = K *m innov_cov P_pred *m K^t*.
     by rewrite -[LHS]mulmxA -hHP mulmxA.
@@ -647,7 +639,7 @@ Definition kf_step (st : kf_state) (u : 'cV[C]_m) (y : 'cV[C]_p) :
   kf_update (kf_predict st u) y.
 
 (* Инвариант PSD через полный цикл предсказание–обновление *)
-Lemma kf_step_psd (st : kf_state) (u : 'cV[C]_p) (y : 'cV[C]_p) :
+Lemma kf_step_psd (st : kf_state) (u : 'cV[C]_m) (y : 'cV[C]_p) :
   psd (kf_P st) -> psd (kf_P (kf_step st u y)).
 Proof.
   move=> hP.
