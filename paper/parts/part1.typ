@@ -23,9 +23,10 @@ $
 поэтому
 $
   tilde(x)_(k)
-  = (F tilde(x)_k - K H)^k tilde(x)_0
+  = (F - K H)^k tilde(x)_0
 $
-и подбором матрицы $K$ можно добиться $tilde(x)_k -> 0$.
+и определённым образом подбирая матрицу $K$
+можно добиться $tilde(x)_k -> 0$.
 
 #rocq-snippet("kalman.v", "Definition predict_state ")
 
