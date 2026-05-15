@@ -2,6 +2,7 @@
 #import "@preview/codly:1.3.0": *
 #import "@preview/tablex:0.0.9": *
 #import "@preview/physica:0.9.5": *
+#import "@preview/mannot:0.3.3": *
 #import "@preview/great-theorems:0.1.2": *
 #import "@preview/rich-counters:0.2.2": *
 #import "@preview/glossarium:0.5.6": *
@@ -359,21 +360,28 @@
 
 #let rocq-snippet(source, name) = {
   let lines = rocq-src(source).split("\n")
-  let from-line = lines.enumerate().find(
-    ((i, l)) => name in l
-  )
+  let from-line = lines
+    .enumerate()
+    .find(
+      ((i, l)) => name in l,
+    )
   let endings = (
-    Variable : ".",
-    Definition : ".",
-    Hypothesis : ".",
-    Lemma : "Qed",
-    Theorem : "Qed",
+    Variable: ".",
+    Definition: ".",
+    Hypothesis: ".",
+    Lemma: "Qed",
+    Theorem: "Qed",
   )
   let end = endings.at(endings.keys().find(end => end in from-line.at(1)))
-  let to-line = lines.slice(from-line.at(0)).enumerate().find(
-    ((i, l)) => end in l
-  ).enumerate().map(((i, x)) => x + from-line.at(i))
-  codly(offset: from-line.at(0) - 1)
+  let to-line = lines
+    .slice(from-line.at(0))
+    .enumerate()
+    .find(
+      ((i, l)) => end in l,
+    )
+    .enumerate()
+    .map(((i, x)) => x + from-line.at(i))
+  codly(offset: from-line.at(0))
   raw(
     lines.slice(from-line.at(0), to-line.at(0) + 1).join("\n"),
     lang: "rocq",

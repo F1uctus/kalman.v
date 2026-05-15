@@ -84,7 +84,10 @@ Mathematical Components (MathComp) и CoqQ.
   [Произведение матриц $A$ и $B$], $A B$, `A *m B`,
   [След матрицы], `Tr`, `\tr`,
   [Коядро $KK^m slash im(A)$ матрицы $A in M_(m,n)(KK)$ ], $"coker" A$, `coker A`,
-  [Положительная (полу)определённость матрицы $A$ (в смысле её квадратичной формы)], [$A > 0$ ($A >= 0$)], [`pd A` (`psd A`)],
+  [Положительная (полу)определённость матрицы $A$ (в смысле её квадратичной формы)],
+  [$A > 0$ ($A >= 0$)],
+  [`pd A` (`psd A`)],
+
   [Порядок Лёвнера для матриц \ ($A <= B <==> B - A >= 0$)], $A prec.eq B$, `psd_le A B`,
   [Математическое ожидание], $EE$, `Exp`,
 )
@@ -109,7 +112,7 @@ $
     x_(k+1) & = F x_k + G (u_k + w_k)\,,
     y_k & = H x_k + v_k
   )
-$
+$ <noisy-state-space>
 
 Здесь матрицы
 $F in CC^(n crossproduct n)$,
@@ -148,11 +151,11 @@ $
   S in CC^(m crossproduct p).
 $
 
-#rocq-snippet("kalman.v", "Variable F")
-#rocq-snippet("kalman.v", "Variable G")
-#rocq-snippet("kalman.v", "Variable H")
-#rocq-snippet("kalman.v", "Variable Q")
-#rocq-snippet("kalman.v", "Variable Rcov")
+#rocq-snippet("kalman.v", "Variable F ")
+#rocq-snippet("kalman.v", "Variable G ")
+#rocq-snippet("kalman.v", "Variable H ")
+#rocq-snippet("kalman.v", "Variable Q ")
+#rocq-snippet("kalman.v", "Variable Rcov ")
 
 Матрицы корреляции шумов $Q, R, S$ считаются известными,
 и на практике подбираются эмпирически. Согласно свойствам
@@ -161,15 +164,15 @@ $
 что матрица $R$ обратима, поэтому потребуем её положительной
 определенности.
 
-#rocq-snippet("kalman.v", "Hypothesis Q_psd")
-#rocq-snippet("kalman.v", "Hypothesis R_pd")
+#rocq-snippet("kalman.v", "Hypothesis Q_psd ")
+#rocq-snippet("kalman.v", "Hypothesis R_pd ")
 
 == Знакоопределённые и знакополуопределённые матрицы
 
 #definition[
   Симметричная матрица $M in CC^(n times n)$
   _определена неотрицательно_
-  (также _положительно полуопределена_, $M succ.eq 0 $)
+  (также _положительно полуопределена_, $M succ.eq 0$)
   если $forall v in CC^n : v^top M v >= 0$.
   Она _определена положительно_
   ($M succ 0$),
@@ -198,3 +201,4 @@ $
   обратная к ней также положительно определена.
 ]
 #rocq-snippet("psd_base.v", "Lemma pd_inv ")
+

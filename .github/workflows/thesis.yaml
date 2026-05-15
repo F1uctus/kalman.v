@@ -1,0 +1,30 @@
+name: Thesis PDF
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, typst]
+    tags: [thesis-*]
+    paths: [paper/**, .github/workflows/thesis.yaml]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: typst-community/setup-typst@v4
+
+      - name: Build PDF
+        run: typst compile paper/thesis.typ paper/thesis.pdf --root .
+
+      - uses: softprops/action-gh-release@v2
+        if: github.event_name != 'pull_request'
+        with:
+          tag_name: thesis-${{ github.run_number }}
+          name: Thesis PDF
+          files: paper/thesis.pdf
+          make_latest: true

@@ -35,33 +35,6 @@ $
 Эквивалентная _форма Джозефа_:
 $ P_k^+ = (E_n - K_k H) P_k^- (E_n - K_k H)^top + K_k R K_k^top. $
 
-*Rocq.* Параметры `F`, `B`, `H`, `Q`, `Rcov` и гипотезы `Q_psd`, `R_pd`; шаги
-`predict_state`, `predict_cov`, `innov_cov`, `kalman_gain`, `update_state`,
-`update_cov`, `joseph_form` в секции `KalmanFilter` файла `kalman.v`. В коде
-`1%:M` соответствует $E_n$ в формулах обновления.
-
-#raw(
-  block: true,
-  lang: "coq",
-  "Definition predict_cov (P_prev : 'M[R]_n) : 'M[R]_n :=
-  F *m P_prev *m F^T + Q.
-
-Definition innov_cov (P_pred : 'M[R]_n) : 'M[R]_m :=
-  H *m P_pred *m H^T + Rcov.
-
-Definition kalman_gain (P_pred : 'M[R]_n) : 'M[R]_(n, m) :=
-  P_pred *m H^T *m invmx (innov_cov P_pred).
-
-Definition update_cov (P_pred : 'M[R]_n) : 'M[R]_n :=
-  let K := kalman_gain P_pred in
-  (1%:M - K *m H) *m P_pred.
-
-Definition joseph_form (P_pred : 'M[R]_n) : 'M[R]_n :=
-  let K := kalman_gain P_pred in
-  let ImKH := 1%:M - K *m H in
-  ImKH *m P_pred *m ImKH^T + K *m Rcov *m K^T.",
-)
-
 == X.5. Информационная форма (обращение апостериорной ковариации)
 
 *Учебник.* Если $P_k^-$ и $R$ положительно определены, то

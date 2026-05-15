@@ -30,12 +30,12 @@
 // Основные части документа
 #include "./parts/intro.typ"
 
-#include "./parts/math_prelim_kalman.typ"
-
 #show heading.where(level: 1): set heading(numbering: "Глава 1.")
 #show: great-theorems-init
 
 #include "./parts/part1.typ"
+
+#include "./parts/math_prelim_kalman.typ"
 
 #include "./parts/part2.typ"
 
