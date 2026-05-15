@@ -1,21 +1,25 @@
-name: Rocq MathComp CI
+# Follow https://github.com/coq-community/templates to regenerate from meta.yml.
+name: Docker CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - 'mathcomp/mathcomp:2.5.0-rocq-prover-9.1'
+      fail-fast: false
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Build and Test
-        uses: coq-community/docker-coq-action@v1
+      - uses: actions/checkout@v6
+      - uses: coq-community/docker-coq-action@v1
         with:
-          custom_image: "mathcomp/mathcomp:2.5.0-rocq-prover-9.1"
-          custom_script: |
-            sudo chown -R $(id -u):$(id -g) .
-            eval $(opam env)
-            opam pin remove dune -y
-            opam install -y dune=3.21.0
-            dune build
+          opam_file: 'unn-rocq-kalman.opam'
+          custom_image: ${{ matrix.image }}

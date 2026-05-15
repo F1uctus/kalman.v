@@ -2,8 +2,11 @@
 
 (rocq.theory
  (name Top)
- (mode vo)
+ (package unn-rocq-kalman)
+ (synopsis "Kalman filter properties using Rocq and MathComp")
+ (flags :standard -w -notation-overridden)
  (modules psd_base psd_order spectral kalman)
- (theories Stdlib HB mathcomp.boot mathcomp.algebra mathcomp.order
-           mathcomp.fingroup mathcomp.classical mathcomp.reals
-           mathcomp.analysis))
+ (plugins rocq-elpi.elpi)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis))
