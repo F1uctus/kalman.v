@@ -2,19 +2,6 @@
 
 #show: phd-appendix
 
-= Примеры вставки листингов программного кода <app:A>
-
-#figure(
-  raw(
-    rocq-src("kalman.v"),
-    lang: "rocq",
-    syntaxes: bytes(rocq-syntax),
-    theme: "../assets/rocq.tmTheme",
-    block: true,
-  ),
-  caption: [Листинг программного кода на языке программирования Rocq],
-)
-
 = Очень длинное название второго приложения, в~котором продемонстрирована работа с~длинными таблицами <app:B>
 
 == Подраздел приложения <app:B2>

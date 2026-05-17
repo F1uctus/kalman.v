@@ -9,6 +9,7 @@
 #import "common/glossary.typ": *
 #import "common/acronyms.typ": *
 #import "common/symbols.typ": *
+#import "common/rocq.typ": *
 
 #let to-str(content) = {
   if content.has("text") {
@@ -115,7 +116,7 @@
 
   // Настройка блоков кода
   show: codly-init.with()
-  codly(languages: languages)
+  codly.codly(languages: languages)
 
   // Инициализация глоссария
   show: make-glossary
@@ -139,8 +140,8 @@
     supplement: [Уравнение],
   )
 
-  // Настройка рисунков
-  show figure: align.with(center)
+  // Настройка рисунков (only images — theorem/proof figures use great-theorems kinds)
+  show figure.where(kind: image): align.with(center)
   set figure(supplement: [Рисунок])
   set figure.caption(separator: [ -- ])
   set figure(numbering: num => (
@@ -246,55 +247,123 @@
   body
 }
 
-// Нужно начать первый абзац в разделе с этой функции для отступа первой строки
-#let indent-par(it) = [#h(2.5em)#it]
-
 #let mathcounter = rich-counter(
   identifier: "mathblocks",
   inherited_levels: 1,
 )
-#let theorem = mathblock(
-  blocktitle: "Теорема",
-  counter: mathcounter,
 
+#let mathblock-inset-x = 10pt
+#let mathblock-inset = (
+  top: 10pt,
+  left: mathblock-inset-x,
+  right: mathblock-inset-x,
+  bottom: 3pt,
+)
+#let mathblock-number = state("mathblock-number", none)
+#let mathblock-title = state("mathblock-title", none)
+
+#let mathblock-code-bleed(body) = {
+  show block.where(width: 100%): it => {
+    pad(left: -mathblock-inset-x, right: -mathblock-inset-x)[#it]
+  }
+  body
+}
+
+#let mathblock-head(head-label, titlix, body) = {
+  mathblock-code-bleed(context {
+    let title = mathblock-title.get()
+    [
+      #set par(first-line-indent: 0pt)
+      *#head-label #mathblock-number.get().*
+      #if title != none {
+        titlix(title)
+      }
+      #body
+    ]
+  })
+}
+
+#let make-counted-mathblock(
+  head-label,
+  blocktitle: none,
   titlix: t => emph[(#t):],
-  inset: 7pt,
+  ..block-args,
+) = {
+  let blocktitle = if blocktitle != none { blocktitle } else { head-label }
+  let env = mathblock(
+    blocktitle: blocktitle,
+    counter: mathcounter,
+    titlix: _ => [],
+    prefix: number => {
+      mathblock-number.update(number)
+      []
+    },
+    bodyfmt: body => mathblock-head(head-label, titlix, body),
+    inset: mathblock-inset,
+    clip: true,
+    breakable: false,
+    ..block-args,
+  )
+  (title: none, ..call-args, body) => {
+    mathblock-title.update(title)
+    env(title: none, ..call-args, body)
+  }
+}
+
+#let make-uncounted-mathblock(head-label, titlix: t => emph[(#t):], ..block-args) = {
+  let env = mathblock(
+    blocktitle: head-label,
+    titlix: _ => [],
+    prefix: [],
+    bodyfmt: body => mathblock-code-bleed(context {
+      let title = mathblock-title.get()
+      [
+        *#head-label.*
+        #if title != none { titlix(title) }
+        #body
+        #v(-1em, weak: true)
+      ]
+    }),
+    inset: mathblock-inset,
+    clip: true,
+    ..block-args,
+  )
+  (title: none, ..call-args, body) => {
+    mathblock-title.update(title)
+    env(title: none, ..call-args, body)
+  }
+}
+
+#let theorem = make-counted-mathblock(
+  "Теорема",
   radius: 5pt,
   stroke: rgb(200, 200, 200),
 )
-#let lemma = mathblock(
-  blocktitle: "Лемма",
-  counter: mathcounter,
-
-  titlix: t => emph[(#t):],
-  inset: 7pt,
+#let lemma = make-counted-mathblock(
+  "Лемма",
+  radius: 5pt,
+  stroke: gray + 0.3pt,
+)
+#let statement = make-counted-mathblock(
+  "Утверждение",
   radius: 5pt,
   stroke: rgb(200, 200, 200),
 )
-#let statement = mathblock(
-  blocktitle: "Утверждение",
-  counter: mathcounter,
-
-  titlix: t => emph[(#t):],
-  inset: 7pt,
+#let corollary = make-uncounted-mathblock(
+  "Следствие",
   radius: 5pt,
   stroke: rgb(200, 200, 200),
 )
-#let corollary = mathblock(
-  blocktitle: "Следствие",
-
-  titlix: t => emph[(#t):],
-  inset: 7pt,
+#let remark = make-uncounted-mathblock(
+  "Замечание",
+)
+#let definition(name: "", ..args) = make-counted-mathblock(
+  "Определение",
+  titlix: t => [_ #t: #(math.thick) _],
   radius: 5pt,
-  stroke: rgb(200, 200, 200),
-)
-#let remark = mathblock(
-  blocktitle: "Замечание",
-)
-#let definition = mathblock(
-  blocktitle: "Определение",
-  titlix: t => [_ #t --- _],
-)
+  stroke: gray + 0.3pt,
+  breakable: false,
+)(..args)
 #let proof = proofblock(
   prefix: [_Доказательство._],
 )
@@ -305,7 +374,7 @@
 #let hl-r(x) = text(fill: red, $#x$)
 #let hl-g(x) = text(fill: rgb("#298E89"), $#x$)
 #let half = h(0.5em)
-#let eq-nonum = math.equation.with(
+#let eq-no-num = math.equation.with(
   block: true,
   numbering: none,
 )
@@ -340,53 +409,4 @@
   state("section").update("annex")
 
   body
-}
-
-#let Rocq = box(
-  image("images/logo-rocq-black-text.svg"),
-  height: 0.65em,
-)
-
-#import "./packages/local/textmate/0.1.0/lib.typ": to-sublime-syntax
-#import "@preview/codly:1.3.0": *
-#show: codly-init
-
-#import "@preview/codly-languages:0.1.10": *
-#codly(languages: codly-languages)
-
-#let rocq-syntax = to-sublime-syntax(json(bytes(read("./assets/rocq.tmLanguage.json"))))
-#let rocq-src(p) = read("../theories/" + p)
-#show raw: set text(font: "Iosevka")
-
-#let rocq-snippet(source, name) = {
-  let lines = rocq-src(source).split("\n")
-  let from-line = lines
-    .enumerate()
-    .find(
-      ((i, l)) => name in l,
-    )
-  let endings = (
-    Variable: ".",
-    Definition: ".",
-    Hypothesis: ".",
-    Lemma: "Qed",
-    Theorem: "Qed",
-  )
-  let end = endings.at(endings.keys().find(end => end in from-line.at(1)))
-  let to-line = lines
-    .slice(from-line.at(0))
-    .enumerate()
-    .find(
-      ((i, l)) => end in l,
-    )
-    .enumerate()
-    .map(((i, x)) => x + from-line.at(i))
-  codly(offset: from-line.at(0))
-  raw(
-    lines.slice(from-line.at(0), to-line.at(0) + 1).join("\n"),
-    lang: "rocq",
-    syntaxes: bytes(rocq-syntax),
-    theme: "./assets/rocq.tmTheme",
-    block: true,
-  )
 }

@@ -27,11 +27,11 @@
   city: "Нижний Новгород",
 )
 
-// Основные части документа
-#include "./parts/intro.typ"
-
 #show heading.where(level: 1): set heading(numbering: "Глава 1.")
 #show: great-theorems-init
+
+// Основные части документа
+#include "./parts/intro.typ"
 
 #include "./parts/part1.typ"
 
