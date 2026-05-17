@@ -1,8 +1,6 @@
-(include_subdirs no)
-
 (rocq.theory
- (name Top)
- (package unn-rocq-kalman)
+ (name Kalman)
+ (package kalman)
  (synopsis "Kalman filter properties using Rocq and MathComp")
  (flags :standard -w -notation-overridden)
  (modules psd_base psd_order spectral kalman)
