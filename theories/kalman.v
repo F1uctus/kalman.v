@@ -583,11 +583,11 @@ Qed.
 (* Ненаблюдаемые моды не поддаются оцениванию *)
 Lemma unobservable_mode :
   ~ observable ->
-  exists (x0 : 'cV[C]_n), x0 != 0 /\
-    forall (i : 'I_n), obsv_block i *m x0 = 0.
+  exists (xun : 'cV[C]_n), xun != 0 /\
+    forall (i : 'I_n), obsv_block i *m xun = 0.
 Proof.
-  rewrite /observable => /existsNP [x0 /not_implyP [Hzeros Hnz]].
-  exists x0; split; last exact: Hzeros.
+  rewrite /observable => /existsNP [xun /not_implyP [Hzeros Hnz]].
+  exists xun; split; last exact: Hzeros.
   by apply/eqP=> Heq; apply: Hnz.
 Qed.
 
