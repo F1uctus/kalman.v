@@ -1,12 +1,14 @@
 (*  Формальная верификация дискретного фильтра Калмана                *)
 
+Set Warnings "-notation-overridden,-coercions,-default".
+
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
 From mathcomp.algebra Require Import sesquilinear spectral.
-From Kalman Require Import psd_base psd_order spectral.
+From Kalman Require Import psd_base psd_order spectral expectation.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -119,13 +121,13 @@ Definition err u y Ps k := x_true u k - x_hat u y Ps k.
 (* Несмещённость                                                      *)
 (* ================================================================== *)
 
-(* Абстрактный оператор математического ожидания
-   (алгебраическая аксиоматизация).
-   Моделируем как матричнозначное линейное отображение. *)
+(* Абстрактный оператор математического ожидания.  Алгебраические
+   аксиомы и производные тождества (Exp_zero/Exp_opp/Exp_sub) вынесены
+   в `expectation.v`; здесь сохранены гипотезы линейности и
+   шум-специфичные `Exp_w_zero`, `Exp_v_zero`. *)
 
 Variable Exp : forall {r c : nat}, 'M[C]_(r, c) -> 'M[C]_(r, c).
 
-(* Аксиомы линейности *)
 Hypothesis Exp_add : forall r c (A B : 'M[C]_(r, c)),
   Exp (A + B) = Exp A + Exp B.
 Hypothesis Exp_scale : forall r c (a : C) (A : 'M[C]_(r, c)),
@@ -136,22 +138,10 @@ Hypothesis Exp_mulmx_l : forall r c s (A : 'M[C]_(r, c)) (B : 'M[C]_(c, s)),
 Hypothesis Exp_w_zero : forall k, Exp (w k) = 0.
 Hypothesis Exp_v_zero : forall k, Exp (v k) = 0.
 
-(* Вспомогательные леммы о линейности E *)
-
-Lemma Exp_zero r c : Exp (0 : 'M[C]_(r, c)) = 0.
-Proof.
-  have e := Exp_scale (0 : C) (0 : 'M[C]_(r, c)).
-  by rewrite !scale0r in e.
-Qed.
-
-Lemma Exp_opp r c (A : 'M[C]_(r, c)) : Exp (- A) = - Exp A.
-Proof.
-  have -> : -A = (-1) *: A by rewrite scaleN1r.
-  by rewrite Exp_scale scaleN1r.
-Qed.
-
-Lemma Exp_sub r c (A1 A2 : 'M[C]_(r, c)) : Exp (A1 - A2) = Exp A1 - Exp A2.
-Proof. by rewrite Exp_add Exp_opp. Qed.
+(* Удобные локальные имена для алгебраических тождеств из expectation.v *)
+Notation Exp_zero := (Exp_zero Exp_scale).
+Notation Exp_opp := (Exp_opp Exp_scale).
+Notation Exp_sub := (Exp_sub Exp_add Exp_scale).
 
 (* Чисто абелева перегруппировка, используемая ниже *)
 Lemma abelian_swap_cancel (M : zmodType) (a b c d e : M) :

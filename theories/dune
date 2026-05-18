@@ -3,7 +3,7 @@
  (package kalman)
  (synopsis "Kalman filter properties using Rocq and MathComp")
  (flags :standard -w -notation-overridden)
- (modules psd_base psd_order spectral kalman)
+ (modules psd_base psd_order spectral expectation kalman)
  (plugins rocq-elpi.elpi)
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
            mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
