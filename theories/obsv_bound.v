@@ -36,7 +36,7 @@ From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
-From Kalman Require Import psd_base psd_order spectral kalman riccati_mono.
+From Kalman Require Import psd_base psd_order spectral mxfrob kalman riccati_mono.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -243,6 +243,45 @@ congr (_ + _).
 congr (_ + _).
 rewrite exprS trmxC_mul.
 by rewrite !mulmxA.
+Qed.
+
+(* ================================================================== *)
+(*  Равномерная следовая оценка управ. грамиана (Session 10).         *)
+(*                                                                     *)
+(*  При Фробениусовой контракции `frob_sq F < 1`:                      *)
+(*    \tr (ctrl_gram k) <= \tr (G Q Gconj) / (1 - frob_sq F)           *)
+(*  равномерно по k.  Доказывается индукцией: из тождества сдвига      *)
+(*  `ctrl_gram (k+1) = G Q Gconj + F (ctrl_gram k) Fconj` и линейности *)
+(*  следа получаем рекуррентность                                      *)
+(*    t_{k+1} = \tr T + \tr (F (ctrl_gram k) Fconj)                    *)
+(*           <= \tr T + frob_sq F * t_k       (tr_conj_frob_le)        *)
+(*  с инвариантом-неподвижной точкой B = \tr T / (1 - frob_sq F),      *)
+(*  т.к. \tr T + frob_sq F * B = B.  Геометрический ряд тут не нужен.  *)
+(* ================================================================== *)
+
+Lemma ctrl_gram_tr_bound (Fc : frob_sq F < 1) (k : nat) :
+  \tr (ctrl_gram k) <= \tr (G *m Q *m G^t*) / (1 - frob_sq F).
+Proof.
+have trT_ge0 : 0 <= \tr (G *m Q *m G^t*).
+  by apply: psd_tr_ge0; apply: psd_mulmx_row; exact: Q_psd.
+set T := G *m Q *m G^t*.
+have d_gt0 : 0 < 1 - frob_sq F by rewrite subr_gt0.
+have d_neq0 : (1 - frob_sq F) != 0 by rewrite gt_eqF.
+have key : \tr T + frob_sq F * (\tr T / (1 - frob_sq F))
+         = \tr T / (1 - frob_sq F).
+  apply: (mulIf d_neq0).
+  rewrite divfK // mulrDl -mulrA divfK // mulrBr mulr1.
+  by rewrite [\tr T * frob_sq F]mulrC subrK.
+elim: k => [|k IH].
+  rewrite ctrl_gram0 mxtrace0.
+  by apply: divr_ge0; [exact: trT_ge0 | exact: ltW d_gt0].
+rewrite ctrl_gram_shift mxtraceD -/T.
+rewrite -[X in _ <= X]key lerD2l.
+apply: (@le_trans _ _ (frob_sq F * \tr (ctrl_gram k))).
+  by apply: tr_conj_frob_le; exact: ctrl_gram_psd k.
+apply: ler_pM => //.
+- exact: frob_sq_ge0.
+- by apply: psd_tr_ge0; exact: ctrl_gram_psd k.
 Qed.
 
 (* ================================================================== *)
