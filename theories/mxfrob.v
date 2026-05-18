@@ -17,7 +17,7 @@ From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
-From Kalman Require Import psd_base.
+From Kalman Require Import psd_base psd_order spectral.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -160,6 +160,83 @@ Proof.
 move=> hpsd.
 have := psd_tr_ge0 hpsd.
 rewrite linearB /= subr_ge0; by [].
+Qed.
+
+(* ================================================================== *)
+(* Скалярные кратные единичной матрицы и их PSD-порядок                *)
+(* ================================================================== *)
+
+(* `a *: 1%:M` PSD при вещественном неотрицательном `a`. *)
+Lemma psd_scale1 n (a : C) :
+  a \is Num.real -> 0 <= a -> psd (a *: (1%:M : 'M[C]_n)).
+Proof.
+move=> areal a_ge0.
+have ac : a^* = a by apply/CrealP.
+split; first by rewrite trmxC_scale trmxC1 ac.
+move=> v.
+rewrite -scalemxAr -scalemxAl mxtraceZ mulmx1.
+by apply: mulr_ge0=> //; exact: (frob_sq_ge0 v).
+Qed.
+
+(* Монотонность скалярного кратного единичной матрицы в порядке Лёвнера. *)
+Lemma psd_le_scale1 n (a b : C) :
+  a \is Num.real -> b \is Num.real -> a <= b ->
+  psd_le (a *: (1%:M : 'M[C]_n)) (b *: 1%:M).
+Proof.
+move=> areal breal aleb.
+rewrite /psd_le -scalerBl.
+apply: psd_scale1; first by apply: rpredB.
+by rewrite subr_ge0.
+Qed.
+
+(* ================================================================== *)
+(* Фробениусова мажоранта следа сопряжения PSD-матрицы:               *)
+(*   tr (F M Fconj) <= frob_sq F * tr M   при psd M.                  *)
+(*                                                                    *)
+(* Доказательство: спектральное разложение M = U diag(l) Uconj,       *)
+(* l_i >= 0; для W := (F U)conj (F U) (PSD) получаем                  *)
+(*   tr (F M Fconj) = \sum_i l_i W_ii <= \sum_i l_i (tr W)            *)
+(*                  = (tr W)(\sum_i l_i) = frob_sq F * tr M,          *)
+(* где W_ii <= tr W (W PSD => диагональ <= след) и tr W = frob_sq F.  *)
+(* Это заменяет общую субмультипликативность Фробениуса:              *)
+(* нужный частный случай выводится напрямую из спектральной теоремы.  *)
+Lemma tr_conj_frob_le n (Fm M : 'M[C]_n) :
+  psd M -> \tr (Fm *m M *m Fm^t*) <= frob_sq Fm * \tr M.
+Proof.
+move=> pM.
+have herm := psd_hermsym pM.
+have [U [l [hU [lreal Mdec]]]] := spectral_theorem herm.
+have psdD : psd (diag_of l) by apply: (psd_spec_conj_inj hU); rewrite -Mdec.
+have lnn := proj1 (psd_diag_iff_real lreal) psdD.
+pose X := Fm *m U.
+pose W := X^t* *m X.
+have Wpsd : psd W := psd_frob X.
+have trEq : \tr (Fm *m M *m Fm^t*) = \tr (diag_of l *m W).
+  rewrite Mdec.
+  rewrite (_ : Fm *m (U *m diag_of l *m U^t*) *m Fm^t*
+             = X *m diag_of l *m X^t*); last by rewrite /X trmxC_mul !mulmxA.
+  by rewrite mxtrace_mulC mulmxA -/W mxtrace_mulC.
+have trW : \tr W = frob_sq Fm.
+  rewrite /W /X /frob_sq trmxC_mul mxtrace_mulC !mulmxA -[_ *m U *m U^t*]mulmxA.
+  have /unitarymxP hUU := hU.
+  by rewrite hUU mulmx1 mxtrace_mulC.
+have trSum : \tr (diag_of l *m W) = \sum_(i < n) l i * W i i.
+  rewrite /mxtrace; apply: eq_bigr=> i _.
+  rewrite mxE (bigD1 i) //=.
+  rewrite big1 ?addr0; last first.
+    by move=> j neij; rewrite mxE [i == j]eq_sym (negbTE neij) mul0r.
+  by rewrite mxE eqxx.
+have Wii_ge0 : forall k, 0 <= W k k.
+  by move=> k; rewrite -(qf_delta W k); exact: (proj2 Wpsd).
+have Wii_le : forall k, W k k <= \tr W.
+  move=> k; rewrite /mxtrace (bigD1 k) //= lerDl.
+  by apply: sumr_ge0=> j _; exact: Wii_ge0.
+have trM_eq : \tr M = \sum_(i < n) l i.
+  rewrite Mdec mxtrace_mulC mulmxA (unitary_mulV hU) mul1mx.
+  by rewrite /mxtrace; apply: eq_bigr=> i _; rewrite !mxE eqxx.
+rewrite trEq trSum trM_eq -trW mulr_sumr.
+apply: ler_sum=> i _; rewrite mulrC.
+apply: ler_pM; [exact: Wii_ge0 | exact: lnn | exact: Wii_le | exact: lexx].
 Qed.
 
 End Frob.
