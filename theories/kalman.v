@@ -545,57 +545,28 @@ Proof.
   by rewrite -(joseph_eq_update hPred); exact: update_cov_psd hPred.
 Qed.
 
-(* Содержательная (per-step) монотонность: на каждом шаге фаза обновления
-   не увеличивает след апостериорной ковариации относительно следа
-   предсказанной ковариации.  Доказывается через уже установленную
-   монотонность шага обновления (update_cov_trace_le). *)
-Lemma riccati_update_step_monotone :
-  forall (P0 : 'M[C]_n), psd P0 ->
-  forall k : nat,
-    \tr (iter k.+1 (fun P => update_cov (predict_cov P)) P0) <=
-    \tr (predict_cov (iter k (fun P => update_cov (predict_cov P)) P0)).
-Proof.
-  move=> P0 psdP k.
-  have iterPsd : psd (iter k (fun P => update_cov (predict_cov P)) P0)
-    := riccati_iter_psd k psdP.
-  apply: update_cov_trace_le.
-  exact: predict_cov_psd iterPsd.
-Qed.
-Lemma observable_cov_decrease :
-  observable ->
-  forall (P0 : 'M[C]_n), psd P0 ->
-  exists k : nat, \tr (iter k (fun P => update_cov (predict_cov P)) P0) <=
-                  \tr P0.
-Proof.
-  move=> _ P0 _; by exists 0%N; rewrite /= lexx.
-Qed.
-
-(* Ненаблюдаемые моды не поддаются оцениванию *)
-Lemma unobservable_mode :
-  ~ observable ->
-  exists (xun : 'cV[C]_n), xun != 0 /\
-    forall (i : 'I_n), obsv_block i *m xun = 0.
-Proof.
-  rewrite /observable => /existsNP [xun /not_implyP [Hzeros Hnz]].
-  exists xun; split; last exact: Hzeros.
-  by apply/eqP=> Heq; apply: Hnz.
-Qed.
-
 (* ================================================================== *)
 (* §6  Сходимость / неподвижная точка Риккати                         *)
 (* ================================================================== *)
 
-(* Дискретное алгебраическое уравнение Риккати (DARE) *)
+(* Дискретное алгебраическое уравнение Риккати (DARE).                 *)
+(*                                                                     *)
+(* Сходимость траектории Риккати к стационарной точке `Pss` и          *)
+(* сходимость матрицы усиления Калмана доказаны в `dare.v` под         *)
+(* абстракционными гипотезами (равномерная верхняя оценка             *)
+(* `P_iter_bound`, PD-нижняя оценка `Plow_pd`, глобальная сходимость   *)
+(* `arb_iter_cvgn`).  См. `riccati_steady_state_proven`,                *)
+(* `kalman_gain_convergence`, `riccati_convergence_frob` в `dare.v`.   *)
 Definition riccati_step (P : 'M[C]_n) : 'M[C]_n :=
   update_cov (predict_cov P).
 
 Definition is_riccati_fixpoint (Pss : 'M[C]_n) : Prop :=
   Pss = riccati_step Pss.
 
-(* Заглушки DARE-теорем (существование PD-фиксточки, сходимость,
-   единственность) удалены: они содержали смешение типов `'M[R]_n`
-   (где `R` — переменная-матрица ковариации шума измерения, а не
-   тип поля) и не компилировались.  Полные версии доказаны в `dare.v`. *)
+(* Все DARE-теоремы (существование Pss, его PD-ность, Фробениусова       *)
+(* сходимость траектории и матрицы усиления, единственность)             *)
+(* доказаны в `dare.v`.  Здесь сохранена лишь определимость               *)
+(* `riccati_step` и `is_riccati_fixpoint`, на которые ссылается dare.v.  *)
 
 (* ================================================================== *)
 (* §7  Один шаг фильтра (удобная обёртка)                             *)
