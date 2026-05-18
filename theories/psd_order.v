@@ -62,7 +62,4 @@ Proof.
   by rewrite opprD addrACA subrr add0r.
 Qed.
 
-Hypothesis psd_le_antisym :
-  forall n (A B : 'M[C]_n), psd_le A B -> psd_le B A -> A = B.
-
 End PsdOrder.

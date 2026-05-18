@@ -463,4 +463,89 @@ have : (lam i)^-1 <= 1.
 by [].
 Qed.
 
+(* ================================================================== *)
+(* Антисимметричность порядка Лёвнера                                 *)
+(* ================================================================== *)
+
+Theorem psd_le_antisym n (A B : 'M[C]_n) :
+  psd_le A B -> psd_le B A -> A = B.
+Proof.
+rewrite /psd_le => h1 h2.
+have Mherm : (B - A) \is hermsymmx := psd_hermsym h1.
+have [U [l [hU [lreal Mdec]]]] := spectral_theorem Mherm.
+have UMU : U^t* *m (B - A) *m U = diag_of l := UAU_decomp hU Mdec.
+have psd_diag_l : psd (diag_of l).
+  rewrite -UMU.
+  exact: psd_congruence h1.
+have l_ge0 : forall i, 0 <= l i
+  := proj1 (psd_diag_iff_real lreal) psd_diag_l.
+have UnMU : U^t* *m (A - B) *m U = - diag_of l.
+  have ABe : A - B = - (B - A) by rewrite opprB.
+  by rewrite ABe mulmxN mulNmx UMU.
+have negl_real : forall i, - l i \is Num.real
+  by move=> i; rewrite rpredN.
+have negl_eq : - diag_of l = diag_of (fun i => - l i).
+  apply/matrixP=> i j; rewrite !mxE.
+  by case: ifP=> _; rewrite ?oppr0.
+have psd_diag_negl : psd (diag_of (fun i => - l i)).
+  rewrite -negl_eq -UnMU.
+  exact: psd_congruence h2.
+have negl_ge0 : forall i, 0 <= - l i
+  := proj1 (psd_diag_iff_real negl_real) psd_diag_negl.
+have l_eq0 : forall i, l i = 0.
+  move=> i; apply: le_anti.
+  apply/andP; split; last exact: l_ge0.
+  by rewrite -oppr_ge0; exact: negl_ge0.
+have diag_l0 : diag_of l = (0 : 'M[C]_n).
+  apply/matrixP=> i j; rewrite !mxE.
+  by case: ifP=> _; rewrite ?l_eq0.
+have BA0 : B - A = 0 by rewrite Mdec diag_l0 mulmx0 mul0mx.
+by apply/eqP; rewrite eq_sym -subr_eq0; apply/eqP; exact: BA0.
+Qed.
+
+(* ================================================================== *)
+(* Мажоранта PSD-матрицы скалярным кратным единичной:                 *)
+(*   psd M  ⇒  M ≤ (\tr M) · I   в порядке Лёвнера.                   *)
+(*                                                                    *)
+(* Для PSD M = U diag(l) U^t* (l_i ≥ 0) имеем \tr M = \sum_i l_i и    *)
+(*   (\tr M)·I − M = U diag(\tr M − l_i) U^t*,                        *)
+(* где \tr M − l_i = \sum_{j≠i} l_j ≥ 0, откуда PSD-мажорация.        *)
+(* Используется в `dare.v` для построения равномерного бенчмарка      *)
+(* `Pbnd` из следовой оценки управ. грамиана.                          *)
+Lemma psd_le_trace_id n (M : 'M[C]_n) :
+  psd M -> psd_le M (\tr M *: 1%:M).
+Proof.
+move=> pM.
+have herm := psd_hermsym pM.
+have [U [l [hU [lreal Mdec]]]] := spectral_theorem herm.
+have psdD : psd (diag_of l).
+  apply: (psd_spec_conj_inj hU); by rewrite -Mdec.
+have lnn := proj1 (psd_diag_iff_real lreal) psdD.
+have diag_const : forall a : C, diag_of (fun _ : 'I_n => a) = a *: 1%:M.
+  move=> a; apply/matrixP=> i j; rewrite !mxE.
+  by case: eqP=> [_|_]; rewrite ?mulr1n ?mulr0n ?mulr1 ?mulr0.
+have trM_eq : \tr M = \sum_(i < n) l i.
+  rewrite Mdec mxtrace_mulC mulmxA (unitary_mulV hU) mul1mx.
+  by rewrite /mxtrace; apply: eq_bigr=> i _; rewrite !mxE eqxx.
+have creal : \tr M \is Num.real.
+  by rewrite trM_eq; apply: rpred_sum=> i _; exact: lreal i.
+have idU : (\tr M *: 1%:M : 'M[C]_n)
+         = U *m diag_of (fun _ => \tr M) *m U^t*.
+  by rewrite diag_const -scalemxAr -scalemxAl (spec_conj_one hU).
+have decomp : \tr M *: 1%:M - M
+            = U *m diag_of (fun i => \tr M - l i) *m U^t*.
+  rewrite (_ : \tr M *: 1%:M - M
+             = U *m diag_of (fun _ => \tr M) *m U^t*
+               - U *m diag_of l *m U^t*); last first.
+    by congr (_ - _); [exact: idU | exact: Mdec].
+  by rewrite -mulmxBl -mulmxBr diag_of_sub.
+rewrite /psd_le decomp.
+apply: psd_mulmx_row.
+have sub_real : forall i, (\tr M - l i) \is Num.real.
+  by move=> i; apply: rpredB; [exact: creal | exact: lreal i].
+apply/(psd_diag_iff_real sub_real)=> i.
+rewrite subr_ge0 trM_eq (bigD1 i) //= lerDl.
+by apply: sumr_ge0=> j _; exact: lnn j.
+Qed.
+
 End Spectral.
