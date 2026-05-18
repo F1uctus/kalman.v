@@ -4,6 +4,8 @@
 (*  всякая эрмитова матрица унитарно диагонализуема с вещественным       *)
 (*  спектром (hermitian_spectral_diag_real).                             *)
 
+Set Warnings "-notation-overridden,-coercions,-default".
+
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra mxpoly.

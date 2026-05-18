@@ -3,6 +3,8 @@
 (*                                                                        *)
 (*  A <= B  <=>  B - A положительно полуопределена.                       *)
 
+Set Warnings "-notation-overridden,-coercions,-default".
+
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
