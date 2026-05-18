@@ -126,8 +126,8 @@ Qed.
 Lemma pd_invertible n (M : 'M[C]_n) : pd M -> M \in unitmx.
 Proof.
   move=> [Msym pdM]; apply: contraT => Mnu.
-  have Cnz : cokermx M != 0 by rewrite cokermx_eq0 row_full_unit.
-  have /matrix0Pn [i [j Cij_nz]] := Cnz.
+  have cokerNZ : cokermx M != 0 by rewrite cokermx_eq0 row_full_unit.
+  have /matrix0Pn [i [j Cij_nz]] := cokerNZ.
   pose v := cokermx M *m delta_mx j ord0 : 'cV[C]_n.
   have vNZ : v != 0.
     apply/cV0Pn; exists i; rewrite /v -colE mxE; exact: Cij_nz.
