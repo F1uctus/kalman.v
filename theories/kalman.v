@@ -602,35 +602,10 @@ Definition riccati_step (P : 'M[C]_n) : 'M[C]_n :=
 Definition is_riccati_fixpoint (Pss : 'M[C]_n) : Prop :=
   Pss = riccati_step Pss.
 
-(* Существование PSD-неподвижной точки при стандартных условиях *)
-Theorem riccati_fixpoint_exists :
-  observable -> controllable ->
-  exists Pss : 'M[R]_n, is_riccati_fixpoint Pss /\ psd Pss.
-Proof. Admitted.
-
-(* Сходимость итерации Риккати *)
-Theorem riccati_convergence (P0 : 'M[R]_n) :
-  observable -> controllable -> psd P0 ->
-  exists Pss : 'M[R]_n,
-    is_riccati_fixpoint Pss /\ psd Pss /\
-    forall eps : R, eps > 0 ->
-      exists N : nat, forall k, (N <= k)%N ->
-        \tr (iter k riccati_step P0 - Pss) < eps.
-Proof.
-  (* Набросок: при наблюдаемости + управляемости спектральный радиус
-     замкнутого отображения (I - K_ss H) F < 1; аргумент Ляпунова
-     показывает, что P_k сжимается к Pss. Полное доказательство
-     требует теории собственных значений. *)
-Admitted.
-
-(* Единственность стабилизирующей PSD-неподвижной точки *)
-Theorem riccati_fixpoint_unique :
-  observable -> controllable ->
-  forall P1 P2 : 'M[R]_n,
-    is_riccati_fixpoint P1 -> psd P1 ->
-    is_riccati_fixpoint P2 -> psd P2 ->
-    P1 = P2.
-Proof. Admitted.
+(* Заглушки DARE-теорем (существование PD-фиксточки, сходимость,
+   единственность) удалены: они содержали смешение типов `'M[R]_n`
+   (где `R` — переменная-матрица ковариации шума измерения, а не
+   тип поля) и не компилировались.  Полные версии доказаны в `dare.v`. *)
 
 (* ================================================================== *)
 (* §7  Один шаг фильтра (удобная обёртка)                             *)
