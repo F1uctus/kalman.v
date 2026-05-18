@@ -49,7 +49,7 @@ From mathcomp Require Import topology normedtype sequences.
 From mathcomp.reals Require Import reals.
 From Kalman Require Import psd_base psd_order spectral.
 From Kalman Require Import mxfrob mxtopo mxmonotone.
-From Kalman Require Import kalman riccati_mono.
+From Kalman Require Import kalman riccati_mono obsv_bound.
 From Kalman Require riccati_cont.
 
 Set Implicit Arguments.
@@ -81,11 +81,38 @@ Variables (F : 'M[C]_n) (G : 'M[C]_(n, m)) (H : 'M[C]_(p, n)).
 Variables (Q : 'M[C]_m) (Rn : 'M[C]_p).
 Hypothesis Q_psd : psd Q.
 Hypothesis Rn_pd : pd Rn.
+(* Фробениусова контракция системной матрицы (Session 10): единственная *)
+(* новая доменная гипотеза, разряжающая прежнюю абстракцию P_iter_bound. *)
+Hypothesis F_contract : frob_sq F < 1.
 
-(* --- Равномерная верхняя оценка траектории (гипотеза устойчивости) --- *)
-Variable Pbnd : 'M[C]_n.
-Hypothesis P_iter_bound :
-  forall k, psd_le (iter k (riccati_step F G H Q Rn) 0) Pbnd.
+(* --- Равномерная верхняя оценка траектории (Session 10) --- *)
+(* Конкретный бенчмарк: скаляр (следовая геометрическая оценка управ.   *)
+(* грамиана) на единичной матрице.  Прежние `Variable Pbnd` и           *)
+(* `Hypothesis P_iter_bound` теперь — определение и доказанная лемма.    *)
+Definition Pbnd : 'M[C]_n :=
+  (\tr (G *m Q *m G^t*) / (1 - frob_sq F)) *: 1%:M.
+
+Lemma ctrl_gram_le_Pbnd k :
+  psd_le (ctrl_gram F G Q k) Pbnd.
+Proof.
+apply: (psd_le_trans (B := \tr (ctrl_gram F G Q k) *: 1%:M)).
+  by apply: psd_le_trace_id; apply: ctrl_gram_psd; exact: Q_psd.
+rewrite /Pbnd.
+apply: psd_le_scale1.
+- by apply: ger0_real; apply: psd_tr_ge0; apply: ctrl_gram_psd; exact: Q_psd.
+- apply: ger0_real; apply: divr_ge0.
+    by apply: psd_tr_ge0; apply: psd_mulmx_row; exact: Q_psd.
+  by rewrite subr_ge0; exact: ltW F_contract.
+- by apply: ctrl_gram_tr_bound; [exact: Q_psd | exact: F_contract].
+Qed.
+
+Lemma P_iter_bound k :
+  psd_le (iter k (riccati_step F G H Q Rn) 0) Pbnd.
+Proof.
+apply: (psd_le_trans (B := ctrl_gram F G Q k)).
+  by apply: riccati_iter_le_ctrl_gram; [exact: Q_psd | exact: Rn_pd].
+exact: ctrl_gram_le_Pbnd k.
+Qed.
 
 (* ================================================================== *)
 (*  Траектория из нуля и её базовые свойства                            *)
