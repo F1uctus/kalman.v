@@ -84,6 +84,11 @@ Hypothesis Rn_pd : pd Rn.
 (* Фробениусова контракция системной матрицы (Session 10): единственная *)
 (* новая доменная гипотеза, разряжающая прежнюю абстракцию P_iter_bound. *)
 Hypothesis F_contract : frob_sq F < 1.
+(* Невырожденность процессного шума (Session 11): шум процесса входит во *)
+(* все направления состояния.  Это стандартное предположение            *)
+(* классической калмановской фильтрации — матрица `G Q Gᶜ` положительно  *)
+(* определена, что гарантирует PD-ность установившейся ковариации `Pss`. *)
+Hypothesis pd_GQGt : pd (G *m Q *m G^t*).
 
 (* --- Равномерная верхняя оценка траектории (Session 10) --- *)
 (* Конкретный бенчмарк: скаляр (следовая геометрическая оценка управ.   *)
@@ -309,10 +314,23 @@ Qed.
 (*  pd (Plow + (Pss - Plow)) = pd Pss`).  Шаг `psd_le Plow Pss`         *)
 (*  использует свежедобавленную `mx_mono_lim_ge_term`.                  *)
 
-Variable Plow : 'M[C]_n.
-Variable k0_low : nat.
-Hypothesis Plow_pd : pd Plow.
-Hypothesis Plow_le_Pseq_k0 : psd_le Plow (Pseq k0_low).
+(* Нижний бенчмарк (Session 11): первый член траектории `Pseq 1`.       *)
+(* `Pseq 1 = riccati_step 0 = update_cov (predict_cov 0)`, а             *)
+(* `predict_cov 0 = G Q Gᶜ` (т.к. `F 0 Fᶜ + G Q Gᶜ = G Q Gᶜ`).          *)
+(* PD-ность следует из `update_cov_pd`, применённой к `pd_GQGt`.         *)
+Definition Plow : 'M[C]_n := iter 1 (riccati_step F G H Q Rn) 0.
+Definition k0_low : nat := 1.
+
+Lemma Plow_pd : pd Plow.
+Proof.
+rewrite /Plow /= /riccati_step.
+apply: update_cov_pd; first exact: Rn_pd.
+rewrite /predict_cov mulmx0 mul0mx add0r.
+exact: pd_GQGt.
+Qed.
+
+Lemma Plow_le_Pseq_k0 : psd_le Plow (Pseq k0_low).
+Proof. by rewrite /k0_low; apply: psd_le_refl; exact: pd_psd Plow_pd. Qed.
 
 Lemma Plow_le_Pss : psd_le Plow Pss.
 Proof.
@@ -327,7 +345,7 @@ Proof.
 have HsumEq : Pss = Plow + (Pss - Plow).
   by rewrite addrC -addrA [(- _) + _]addrC subrr addr0.
 rewrite HsumEq.
-apply: pd_add => //.
+apply: pd_add; first exact: Plow_pd.
 exact: Plow_le_Pss.
 Qed.
 
