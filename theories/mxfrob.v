@@ -200,7 +200,7 @@ Qed.
 (* где W_ii <= tr W (W PSD => диагональ <= след) и tr W = frob_sq F.  *)
 (* Это заменяет общую субмультипликативность Фробениуса:              *)
 (* нужный частный случай выводится напрямую из спектральной теоремы.  *)
-Lemma tr_conj_frob_le n (Fm M : 'M[C]_n) :
+Lemma tr_conj_frob_le n m (Fm : 'M[C]_(n, m)) (M : 'M[C]_m) :
   psd M -> \tr (Fm *m M *m Fm^t*) <= frob_sq Fm * \tr M.
 Proof.
 move=> pM.
@@ -220,7 +220,7 @@ have trW : \tr W = frob_sq Fm.
   rewrite /W /X /frob_sq trmxC_mul mxtrace_mulC !mulmxA -[_ *m U *m U^t*]mulmxA.
   have /unitarymxP hUU := hU.
   by rewrite hUU mulmx1 mxtrace_mulC.
-have trSum : \tr (diag_of l *m W) = \sum_(i < n) l i * W i i.
+have trSum : \tr (diag_of l *m W) = \sum_(i < m) l i * W i i.
   rewrite /mxtrace; apply: eq_bigr=> i _.
   rewrite mxE (bigD1 i) //=.
   rewrite big1 ?addr0; last first.
@@ -231,12 +231,131 @@ have Wii_ge0 : forall k, 0 <= W k k.
 have Wii_le : forall k, W k k <= \tr W.
   move=> k; rewrite /mxtrace (bigD1 k) //= lerDl.
   by apply: sumr_ge0=> j _; exact: Wii_ge0.
-have trM_eq : \tr M = \sum_(i < n) l i.
+have trM_eq : \tr M = \sum_(i < m) l i.
   rewrite Mdec mxtrace_mulC mulmxA (unitary_mulV hU) mul1mx.
   by rewrite /mxtrace; apply: eq_bigr=> i _; rewrite !mxE eqxx.
 rewrite trEq trSum trM_eq -trW mulr_sumr.
 apply: ler_sum=> i _; rewrite mulrC.
 apply: ler_pM; [exact: Wii_ge0 | exact: lnn | exact: Wii_le | exact: lexx].
+Qed.
+
+(* ================================================================== *)
+(* Мажоранта Фробениуса следом для PSD-матриц:                         *)
+(*   psd M  ⇒  frob_sq M ≤ (\tr M)^+2.                                  *)
+(*                                                                    *)
+(* Через спектральное разложение M = U diag(l) U^t*, l_i ≥ 0:           *)
+(*   frob_sq M = \tr (M^t* M) = \tr M² = \sum_i l_i²,                  *)
+(*   \tr M = \sum_i l_i,                                                *)
+(* и для неотрицательных l_i: ∑ l_i² ≤ (∑ l_i)² (перекрёстные ≥ 0).    *)
+(*                                                                    *)
+(* Нужно в Session 12 для tracesqueeze: чтобы из `\tr (U_k - L_k) → 0` *)
+(* и `0 ≤ X_k - L_k ≤ U_k - L_k` (PSD) вывести `frob_sq → 0`.           *)
+Lemma frob_sq_le_tr_sq n (M : 'M[C]_n) :
+  psd M -> frob_sq M <= (\tr M) ^+ 2.
+Proof.
+move=> pM.
+have herm := psd_hermsym pM.
+have [U [l [hU [lreal Mdec]]]] := spectral_theorem herm.
+have psdD : psd (diag_of l) by apply: (psd_spec_conj_inj hU); rewrite -Mdec.
+have lnn := proj1 (psd_diag_iff_real lreal) psdD.
+have trM_eq : \tr M = \sum_(i < n) l i.
+  rewrite Mdec mxtrace_mulC mulmxA (unitary_mulV hU) mul1mx.
+  by rewrite /mxtrace; apply: eq_bigr=> i _; rewrite !mxE eqxx.
+have frob_sq_eq : frob_sq M = \sum_(i < n) (l i) ^+ 2.
+  rewrite /frob_sq.
+  have Mhermt : M^t* = M by rewrite -(hermsym_eq herm).
+  rewrite Mhermt Mdec.
+  have e1 : (U *m diag_of l *m U^t*) *m (U *m diag_of l *m U^t*)
+          = U *m (diag_of l *m diag_of l) *m U^t*.
+    by rewrite spec_conj_mul.
+  rewrite e1 diag_of_mul.
+  rewrite mxtrace_mulC mulmxA (unitary_mulV hU) mul1mx.
+  rewrite /mxtrace; apply: eq_bigr=> i _.
+  by rewrite !mxE eqxx /= -expr2.
+rewrite frob_sq_eq trM_eq.
+(* Goal: \sum l_i^2 ≤ (\sum l_i)^2; expand RHS as sum of products. *)
+rewrite expr2 mulr_suml.
+apply: ler_sum=> i _.
+rewrite expr2 mulr_sumr.
+rewrite (bigD1 i) //= lerDl.
+apply: sumr_ge0=> j _.
+exact: mulr_ge0.
+Qed.
+
+(* ================================================================== *)
+(* Контракция предсказывающего шага в Фробениусе:                     *)
+(*   D \is hermsymmx ⇒                                                 *)
+(*     frob_sq (Fm *m D *m Fmᶜ) ≤ (frob_sq Fm)^+2 * frob_sq D.          *)
+(*                                                                    *)
+(* Доказательство: Fm D Fmᶜ эрмитова (D эрмитова), значит               *)
+(*   frob_sq (Fm D Fmᶜ) = \tr ((Fm D Fmᶜ)²).                            *)
+(* Применяем `tr_conj_frob_le` (psd (D *m Fmᶜ *m Fm *m D)) и             *)
+(* `tr_conj_frob_le` (psd (Fmᶜ *m Fm)) — каждое даёт коэффициент        *)
+(* `frob_sq Fm`. Итого `(frob_sq Fm)^+2 * \tr (D²) = (frob_sq Fm)^+2 *  *)
+(* frob_sq D` (D эрмитова ⇒ frob_sq D = \tr D²).                        *)
+Lemma frob_sq_herm n (D : 'M[C]_n) :
+  D \is hermsymmx -> frob_sq D = \tr (D *m D).
+Proof.
+move=> Dherm.
+have hD : D^t* = D by rewrite -(hermsym_eq Dherm).
+by rewrite /frob_sq hD.
+Qed.
+
+(* Эрмитовость произведения F D F^t* при эрмитовой D. *)
+Lemma herm_conj n m (Fm : 'M[C]_(n, m)) (D : 'M[C]_m) :
+  D \is hermsymmx -> (Fm *m D *m Fm^t*) \is hermsymmx.
+Proof.
+move=> Dherm.
+apply/is_hermitianmxP; rewrite expr0 scale1r.
+rewrite trmxC_mul trmxC_mul trmxCK mulmxA.
+by rewrite -(hermsym_eq Dherm).
+Qed.
+
+(* PSD-ность D *m Fm^t* *m Fm *m D при эрмитовой D — частный случай *)
+(* psd_congruence для PSD матрицы Fm^t* *m Fm = (psd_frob).            *)
+Lemma psd_conj_herm_FtF n m (Fm : 'M[C]_(n, m)) (D : 'M[C]_m) :
+  D \is hermsymmx -> psd (D *m Fm^t* *m Fm *m D).
+Proof.
+move=> Dherm.
+have hD : D = D^t* by exact: hermsym_eq.
+have eq1 : D *m Fm^t* *m Fm *m D = D^t* *m (Fm^t* *m Fm) *m D.
+  by rewrite -hD !mulmxA.
+rewrite eq1.
+exact: psd_congruence (psd_frob Fm).
+Qed.
+
+Lemma predict_diff_frob_bound n m (Fm : 'M[C]_(n, m)) (D : 'M[C]_m) :
+  D \is hermsymmx ->
+  frob_sq (Fm *m D *m Fm^t*) <= (frob_sq Fm) ^+ 2 * frob_sq D.
+Proof.
+move=> Dherm.
+have FDFherm : (Fm *m D *m Fm^t*) \is hermsymmx := herm_conj Fm Dherm.
+rewrite (frob_sq_herm FDFherm).
+(* Шаг 1: \tr ((F D Fᶜ) (F D Fᶜ)) = \tr (F (D Fᶜ F D) Fᶜ). *)
+have step1 : (Fm *m D *m Fm^t*) *m (Fm *m D *m Fm^t*)
+           = Fm *m (D *m Fm^t* *m Fm *m D) *m Fm^t*.
+  by rewrite !mulmxA.
+rewrite step1.
+(* Шаг 2: tr_conj_frob_le с PSD-матрицей (D Fᶜ F D). *)
+have psd_DFtFD : psd (D *m Fm^t* *m Fm *m D) := psd_conj_herm_FtF Fm Dherm.
+apply: (le_trans (tr_conj_frob_le Fm psd_DFtFD)).
+(* Цель: frob_sq Fm * \tr (D Fᶜ F D) ≤ (frob_sq Fm)^+2 * frob_sq D. *)
+rewrite expr2 -mulrA.
+apply: ler_pM; first by exact: frob_sq_ge0.
+- by apply: psd_tr_ge0; exact: psd_DFtFD.
+- exact: lexx.
+- (* Цель: \tr (D Fᶜ F D) ≤ frob_sq Fm * frob_sq D. *)
+  (* D Fᶜ F D = D *m (Fᶜ F) *m D, и D = Dᶜ (Hermitian);  *)
+  (* применяем tr_conj_frob_le ещё раз с Fm := D, M := Fᶜ Fm. *)
+  have hD : D = D^t* by exact: hermsym_eq.
+  have rewriteDFtFD : D *m Fm^t* *m Fm *m D = D *m (Fm^t* *m Fm) *m D^t*.
+    by rewrite -hD !mulmxA.
+  rewrite rewriteDFtFD.
+  apply: (le_trans (tr_conj_frob_le D (psd_frob Fm))).
+  rewrite (frob_sq_herm Dherm).
+  (* Цель: frob_sq D * \tr (Fmᶜ Fm) ≤ frob_sq Fm * \tr (D D). *)
+  have e1 : \tr (Fm^t* *m Fm) = frob_sq Fm by [].
+  rewrite e1 [_ * \tr _]mulrC; exact: lexx.
 Qed.
 
 End Frob.
