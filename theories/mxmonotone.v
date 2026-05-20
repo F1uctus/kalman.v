@@ -498,3 +498,138 @@ apply: (cvgn_real_ge_C
 Qed.
 
 End MxBridge.
+
+(* ================================================================== *)
+(*  Монотонно-убывающая сходимость PSD-матриц                          *)
+(* ================================================================== *)
+(*                                                                     *)
+(*  Двойственная конструкция к `MxBridge`: для убывающей PSD-после-    *)
+(*  довательности `Smx k+1 ≤ Smx k` доказываем сходимость через         *)
+(*  субституцию `Tmx k := Smx 0 - Smx k` (возрастающая, ограниченная   *)
+(*  сверху `Smx 0`).  Затем переносим результаты обратно на `Smx`.      *)
+(*                                                                     *)
+(*  Используется в `dare.v` Session 12 для верхней траектории          *)
+(*  `iter k riccati_step Pbnd` (Pbnd — суперрешение).                  *)
+
+Section MxBridgeDec.
+Variables (R : realType) (C : numClosedFieldType).
+Variable r2c : {rmorphism R -> C}.
+Variable c2r : C -> R.
+Hypothesis ler_r2c : {mono r2c : x y / x <= y}.
+Hypothesis r2cK : cancel r2c c2r.
+Hypothesis c2rK : {in Num.real, cancel c2r r2c}.
+Hypothesis c2r_continuous : continuous (c2r : C -> R).
+Hypothesis r2c_continuous : continuous (r2c : R -> C).
+
+Variable n : nat.
+Variable Smx : nat -> 'M[C]_n.
+Hypothesis S_psd : forall k, psd (Smx k).
+Hypothesis S_anti : forall k, psd_le (Smx k.+1) (Smx k).
+
+(* Цепочка PSD-неравенств: Smx k ≤ Smx i при i ≤ k. *)
+Lemma S_anti_le (i j : nat) : (i <= j)%N -> psd_le (Smx j) (Smx i).
+Proof.
+elim: j i => [|j IHj] i; first by rewrite leqn0=> /eqP->; apply: psd_le_refl; exact: S_psd.
+rewrite leq_eqVlt=> /orP[/eqP->|].
+  by apply: psd_le_refl; exact: S_psd.
+by rewrite ltnS=> Hij; apply: (psd_le_trans (S_anti j)); exact: IHj.
+Qed.
+
+(* Все члены убывающей PSD-последовательности оцениваются Smx 0 сверху. *)
+Lemma S_le_S0 (k : nat) : psd_le (Smx k) (Smx 0%N).
+Proof. exact: S_anti_le (leq0n k). Qed.
+
+(* Субституция T k := Smx 0 - Smx k делает последовательность       *)
+(* возрастающей и ограниченной сверху Smx 0.                          *)
+Definition Tmx (k : nat) : 'M[C]_n := Smx 0%N - Smx k.
+
+Lemma T_psd (k : nat) : psd (Tmx k).
+Proof. exact: S_le_S0. Qed.
+
+Lemma T_mono (k : nat) : psd_le (Tmx k) (Tmx k.+1).
+Proof.
+rewrite /psd_le /Tmx.
+have ->: Smx 0%N - Smx k.+1 - (Smx 0%N - Smx k) = Smx k - Smx k.+1.
+  rewrite opprB [Smx k - Smx 0%N]addrC addrACA addrN add0r addrC.
+  by [].
+exact: S_anti.
+Qed.
+
+Lemma T_bnd (k : nat) : psd_le (Tmx k) (Smx 0%N).
+Proof.
+rewrite /psd_le /Tmx.
+have ->: Smx 0%N - (Smx 0%N - Smx k) = Smx k.
+  by rewrite opprB [Smx k - Smx 0%N]addrC addrA addrN add0r.
+exact: S_psd.
+Qed.
+
+(* Применяем существующую `mx_mono_cvgn` к T. *)
+Definition mx_mono_dec_lim : 'M[C]_n :=
+  Smx 0%N - mx_mono_lim Tmx.
+
+Theorem mx_mono_dec_cvgn :
+  (Smx : nat -> 'M[C]_n) @ \oo --> mx_mono_dec_lim.
+Proof.
+have HT : (Tmx : nat -> 'M[C]_n) @ \oo --> mx_mono_lim Tmx.
+  exact: (@mx_mono_cvgn R C r2c c2r
+            ler_r2c c2rK r2c_continuous
+            n Tmx (Smx 0%N) T_psd T_mono T_bnd).
+(* Smx k = Smx 0 - Tmx k *)
+have eq_S : Smx = (fun k => Smx 0%N - Tmx k).
+  apply/funext=> k.
+  rewrite /Tmx.
+  by rewrite opprB [Smx k - Smx 0%N]addrC addrA addrN add0r.
+rewrite eq_S.
+have Hcst : ((fun _ : nat => Smx 0%N) : nat -> 'M[C]_n) @ \oo --> Smx 0%N
+  by exact: cvg_cst.
+rewrite /mx_mono_dec_lim.
+exact: cvgn_submx Hcst HT.
+Qed.
+
+Lemma mx_mono_dec_is_cvgn : cvgn (Smx : nat -> 'M[C]_n).
+Proof. by apply/cvg_ex; exists mx_mono_dec_lim; exact: mx_mono_dec_cvgn. Qed.
+
+Lemma mx_mono_dec_lim_psd : psd mx_mono_dec_lim.
+Proof.
+(* mx_mono_dec_lim = Smx 0 - mx_mono_lim T.  Поскольку lim T ≤ Smx 0    *)
+(* (через mx_mono_lim_le), psd (Smx 0 - lim T).                          *)
+rewrite /mx_mono_dec_lim.
+have HT_le : psd_le (mx_mono_lim Tmx) (Smx 0%N).
+  exact: (@mx_mono_lim_le R C r2c c2r
+            ler_r2c c2rK c2r_continuous r2c_continuous
+            n Tmx (Smx 0%N) T_psd T_mono T_bnd).
+exact: HT_le.
+Qed.
+
+(* Любой член убывающей последовательности ≥ её предела. *)
+Lemma mx_mono_dec_lim_le_term (k0 : nat) :
+  psd_le mx_mono_dec_lim (Smx k0).
+Proof.
+(* Через возрастание Tmx: T k0 ≤ lim T. *)
+have HT_term : psd_le (Tmx k0) (mx_mono_lim Tmx).
+  exact: (@mx_mono_lim_ge_term R C r2c c2r
+            ler_r2c c2rK c2r_continuous r2c_continuous
+            n Tmx (Smx 0%N) T_psd T_mono T_bnd k0).
+(* Перепишем: lim_dec = S 0 - lim T, S k0 = S 0 - T k0.                  *)
+(* Тогда S k0 - lim_dec = lim T - T k0 ≥ 0 (HT_term).                    *)
+rewrite /psd_le /mx_mono_dec_lim /Tmx.
+have ->: Smx k0 - (Smx 0%N - mx_mono_lim Tmx)
+       = mx_mono_lim Tmx - (Smx 0%N - Smx k0).
+  by rewrite !opprB addrCA.
+exact: HT_term.
+Qed.
+
+(* Эрмитов предел.  Достаточно одного направления: убывающая          *)
+(* последовательность из эрмитовых матриц имеет эрмитов предел.        *)
+Lemma mx_mono_dec_lim_herm : mx_mono_dec_lim = mx_mono_dec_lim^t*.
+Proof.
+have HT_herm : mx_mono_lim Tmx = (mx_mono_lim Tmx)^t*.
+  exact: (@mx_mono_lim_herm R C r2c c2r
+            ler_r2c c2rK r2c_continuous
+            n Tmx (Smx 0%N) T_psd T_mono T_bnd).
+have S0_herm : Smx 0%N = (Smx 0%N)^t* by case: (S_psd 0%N).
+rewrite /mx_mono_dec_lim.
+by rewrite trmxCB -HT_herm -S0_herm.
+Qed.
+
+End MxBridgeDec.
