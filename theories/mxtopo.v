@@ -104,6 +104,126 @@ Qed.
 End FrobeniusBridge.
 
 (* ================================================================== *)
+(*  Обратное направление: frob_sq (Pf k - L) → 0  ⇒  Pf @ \oo --> L.    *)
+(*                                                                     *)
+(*  Достаточно показать поэлементную сходимость P_k i j → L i j        *)
+(*  (через `mxcvgn_to_cvgn`).  Из `|M i j|^+2 ≤ frob_sq M`              *)
+(*  (`frob_sq_entry_ge` выше) и `frob_sq → 0` (вместе с                  *)
+(*  `0 ≤ |Pf k i j - L i j|^+2 ≤ frob_sq (Pf k - L)`)                   *)
+(*  получаем `|Pf k i j - L i j|^+2 → 0`, откуда `|·| → 0` и           *)
+(*  `(Pf k - L) i j → 0` поэлементно — что и даёт `Pf k i j → L i j`.   *)
+Section FrobToMxCvg.
+Variable (C : numClosedFieldType) (r c : nat).
+Implicit Types (Pf : nat -> 'M[C]_(r, c)) (L : 'M[C]_(r, c)).
+
+(* Технический шаг: для C-значной последовательности s ≥ 0, если       *)
+(* s ≤ t и t → 0 в C^o, то s → 0 в C^o.                                 *)
+Lemma cvgC_le0_squeeze (s t : nat -> C) :
+  (forall k, 0 <= s k) -> (forall k, s k <= t k) ->
+  t @ \oo --> (0 : C) -> s @ \oo --> (0 : C).
+Proof.
+move=> s_ge0 s_le_t Hcvgt.
+have Ht_o : (t : nat -> C^o) @ \oo --> (0 : C^o) by exact: Hcvgt.
+have Hs_o : (s : nat -> C^o) @ \oo --> (0 : C^o).
+  apply/cvgrPdistC_lt=> eps eps_pos.
+  have /cvgrPdistC_lt /(_ eps eps_pos) Ht_pdist := Ht_o.
+  near=> k.
+  have Hk : `|t k - 0| < eps by near: k; exact: Ht_pdist.
+  rewrite subr0 in Hk.
+  rewrite /= subr0.
+  have abs_t : `|t k| = t k.
+    apply: ger0_norm.
+    exact: (le_trans (s_ge0 k) (s_le_t k)).
+  have abs_s : `|s k| = s k by exact: ger0_norm (s_ge0 k).
+  rewrite abs_s.
+  rewrite abs_t in Hk.
+  exact: le_lt_trans (s_le_t k) Hk.
+exact: Hs_o.
+Unshelve. all: by end_near.
+Qed.
+
+(* Поэлементная сходимость `(Pf k - L) i j → 0` из `frob_sq → 0`. *)
+Lemma frob_sq_to_entry_cvg0 Pf L (i : 'I_r) (j : 'I_c) :
+  (fun k => frob_sq (Pf k - L)) @ \oo --> (0 : C) ->
+  (fun k => (Pf k - L) i j) @ \oo --> (0 : C).
+Proof.
+move=> Hfrob.
+(* Шаг 1: `|·|^+2 ≤ frob_sq`, и frob_sq → 0 ⇒ `|·|^+2 → 0`. *)
+have Habs_sq_cvg :
+    (fun k => `|(Pf k - L) i j| ^+ 2) @ \oo --> (0 : C).
+  apply: (cvgC_le0_squeeze (t := fun k => frob_sq (Pf k - L))).
+  - by move=> k; rewrite exprn_ge0 // normr_ge0.
+  - by move=> k; exact: frob_sq_entry_ge.
+  - exact: Hfrob.
+(* Шаг 2: `|·|^+2 → 0` ⇒ `|·| → 0`.  Доказательство: для любого ε > 0  *)
+(* достаточно подойти к `|·|^+2 < ε^+2`.                                *)
+have Habs_sq_o :
+    ((fun k => `|(Pf k - L) i j| ^+ 2) : nat -> C^o) @ \oo --> (0 : C^o)
+  := Habs_sq_cvg.
+have Habs_o :
+    ((fun k => `|(Pf k - L) i j|) : nat -> C^o) @ \oo --> (0 : C^o).
+  apply/cvgrPdistC_lt=> eps eps_pos.
+  have eps_sq_pos : 0 < eps ^+ 2 by rewrite exprn_gt0.
+  have /cvgrPdistC_lt /(_ (eps ^+ 2) eps_sq_pos) Hsq_near := Habs_sq_o.
+  near=> k.
+  have Hsq_k : (`| (`|(Pf k - L) i j| ^+ 2) - 0| < eps ^+ 2).
+    by near: k; exact: Hsq_near.
+  rewrite /= subr0 in Hsq_k.
+  have abs_sq_ge0 : 0 <= `|(Pf k - L) i j| ^+ 2 by rewrite exprn_ge0 // normr_ge0.
+  rewrite (ger0_norm abs_sq_ge0) in Hsq_k.
+  rewrite /= subr0.
+  rewrite ger0_norm; last exact: normr_ge0.
+  have nneg : 0 <= `|(Pf k - L) i j| by exact: normr_ge0.
+  have eps_ge0 : 0 <= eps by exact: ltW eps_pos.
+  (* `|·|^+2 < eps^+2`  and  0 ≤ |·|, 0 ≤ eps  ⇒  `|·| < eps`.        *)
+  (* Через mono-форму `ltr_pXn2r`: (x^+2 < y^+2) = (x < y) на Num.nneg. *)
+  have abs_in : `|(Pf k - L) i j| \is Num.nneg by rewrite nnegrE.
+  have eps_in : eps \is Num.nneg by rewrite nnegrE.
+  by rewrite -(ltr_pXn2r (n:=2) _ abs_in eps_in).
+have Habs_cvg : (fun k => `|(Pf k - L) i j|) @ \oo --> (0 : C)
+  by exact: Habs_o.
+(* Шаг 3: `|·| → 0` ⇒ `· → 0`. *)
+have Hentry_o :
+    ((fun k => (Pf k - L) i j) : nat -> C^o) @ \oo --> (0 : C^o).
+  apply/cvgrPdistC_lt=> eps eps_pos.
+  have /cvgrPdistC_lt /(_ eps eps_pos) Habs_near := Habs_o.
+  near=> k.
+  have Habs_k : (`| `|(Pf k - L) i j| - 0| < eps) by near: k; exact: Habs_near.
+  rewrite /= subr0 in Habs_k.
+  rewrite (ger0_norm (@normr_ge0 _ _ _)) in Habs_k.
+  by rewrite /= subr0.
+exact: Hentry_o.
+Unshelve. all: by end_near.
+Qed.
+
+Lemma frob_sq_cvgn0_to_mxcvgn Pf L :
+  (fun k => frob_sq (Pf k - L)) @ \oo --> (0 : C) ->
+  (Pf : nat -> 'M[C]_(r, c)) @ \oo --> L.
+Proof.
+move=> Hfrob.
+apply/mxcvgn_to_cvgn=> i j.
+have Hdiff : (fun k => (Pf k - L) i j) @ \oo --> (0 : C)
+  := frob_sq_to_entry_cvg0 i j Hfrob.
+(* `Pf k i j = (Pf k - L) i j + L i j` — добавляем константу `L i j`. *)
+have Heq_decomp : (fun k => Pf k i j) = (fun k => (Pf k - L) i j + L i j).
+  apply/funext=> k.
+  by rewrite !mxE subrK.
+rewrite Heq_decomp.
+have Hdiff_o : ((fun k => (Pf k - L) i j) : nat -> C^o) @ \oo --> (0 : C^o)
+  by exact: Hdiff.
+have Hcst_o : ((fun _ : nat => L i j) : nat -> C^o) @ \oo --> (L i j : C^o)
+  by exact: cvg_cst.
+have HSum_o : ((fun k => (Pf k - L) i j + L i j) : nat -> C^o) @ \oo -->
+              (0 + L i j : C^o)
+  := cvgD Hdiff_o Hcst_o.
+have HSum : (fun k => (Pf k - L) i j + L i j) @ \oo --> (0 + L i j : C)
+  by exact: HSum_o.
+by rewrite add0r in HSum.
+Qed.
+
+End FrobToMxCvg.
+
+(* ================================================================== *)
 (*  Вспомогательный факт: изометрия непрерывна.                        *)
 (*                                                                     *)
 (*  Доказывается в абстрактном контексте — иначе тайп-классы           *)
