@@ -215,3 +215,55 @@ apply: (psd_le_pd (A := obsv_gram F H 1%:M n)).
 Qed.
 
 End GramianInf.
+
+(* ================================================================== *)
+(*  Взвешенный обсв. Грамиан под произвольный PSD-вес `W`               *)
+(*                                                                     *)
+(*  `obsv_gram_inf_w F W := lyap_sol_inf (Fᶜ) W`                        *)
+(*    ↔ X = Fᶜ *m X *m F + W                                            *)
+(*                                                                     *)
+(*  Обобщение `obsv_gram_inf` (который = `obsv_gram_inf_w F (Hᶜ H)`     *)
+(*  определительно): вес `W` отвязан от формы `Mᶜ M`.  Нужен для        *)
+(*  R-взвешенной меры `O_P` (Session 17, dare.v), где                   *)
+(*  `W := Hᶜ *m invmx Rn *m H` НЕ имеет вида `Mᶜ M`.                     *)
+(* ================================================================== *)
+
+Section GramianInfWeighted.
+
+(* R↔C мост — те же гипотезы, что в `GramianInf`. *)
+Variables (Rty : realType) (C : numClosedFieldType).
+Variable r2c : {rmorphism Rty -> C}.
+Variable c2r : C -> Rty.
+Hypothesis ler_r2c : {mono r2c : x y / x <= y}.
+Hypothesis r2cK : cancel r2c c2r.
+Hypothesis c2rK : {in Num.real, cancel c2r r2c}.
+Hypothesis c2r_continuous : continuous (c2r : C -> Rty).
+Hypothesis r2c_continuous : continuous (r2c : Rty -> C).
+
+Variable (n : nat).
+Variables (F W : 'M[C]_n).
+Hypothesis W_psd : psd W.
+Hypothesis F_contract : frob_sq F < 1.
+
+Definition obsv_gram_inf_w : 'M[C]_n := lyap_sol_inf (F^t*) W.
+
+(* `frob_sq Fᶜ = frob_sq F < 1`. *)
+Lemma F_trmxC_contract_w : frob_sq (F^t*) < 1.
+Proof. by rewrite frob_sq_trmxC. Qed.
+
+Theorem obsv_gram_inf_w_psd : psd obsv_gram_inf_w.
+Proof.
+exact: (lyap_sol_inf_psd ler_r2c c2rK c2r_continuous r2c_continuous
+         W_psd F_trmxC_contract_w).
+Qed.
+
+Theorem obsv_gram_inf_w_fixpoint :
+  obsv_gram_inf_w = F^t* *m obsv_gram_inf_w *m F + W.
+Proof.
+rewrite /obsv_gram_inf_w.
+rewrite {1}(lyap_sol_inf_fixpoint ler_r2c c2rK r2c_continuous
+            W_psd F_trmxC_contract_w).
+by rewrite trmxCK.
+Qed.
+
+End GramianInfWeighted.
