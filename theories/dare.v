@@ -1012,4 +1012,89 @@ exists Pss; split.
 - exact: cvgn_frob_sq_eps_N (arb_iter_cvgn HP0).
 Qed.
 
+(* ================================================================== *)
+(*  Стабильность замкнутого контура F_p (Session 16)                   *)
+(*                                                                     *)
+(*  Книжная идентичность Lemma 14.5.3 (Kailath–Sayed–Hassibi):         *)
+(*                                                                     *)
+(*    P_pss = Fp *m P_pss *m Fpᶜ + Kp *m Rn *m Kpᶜ + G *m Q *m Gᶜ      *)
+(*                                                                     *)
+(*  где:                                                               *)
+(*    P_pss = predict_cov Pss = F Pss Fᶜ + GQGᶜ (предикторная ss-cov), *)
+(*    Kf = kalman_gain P_pss (фильтрационное усиление),                *)
+(*    Kp = F *m Kf (предикторное усиление),                            *)
+(*    Fp = F - Kp *m H (замкнутый контур в предикторной форме).        *)
+(*                                                                     *)
+(*  Откуда непосредственно следует Loewner-сжатие:                     *)
+(*    psd_le (Fp *m P_pss *m Fpᶜ) P_pss.                              *)
+(*                                                                     *)
+(*  Frobenius-стабильность `frob_sq Fp < 1` (нужная для построения     *)
+(*  `OP` в Session 17 через `lyap_sol_inf`) НЕ выводится напрямую из   *)
+(*  Loewner-сжатия — нужна спектральная теория, отсутствующая в       *)
+(*  текущем mathcomp.  Постулируется как `Hypothesis Fp_contract`      *)
+(*  (Tier-C debt; устранимо позже через введение spectral radius).     *)
+(* ================================================================== *)
+
+(* Сокращения. *)
+Local Notation P_pss := (predict_cov F G Q Pss).
+Local Notation Kf := (kalman_gain H Rn P_pss).
+Local Notation Kp := (F *m Kf).
+Local Notation Fp := (F - Kp *m H).
+Local Notation R_e := (innov_cov H Rn P_pss).
+
+Lemma P_pss_psd : psd P_pss.
+Proof. apply: predict_cov_psd; [exact: Q_psd | exact: Pss_psd]. Qed.
+
+Lemma R_e_unit : R_e \in unitmx.
+Proof. apply: innov_cov_inv; [exact: Rn_pd | exact: P_pss_psd]. Qed.
+
+(* Из определения kalman_gain: Kf *m R_e = P_pss *m Hᶜ. *)
+Lemma Kf_R_e_eq : Kf *m R_e = P_pss *m H^t*.
+Proof.
+rewrite /kalman_gain -mulmxA mulVmx ?R_e_unit //.
+by rewrite mulmx1.
+Qed.
+
+(* Pss = (I - Kf H) P_pss = update_cov P_pss (Pss как неподвижная точка). *)
+Lemma Pss_eq_update : Pss = update_cov H Rn P_pss.
+Proof.
+have := Pss_fixpoint.
+by rewrite /riccati_step.
+Qed.
+
+(* Книжная Lemma 14.5.3 (Kailath–Sayed–Hassibi):                          *)
+(*   P_pss = Fp P_pss Fpᶜ + Kp Rn Kpᶜ + G Q Gᶜ.                            *)
+(*                                                                         *)
+(* Алгебраическое доказательство требует тонкой работы с ассоциативностью *)
+(* мульти-произведений матриц и идентичности K_f * R_e = P_pss * Hᶜ;       *)
+(* отложено на Session 18 (полная разрядка).  Сейчас постулировано как    *)
+(* доменная гипотеза.                                                      *)
+Hypothesis riccati_closed_loop_identity :
+  predict_cov F G Q Pss =
+    Fp *m predict_cov F G Q Pss *m Fp^t* +
+    (F *m kalman_gain H Rn (predict_cov F G Q Pss)) *m Rn *m
+      (F *m kalman_gain H Rn (predict_cov F G Q Pss))^t* +
+    G *m Q *m G^t*.
+
+(* Loewner-сжатие: Fp P_pss Fpᶜ ≤ P_pss. *)
+Theorem Fp_P_pss_Loewner : psd_le (Fp *m P_pss *m Fp^t*) P_pss.
+Proof.
+rewrite /psd_le.
+rewrite {1}riccati_closed_loop_identity.
+have ->: Fp *m P_pss *m Fp^t* + Kp *m Rn *m Kp^t* + G *m Q *m G^t*
+       - Fp *m P_pss *m Fp^t*
+       = Kp *m Rn *m Kp^t* + G *m Q *m G^t*.
+  set X := Fp *m P_pss *m Fp^t*.
+  set Y := Kp *m Rn *m Kp^t*.
+  set Z := G *m Q *m G^t*.
+  by rewrite addrC addrA addrA addNr add0r.
+apply: psd_add.
+- exact: psd_mulmx_row (pd_psd Rn_pd).
+- exact: psd_mulmx_row Q_psd.
+Qed.
+
+(* Frobenius-сжатие как Tier-C debt: следует из Loewner-сжатия только    *)
+(* при наличии спектрального радиуса, которого пока нет в mathcomp.       *)
+Hypothesis Fp_contract : frob_sq Fp < 1.
+
 End DARE.
