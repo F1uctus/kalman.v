@@ -50,6 +50,7 @@ From mathcomp.reals Require Import reals.
 From Kalman Require Import psd_base psd_order spectral.
 From Kalman Require Import mxfrob mxtopo mxmonotone.
 From Kalman Require Import kalman riccati_mono obsv_bound.
+From Kalman Require Import lyapunov gramian_inf.
 From Kalman Require riccati_cont.
 
 Set Implicit Arguments.
@@ -1096,5 +1097,45 @@ Qed.
 (* Frobenius-сжатие как Tier-C debt: следует из Loewner-сжатия только    *)
 (* при наличии спектрального радиуса, которого пока нет в mathcomp.       *)
 Hypothesis Fp_contract : frob_sq Fp < 1.
+
+(* ================================================================== *)
+(*  Мера `O_P` — бесконечный R-взвешенный обсв. Грамиан замкнутого      *)
+(*  контура `Fp` (Session 17)                                          *)
+(*                                                                     *)
+(*    O_P := lyap_sol_inf (Fpᶜ) (Hᶜ *m invmx Rn *m H)                   *)
+(*        ↔  O_P = Fpᶜ *m O_P *m Fp + Hᶜ *m invmx Rn *m H               *)
+(*                                                                     *)
+(*  Книжная роль (Kailath–Sayed–Hassibi, гл. 14).  Для произвольной    *)
+(*  инициализации `P0` ошибка фильтрации `P_k - Pss` распространяется   *)
+(*  замкнутым контуром `Fp` (предикторная форма `F - Kp H`).  Энергия   *)
+(*  этого распространения в R-взвешенной норме измеряется бесконечной   *)
+(*  суммой `\sum_k (Fpᶜ)^k (Hᶜ R⁻¹ H) Fp^k`, т.е. бесконечным обсв.    *)
+(*  Грамианом замкнутого контура под весом `Hᶜ R⁻¹ H`.  Сходимость     *)
+(*  суммы обеспечена Фробениусовым сжатием `Fp_contract`; невырожден-   *)
+(*  ность веса (а с нею PD-ность `O_P`) — наблюдаемостью пары `[Fp, H]` *)
+(*  (выводимой из детектируемости `[F, H]`; отложено на позже).         *)
+(* ================================================================== *)
+
+Definition OP : 'M[C]_n :=
+  obsv_gram_inf_w Fp (H^t* *m invmx Rn *m H).
+
+(* Вес `Hᶜ R⁻¹ H` положительно полуопределён (R⁻¹ PD ⇒ конгруэнция). *)
+Lemma OP_weight_psd : psd (H^t* *m invmx Rn *m H).
+Proof. exact: psd_congruence (pd_psd (pd_inv Rn_pd)). Qed.
+
+Theorem OP_psd : psd OP.
+Proof.
+apply: (obsv_gram_inf_w_psd ler_r2c c2rK c2r_continuous r2c_continuous).
+- exact: OP_weight_psd.
+- exact: Fp_contract.
+Qed.
+
+Theorem OP_fixpoint :
+  OP = Fp^t* *m OP *m Fp + H^t* *m invmx Rn *m H.
+Proof.
+apply: (obsv_gram_inf_w_fixpoint ler_r2c c2rK r2c_continuous).
+- exact: OP_weight_psd.
+- exact: Fp_contract.
+Qed.
 
 End DARE.
