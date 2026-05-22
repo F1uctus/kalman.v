@@ -1066,16 +1066,49 @@ Qed.
 (* Книжная Lemma 14.5.3 (Kailath–Sayed–Hassibi):                          *)
 (*   P_pss = Fp P_pss Fpᶜ + Kp Rn Kpᶜ + G Q Gᶜ.                            *)
 (*                                                                         *)
-(* Алгебраическое доказательство требует тонкой работы с ассоциативностью *)
-(* мульти-произведений матриц и идентичности K_f * R_e = P_pss * Hᶜ;       *)
-(* отложено на Session 18 (полная разрядка).  Сейчас постулировано как    *)
-(* доменная гипотеза.                                                      *)
-Hypothesis riccati_closed_loop_identity :
+(* Доказано алгебраически (Session 18) через идентичность                  *)
+(* Kf R_e = P_pss Hᶜ (Kf_R_e_eq) и неподвижность Pss = update_cov P_pss.   *)
+
+(* Свёртка усиления: F (I - Kf H) = Fp. *)
+Lemma F_update_factor : F *m (1%:M - Kf *m H) = Fp.
+Proof. by rewrite mulmxBr mulmx1 mulmxA. Qed.
+
+(* Предиктор на неподвижной точке свёрнут на замкнутый контур:             *)
+(*   P_pss = Fp P_pss Fᶜ + G Q Gᶜ.                                         *)
+Lemma predict_cov_closed_loop :
+  predict_cov F G Q Pss = Fp *m P_pss *m F^t* + G *m Q *m G^t*.
+Proof.
+by rewrite {1}/predict_cov {1}Pss_eq_update /update_cov mulmxA F_update_factor.
+Qed.
+
+(* Ключевое перекрёстное тождество: Fp P_pss Hᶜ = Kp Rn.                   *)
+Lemma Fp_Ppss_Ht : Fp *m P_pss *m H^t* = Kp *m Rn.
+Proof.
+rewrite mulmxBl mulmxBl.
+rewrite -[F *m P_pss *m H^t*]mulmxA -Kf_R_e_eq mulmxA.
+rewrite /innov_cov mulmxDr !mulmxA.
+by rewrite addrAC subrr add0r.
+Qed.
+
+(* Книжная Lemma 14.5.3 — теперь доказанная теорема. *)
+Theorem riccati_closed_loop_identity :
   predict_cov F G Q Pss =
     Fp *m predict_cov F G Q Pss *m Fp^t* +
     (F *m kalman_gain H Rn (predict_cov F G Q Pss)) *m Rn *m
       (F *m kalman_gain H Rn (predict_cov F G Q Pss))^t* +
     G *m Q *m G^t*.
+Proof.
+rewrite {1}predict_cov_closed_loop.
+congr (_ + _).
+have Fpt : Fp^t* = F^t* - H^t* *m Kp^t*.
+  by rewrite trmxCB [(Kp *m H)^t*]trmxC_mul.
+have expand : Fp *m P_pss *m Fp^t*
+            = Fp *m P_pss *m F^t* - Kp *m Rn *m Kp^t*.
+  rewrite Fpt mulmxBr.
+  congr (_ - _).
+  by rewrite mulmxA Fp_Ppss_Ht.
+by rewrite expand subrK.
+Qed.
 
 (* Loewner-сжатие: Fp P_pss Fpᶜ ≤ P_pss. *)
 Theorem Fp_P_pss_Loewner : psd_le (Fp *m P_pss *m Fp^t*) P_pss.
