@@ -2,7 +2,7 @@
 (*                                                                         *)
 (*  Над `numClosedFieldType` каждая квадратная матрица унитарно            *)
 (*  подобна верхне-треугольной (теорема Schur, mathcomp 2.x                *)
-(*  `algebra/spectral.v`).  Диагональ T = U A Uᶜ содержит собственные      *)
+(*  `algebra/spectral.v`).  Диагональ T = U A U† содержит собственные      *)
 (*  значения A; spec_rad A := max_i ‖T_ii‖ — спектральный радиус.          *)
 (*                                                                         *)
 (*  Здесь введено Prop-предикат `spec_rad_lt1 A` (свидетельство            *)
@@ -20,13 +20,14 @@
 
 Set Warnings "-notation-overridden,-coercions,-default".
 
+From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral mxred.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
-From Kalman Require Import psd_base mxfrob.
+From Kalman Require Import mxnotation mxherm mxdefinite mxfrob.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -41,10 +42,10 @@ Local Open Scope sesquilinear_scope.
 (* ================================================================== *)
 
 Section FrobUnitary.
-Variable (C : numClosedFieldType).
+Variable (ℂ : numClosedFieldType).
 
 (* Унитарная U слева: frob_sq (U M) = frob_sq M.                       *)
-Lemma frob_sq_unitary_left n m (U : 'M[C]_n) (M : 'M[C]_(n, m)) :
+Lemma frob_sq_unitary_left n m (U : 'M[ℂ]_n) (M : 'M[ℂ]_(n, m)) :
   U \is unitarymx -> frob_sq (U *m M) = frob_sq M.
 Proof.
 move=> hU.
@@ -56,7 +57,7 @@ by rewrite [U^t* *m _]mulmxA hUCU mul1mx.
 Qed.
 
 (* Унитарная U справа: frob_sq (M U) = frob_sq M.                      *)
-Lemma frob_sq_unitary_right n m (U : 'M[C]_n) (M : 'M[C]_(m, n)) :
+Lemma frob_sq_unitary_right n m (U : 'M[ℂ]_n) (M : 'M[ℂ]_(m, n)) :
   U \is unitarymx -> frob_sq (M *m U) = frob_sq M.
 Proof.
 move=> hU.
@@ -66,8 +67,8 @@ apply: frob_sq_unitary_left.
 by rewrite trmxC_unitary.
 Qed.
 
-(* Сопряжение унитарным с двух сторон: frob_sq (U M Uᶜ) = frob_sq M.   *)
-Lemma frob_sq_conj_unitary n (U M : 'M[C]_n) :
+(* Сопряжение унитарным с двух сторон: frob_sq (U M U†) = frob_sq M.   *)
+Lemma frob_sq_conj_unitary n (U M : 'M[ℂ]_n) :
   U \is unitarymx -> frob_sq (U *m M *m U^t*) = frob_sq M.
 Proof.
 move=> hU.
@@ -82,12 +83,12 @@ End FrobUnitary.
 (* ================================================================== *)
 
 Section DiagBound.
-Variable (C : numClosedFieldType).
+Variable (ℂ : numClosedFieldType).
 
 (* Для каждого диагонального элемента M_ii: ‖M_ii‖² ≤ frob_sq M.        *)
 (* Тривиально через frob_sqE: \sum_{i,j} M_ij^* M_ij ≥ единичное       *)
 (* слагаемое M_ii^* M_ii = ‖M_ii‖².                                    *)
-Lemma diag_normCK_le_frob_sq n (M : 'M[C]_n) (i : 'I_n) :
+Lemma diag_normCK_le_frob_sq n (M : 'M[ℂ]_n) (i : 'I_n) :
   `|M i i| ^+ 2 <= frob_sq M.
 Proof.
 rewrite normCKC frob_sqE.
@@ -109,35 +110,35 @@ End DiagBound.
 (* ================================================================== *)
 
 Section SpecRad.
-Variable (C : numClosedFieldType).
+Variable (ℂ : numClosedFieldType).
 
 (* `spec_rad_lt1 A` — существование Schur-разложения с диагональю      *)
 (* строго внутри открытого единичного диска.  Не утверждает максимум   *)
 (* (это потребовало бы `bigmax`), но достаточно для downstream:        *)
 (* спектральный анализ через любую конкретную трёхугольную форму.      *)
-Definition spec_rad_lt1 n (A : 'M[C]_n) : Prop :=
-  exists U T : 'M[C]_n,
+Definition spec_rad_lt1 n (A : 'M[ℂ]_n) : Prop :=
+  exists U T : 'M[ℂ]_n,
     [/\ U \is unitarymx,
         A = U^t* *m T *m U,
         is_trig_mx T &
         forall i : 'I_n, `|T i i| < 1].
 
 (* ================================================================== *)
-(*  Главная теорема: Фробениусово сжатие ⇒ Шуровость                   *)
+(*  Главная теорема: Фробениусово сжатие => Шуровость                   *)
 (* ================================================================== *)
 
 (* Для n.+1: устраняем граничный случай n = 0 (Schur требует n > 0).   *)
-Theorem frob_sq_contract_spec_rad_lt1 n (A : 'M[C]_n.+1) :
+Theorem frob_sq_contract_spec_rad_lt1 n (A : 'M[ℂ]_n.+1) :
   frob_sq A < 1 -> spec_rad_lt1 A.
 Proof.
 move=> Ac.
 (* Шаг 1: Schur даёт unitary U и трёхугольную conjmx U A.              *)
 have HSchur : (0 < n.+1)%N := isT.
 have [U Uunit Atrig] := Schur A HSchur.
-(* Atrig : is_trig_mx (conjmx U A);  conjmx U A = U A Uᶜ при U unitary *)
+(* Atrig : is_trig_mx (conjmx U A);  conjmx U A = U A U† при U unitary *)
 have HTeq : conjmx U A = U *m A *m U^t* := conjymx A Uunit.
 set T := conjmx U A.
-(* Шаг 2: A = Uᶜ T U (обратное Schur-разложение).                       *)
+(* Шаг 2: A = U† T U (обратное Schur-разложение).                       *)
 have hUUC : U *m U^t* = 1%:M by apply/unitarymxP.
 have hUCU : U^t* *m U = 1%:M.
   rewrite -invmx_unitary //.
@@ -159,9 +160,83 @@ have Hsq : `|T i i| ^+ 2 < 1.
   have step1 : `|T i i| ^+ 2 <= frob_sq T := diag_normCK_le_frob_sq T i.
   rewrite HfrobEq in step1.
   exact: le_lt_trans step1 Ac.
-(* ‖T i i‖² < 1 ⇒ ‖T i i‖ < 1 — через mono `ltr_pXn2r` на Num.nneg. *)
+(* ‖T i i‖² < 1 => ‖T i i‖ < 1 — через mono `ltr_pXn2r` на Num.nneg. *)
 rewrite -(@ltr_pXn2r _ 2 isT _ _ _ _) ?nnegrE //.
 by rewrite expr1n; exact: Hsq.
 Qed.
 
 End SpecRad.
+
+(* ================================================================== *)
+(*  Степени матрицы при Schur-стабильности (Session 20, ступень 1)     *)
+(* ================================================================== *)
+(*  Алгебраическая часть пути к сходимости A^+k → 0 при spec_rad_lt1 A: *)
+(*  субмультипликативность Фробениуса, оценка степени, выражение         *)
+(*  A^+k через Schur-конъюгацию T^+k.  Конкретное предельное             *)
+(*  утверждение `A^+k @ \oo --> 0` требует архимедова замыкания          *)
+(*  (для доказательства `r^+k → 0` при `0 ≤ r < 1`) и выносится в       *)
+(*  отдельную ступень (Session 20.5 / 21).                              *)
+
+Section SchurPow.
+Variable (ℂ : numClosedFieldType).
+
+(* Субмультипликативность Фробениусова квадрата:                       *)
+(*   frob_sq (A *m B) ≤ frob_sq A * frob_sq B.                          *)
+(* Доказательство: \tr ((AB)† AB) = \tr (B† (A† A) B);                  *)
+(*   `tr_conj_frob_le` с Fm := B†, M := A† A (PSD по psd_frob) даёт    *)
+(*   `\tr (B† (A† A) (B†)†) ≤ frob_sq B† * \tr (A† A)`.                 *)
+(*   `(B†)† = B` (trmxCK) и `frob_sq B† = frob_sq B`                    *)
+(*   (frob_sq_trmxC), `\tr (A† A) = frob_sq A` (по определению).        *)
+Lemma frob_sq_mulmx_le n m p
+    (A : 'M[ℂ]_(n, m)) (B : 'M[ℂ]_(m, p)) :
+  frob_sq (A *m B) <= frob_sq A * frob_sq B.
+Proof.
+rewrite /frob_sq trmxC_mul.
+have step : B^t* *m A^t* *m (A *m B) = B^t* *m (A^t* *m A) *m B
+  by rewrite !mulmxA.
+rewrite step.
+have H := tr_conj_frob_le (B^t*) (psd_frob A).
+rewrite trmxCK frob_sq_trmxC in H.
+by apply: (le_trans H); rewrite mulrC.
+Qed.
+
+(* Оценка нормы Фробениуса степени:                                     *)
+(*   frob_sq (A ^+ k.+1) ≤ (frob_sq A) ^+ k.+1.                          *)
+(* Индукция по k через субмультипликативность.  Граничный случай k = 0 *)
+(* отсутствует (для k = 0: A^0 = 1, frob_sq 1 = n.+1 в общем случае,   *)
+(* в то время как (frob_sq A)^0 = 1).                                   *)
+Lemma frob_sq_exp_le n (A : 'M[ℂ]_n.+1) k :
+  frob_sq (A ^+ k.+1) <= (frob_sq A) ^+ k.+1.
+Proof.
+elim: k => [|k IHk]; first by rewrite !expr1.
+have rew_pow : A ^+ k.+2 = A *m A ^+ k.+1 by rewrite exprS mulmxE.
+rewrite rew_pow.
+have step1 : frob_sq (A *m A ^+ k.+1) <= frob_sq A * frob_sq (A ^+ k.+1)
+  := frob_sq_mulmx_le A (A ^+ k.+1).
+apply: (le_trans step1).
+rewrite [in X in _ <= X]exprS.
+by rewrite ler_wpM2l ?frob_sq_ge0 // IHk.
+Qed.
+
+(* Schur-конъюгация коммутирует со степенями:                          *)
+(*   при unitary U и A = U† T U выполнено A^+k = U† T^+k U.             *)
+(* Доказательство: индукция по k; шаг использует `U *m U† = 1%:M`       *)
+(* для «съёживания» среднего фрагмента (U *m U†) в произведении.        *)
+Lemma schur_exp_conj n (U A T : 'M[ℂ]_n) (k : nat) :
+  U \is unitarymx -> A = U^t* *m T *m U ->
+  A ^+ k = U^t* *m T ^+ k *m U.
+Proof.
+move=> hU hA.
+have hUU : U *m U^t* = 1%:M by apply/unitarymxP.
+elim: k => [|k IHk].
+  rewrite !expr0 mulmx1.
+  by rewrite -invmx_unitary // mulVmx //; exact: unitarymx_unit.
+rewrite exprS IHk [in LHS]hA -mulmxE.
+rewrite exprS -mulmxE.
+have step : U^t* *m T *m U *m (U^t* *m T ^+ k *m U)
+          = U^t* *m T *m (U *m U^t*) *m T ^+ k *m U
+  by rewrite !mulmxA.
+by rewrite step hUU mulmx1 !mulmxA.
+Qed.
+
+End SchurPow.
