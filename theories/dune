@@ -3,8 +3,8 @@
  (package kalman)
  (synopsis "Kalman filter properties using Rocq and MathComp")
  (flags :standard -w -notation-overridden)
- (modules psd_base psd_order spectral expectation mxfrob mxtopo mxmonotone riccati_cont riccati_mono obsv_bound lyapunov gramian_inf detectability spec_rad dare kalman)
+ (modules mxnotation mxdefinite mxloewner spectral expectation mxherm mxfrob mxtopo mxmonotone riccati_cont riccati_mono obsv_bound lyapunov gramian_inf detectability spec_rad lyap_inv dare kalman)
  (plugins rocq-elpi.elpi)
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
            mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
-           mathcomp.classical mathcomp.reals mathcomp.analysis))
+           mathcomp.classical mathcomp.reals mathcomp.analysis Stdlib))
