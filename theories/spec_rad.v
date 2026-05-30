@@ -23,18 +23,21 @@ Set Warnings "-notation-overridden,-coercions,-default".
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
-From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
+From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra archimedean.
 From mathcomp.algebra Require Import sesquilinear spectral mxred.
 From mathcomp Require Import order.
-From mathcomp.classical Require Import boolp.
-From Kalman Require Import mxnotation mxherm mxdefinite mxfrob.
+From mathcomp.classical Require Import boolp classical_sets.
+From mathcomp Require Import topology normedtype.
+From Kalman Require Import mxnotation mxherm mxdefinite mxfrob mxtopo.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import GRing.Theory Num.Theory Order.Theory.
+Import numFieldTopology.Exports.
 Local Open Scope ring_scope.
+Local Open Scope classical_set_scope.
 Local Open Scope sesquilinear_scope.
 
 (* ================================================================== *)
@@ -240,3 +243,59 @@ by rewrite step hUU mulmx1 !mulmxA.
 Qed.
 
 End SchurPow.
+
+(* ================================================================== *)
+(*  Сходимость степеней при Фробениусовом сжатии (Session 20.5)        *)
+(* ================================================================== *)
+(*  Предельная ступень: A^+k → 0 при frob_sq A < 1.  Объединяет          *)
+(*  алгебраические оценки Session 20 (frob_sq_exp_le) с архимедовым       *)
+(*  затуханием r^+k → 0 (mxtopo.r_pow_cvgn0) через squeeze и мост         *)
+(*  Фробениуса frob_sq_cvgn0_to_mxcvgn.  Архимедовость — явная гипотеза   *)
+(*  (см. mxtopo: над numClosedFieldType cvg_expr неприменима).            *)
+
+Section SchurPowCvg.
+Variable (ℂ : numClosedFieldType).
+Hypothesis ℂ_archi : Num.archimedean_axiom ℂ.
+
+(* Сходимость Фробениусова квадрата степени: frob_sq (A^+k.+1) → 0.     *)
+(* Squeeze: 0 ≤ frob_sq (A^+k.+1) ≤ (frob_sq A)^+k.+1 (frob_sq_exp_le), *)
+(* и (frob_sq A)^+k.+1 → 0 (r_pow_cvgn0, т.к. 0 ≤ frob_sq A < 1).       *)
+Lemma frob_sq_pow_cvgn0 n (A : 'M[ℂ]_n.+1) :
+  frob_sq A < 1 ->
+  (fun k => frob_sq (A ^+ k.+1)) @ \oo --> (0 : ℂ).
+Proof.
+move=> Ac.
+apply: (cvgC_le0_squeeze (t := fun k => (frob_sq A) ^+ k.+1)).
+- by move=> k; exact: frob_sq_ge0.
+- by move=> k; exact: frob_sq_exp_le.
+- apply: r_pow_cvgn0 => //; exact: frob_sq_ge0.
+Qed.
+
+(* Поэлементная сходимость степеней: A^+k.+1 → 0 при frob_sq A < 1.     *)
+(* Мост frob_sq_cvgn0_to_mxcvgn с пределом L = 0: достаточно frob_sq    *)
+(* разности → 0, а frob_sq (A^+k.+1 - 0) = frob_sq (A^+k.+1).           *)
+Lemma mx_pow_cvgn0_frob_lt1 n (A : 'M[ℂ]_n.+1) :
+  frob_sq A < 1 ->
+  (fun k => A ^+ k.+1) @ \oo --> (0 : 'M[ℂ]_n.+1).
+Proof.
+move=> Ac.
+apply: frob_sq_cvgn0_to_mxcvgn.
+under eq_cvg=> k do rewrite subr0.
+exact: frob_sq_pow_cvgn0.
+Qed.
+
+(* Связка двух нитей пути Kailath–Sayed–Hassibi App. E: Фробениусово    *)
+(* сжатие даёт одновременно Шуровость (spec_rad_lt1) и сходимость        *)
+(* степеней к нулю.  Полный `spec_rad_lt1 A → A^+k → 0` (без             *)
+(* Фробениусовой гипотезы) требует блочной индукции по                  *)
+(* верхне-треугольной форме и вынесен в Session 20.6.                    *)
+Corollary pow_cvgn0_spec_rad_via_frob n (A : 'M[ℂ]_n.+1) :
+  frob_sq A < 1 ->
+  spec_rad_lt1 A /\ (fun k => A ^+ k.+1) @ \oo --> (0 : 'M[ℂ]_n.+1).
+Proof.
+move=> Ac; split.
+- exact: frob_sq_contract_spec_rad_lt1.
+- exact: mx_pow_cvgn0_frob_lt1.
+Qed.
+
+End SchurPowCvg.
