@@ -1,46 +1,49 @@
-(*  Детектируемость, стабилизируемость, PBH-тест.                         *)
-(*                                                                         *)
-(*  Определения (PBH — Popov–Belevitch–Hautus критерий):                  *)
-(*                                                                         *)
-(*    detectable F H —                                                     *)
-(*      каждый правый собственный вектор `F` с |λ| ≥ 1 наблюдаем парой    *)
-(*      (F, H), т.е. `H v ≠ 0`.                                            *)
-(*                                                                         *)
-(*    stabilizable F G —                                                   *)
-(*      каждый левый собственный вектор `F` с |λ| ≥ 1 управляем парой     *)
-(*      (F, G), т.е. `w G ≠ 0`.                                            *)
-(*                                                                         *)
-(*    unit_circle_controllable F G —                                       *)
-(*      условие УПРАВЛЯЕМОСТИ ровно на единичной окружности |λ| = 1.       *)
-(*                                                                         *)
-(*  Schur-стабильность:                                                    *)
-(*                                                                         *)
-(*    schur_stable A := frob_sq A < 1                                      *)
-(*                                                                         *)
-(*  (Это наш текущий аналог классической Шуровости — Фробениусова          *)
-(*  контракция строго меньше единицы.  Имплицирует, что все собственные   *)
-(*  значения внутри единичного круга, но строго сильнее: для матриц с    *)
-(*  спектральным радиусом < 1, но frob_sq ≥ 1, этого недостаточно.)        *)
-(*                                                                         *)
-(*  Основные теоремы:                                                     *)
-(*    * `observable_detectable`: observable F H ⇒ detectable F H.         *)
-(*    * `controllable_stabilizable`: controllable F G ⇒ stabilizable F G. *)
-(*    * `stabilizable_ucc`: stabilizable F G ⇒                             *)
-(*       unit_circle_controllable F G (тривиально, т.к. |λ| = 1 ⇒ ≥ 1).   *)
-(*                                                                         *)
-(*  Этот файл — инфраструктура для Sessions 16–18 (стабильность            *)
-(*  замкнутого контура `Fp`, замена `F_contract` на детектируемость +     *)
-(*  UCC в `dare.v`).                                                       *)
+(*
+  Детектируемость, стабилизируемость, PBH-тест.
+
+  Определения (PBH — Popov–Belevitch–Hautus критерий):
+
+  detectable F H —
+    каждый правый собственный вектор `F` с |λ| ≥ 1 наблюдаем парой
+    (F, H), т.е. `H v ≠ 0`.
+
+  stabilizable F G —
+    каждый левый собственный вектор `F` с |λ| ≥ 1 управляем парой
+    (F, G), т.е. `w G ≠ 0`.
+
+  unit_circle_controllable F G —
+    условие УПРАВЛЯЕМОСТИ ровно на единичной окружности |λ| = 1.
+
+  Schur-стабильность:
+
+    schur_stable A := frob_sq A < 1
+
+  (Это наш текущий аналог классической Шуровости — Фробениусова
+  контракция строго меньше единицы.  Имплицирует, что все собственные
+  значения внутри единичного круга, но строго сильнее: для матриц с
+  спектральным радиусом < 1, но frob_sq ≥ 1, этого недостаточно.)
+
+  Основные теоремы:
+  * `observable_detectable`: observable F H => detectable F H.
+  * `controllable_stabilizable`: controllable F G => stabilizable F G
+  * `stabilizable_ucc`: stabilizable F G =>
+     unit_circle_controllable F G (тривиально, т.к. |λ| = 1 => ≥ 1).
+
+  Этот файл — инфраструктура для Sessions 16–18 (стабильность
+  замкнутого контура `Fp`, замена `F_contract` на детектируемость +
+  UCC в `dare.v`).
+*)
 
 Set Warnings "-notation-overridden,-coercions,-default".
 
+From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
-From Kalman Require Import psd_base mxfrob kalman.
+From Kalman Require Import mxnotation mxherm mxdefinite mxfrob kalman spec_rad.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -54,24 +57,25 @@ Local Open Scope sesquilinear_scope.
 (*  Schur-стабильность через Фробениусовую контракцию                  *)
 (* ================================================================== *)
 
-Definition schur_stable (C : numClosedFieldType) (n : nat) (A : 'M[C]_n)
-  : Prop := frob_sq A < 1.
+Definition schur_stable
+  (ℂ : numClosedFieldType) (n : nat) (A : 'M[ℂ]_n) : Prop :=
+    frob_sq A < 1.
 
 (* ================================================================== *)
 (*  Детектируемость (правый PBH)                                       *)
 (* ================================================================== *)
 
 Section Detectability.
-Variable (C : numClosedFieldType).
+Variable (ℂ : numClosedFieldType).
 Variables (n p : nat).
-Variables (F : 'M[C]_n) (H : 'M[C]_(p, n)).
+Variables (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)).
 
 Definition detectable : Prop :=
-  forall (lam : C) (v : 'cV[C]_n),
+  forall (lam : ℂ) (v : 'cV[ℂ]_n),
     v != 0 -> F *m v = lam *: v -> 1 <= `|lam| -> H *m v != 0.
 
-(* Степень F на собственном векторе: F^+i *m v = lam^+i *: v. *)
-Lemma F_pow_eigvec i (lam : C) (v : 'cV[C]_n) :
+(* Степень F на собственном векторе: F^+i ⋅ v = lam^+i *: v. *)
+Lemma F_pow_eigvec i (lam : ℂ) (v : 'cV[ℂ]_n) :
   F *m v = lam *: v -> F^+i *m v = lam^+i *: v.
 Proof.
 move=> Fv.
@@ -91,6 +95,32 @@ have v0 := Hobs v Hblock.
 by move: vNZ; rewrite v0 eqxx.
 Qed.
 
+(* ================================================================== *)
+(*  Книжное определение: детектируемость = ∃ стабилизующий K           *)
+(* ================================================================== *)
+
+(* `detectable_stabilizing F H` — книжная формулировка (Kailath–Sayed– *)
+(* Hassibi, App. C; Wonham 1985): существует выходная инъекция K,       *)
+(* делающая замкнутый контур `F − K H` Schur-устойчивым.                *)
+Definition detectable_stabilizing : Prop :=
+  exists K : 'M[ℂ]_(n, p), spec_rad_lt1 (F - K *m H).
+
+(* Тривиальное направление: стабилизуемость замыкания => PBH.           *)
+(* Если `F − K H` Schur-устойчива и `F v = λ v` с `|λ| ≥ 1`, то при     *)
+(* `H v = 0` имеем `(F − K H) v = λ v` — собственное значение замыкания *)
+(* вне единичного круга, что противоречит Шуровости                     *)
+(* (`spec_rad_lt1_eigval`).                                             *)
+Theorem detectable_stabilizing_detectable :
+  detectable_stabilizing -> detectable.
+Proof.
+move=> [K HK] lam v vNZ Fv lam_ge1.
+apply/negP=> /eqP Hv0.
+have eig : (F - K *m H) *m v = lam *: v.
+  by rewrite mulmxBl Fv -mulmxA Hv0 mulmx0 subr0.
+have hlt := spec_rad_lt1_eigval HK vNZ eig.
+by move: (le_lt_trans lam_ge1 hlt); rewrite ltxx.
+Qed.
+
 End Detectability.
 
 (* ================================================================== *)
@@ -98,20 +128,20 @@ End Detectability.
 (* ================================================================== *)
 
 Section Stabilizability.
-Variable (C : numClosedFieldType).
+Variable (ℂ : numClosedFieldType).
 Variables (m n : nat).
-Variables (F : 'M[C]_n) (G : 'M[C]_(n, m)).
+Variables (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m)).
 
 Definition stabilizable : Prop :=
-  forall (lam : C) (w : 'rV[C]_n),
+  forall (lam : ℂ) (w : 'rV[ℂ]_n),
     w != 0 -> w *m F = lam *: w -> 1 <= `|lam| -> w *m G != 0.
 
 Definition unit_circle_controllable : Prop :=
-  forall (lam : C) (w : 'rV[C]_n),
+  forall (lam : ℂ) (w : 'rV[ℂ]_n),
     w != 0 -> w *m F = lam *: w -> `|lam| = 1 -> w *m G != 0.
 
 (* Степень F на левом собственном векторе. *)
-Lemma F_pow_left_eigvec i (lam : C) (w : 'rV[C]_n) :
+Lemma F_pow_left_eigvec i (lam : ℂ) (w : 'rV[ℂ]_n) :
   w *m F = lam *: w -> w *m F^+i = lam^+i *: w.
 Proof.
 move=> wF.
@@ -142,6 +172,37 @@ apply: (Hstab lam w wNZ wF_eq).
 by rewrite lam_eq1.
 Qed.
 
+(* ================================================================== *)
+(*  Книжное определение: стабилизируемость = ∃ стабилизующий K         *)
+(* ================================================================== *)
+
+(* `stabilizable_stabilizing F G` — книжная формулировка: существует    *)
+(* state-feedback K, делающий замкнутый контур `F − G K` Schur-         *)
+(* устойчивым.                                                          *)
+Definition stabilizable_stabilizing : Prop :=
+  exists K : 'M[ℂ]_(m, n), spec_rad_lt1 (F - G *m K).
+
+(* Тривиальное направление (двойственно детектируемости, левый PBH):    *)
+(* если `F − G K` Schur-устойчива и `w F = λ w` с `|λ| ≥ 1`, то при     *)
+(* `w G = 0` имеем `w (F − G K) = λ w`, противоречие со Шуровостью.      *)
+Theorem stabilizable_stabilizing_stabilizable :
+  stabilizable_stabilizing -> stabilizable.
+Proof.
+move=> [K HK] lam w wNZ wF lam_ge1.
+apply/negP=> /eqP wG0.
+have eig : w *m (F - G *m K) = lam *: w.
+  by rewrite mulmxBr wF mulmxA wG0 mul0mx subr0.
+have hlt := spec_rad_lt1_left_eigval HK wNZ eig.
+by move: (le_lt_trans lam_ge1 hlt); rewrite ltxx.
+Qed.
+
+(* Стабилизуемость замыкания => управляемость на единичной окружности.  *)
+Corollary stabilizable_stabilizing_ucc :
+  stabilizable_stabilizing -> unit_circle_controllable.
+Proof.
+by move=> Hss; apply: stabilizable_ucc; exact: stabilizable_stabilizing_stabilizable.
+Qed.
+
 End Stabilizability.
 
 (* ================================================================== *)
@@ -152,18 +213,18 @@ End Stabilizability.
 (* |λ| ≥ 1.  Поэтому условия detectable / stabilizable выполняются      *)
 (* тривиально (нет «неустойчивых» мод вообще).                          *)
 Section SchurStableTrivialDet.
-Variable (C : numClosedFieldType).
+Variable (ℂ : numClosedFieldType).
 Variables (n p : nat).
-Variables (F : 'M[C]_n) (H : 'M[C]_(p, n)).
+Variables (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)).
 
 (* Frobenius-сжатие исключает собственные значения с |λ| ≥ 1: для      *)
 (* любого собственного значения `lam` верно `|lam|^+2 ≤ frob_sq F < 1`.  *)
 (* Доказательство: если F v = lam v с v ≠ 0, то                         *)
-(*   |lam|^+2 * (v^t* v) = (lam v)^t* (lam v)                          *)
-(*                       = (F v)^t* (F v)                              *)
-(*                       = v^t* (F^t* F) v                             *)
-(*                       ≤ frob_sq F * (v^t* v)                        *)
-(* (последнее — `tr_conj_frob_le`).  Сокращая на `v^t* v > 0`,           *)
+(*   |lam|^+2 * (v† v) = (lam v)† (lam v)                          *)
+(*                     = (F v)† (F v)                              *)
+(*                     = v† (F† F) v                             *)
+(*                     ≤ frob_sq F * (v† v)                        *)
+(* (последнее — `tr_conj_frob_le`).  Сокращая на `v† v > 0`,           *)
 (* получаем `|lam|^+2 ≤ frob_sq F`.                                     *)
 
 (* Эта лемма — мост между Шуровостью и PBH-условиями: при `schur_stable F` *)
@@ -171,7 +232,7 @@ Variables (F : 'M[C]_n) (H : 'M[C]_(p, n)).
 Theorem schur_stable_detectable : schur_stable F -> detectable F H.
 Proof.
 move=> Fc lam v vNZ Fv_eq lam_ge1.
-(* Шаг 1: |lam|^+2 * (v^t* v) = v^t* (F^t* F) v. *)
+(* Шаг 1: |lam|^+2 * (v† v) = v† (F† F) v. *)
 have step1 :
    `|lam| ^+ 2 * \tr (v^t* *m v) = \tr (v^t* *m (F^t* *m F) *m v).
   have e1 : v^t* *m (F^t* *m F) *m v = (F *m v)^t* *m (F *m v).
@@ -179,9 +240,9 @@ have step1 :
   rewrite e1 Fv_eq trmxC_scale.
   rewrite -scalemxAl -scalemxAr !mxtraceZ.
   by rewrite mulrA -normCKC.
-(* Шаг 2: \tr (vᶜ (Fᶜ F) v) ≤ frob_sq F * \tr (vᶜ v).                      *)
-(* Доказательство: LHS = \tr (F (v vᶜ) Fᶜ) (cyclic trace + trmxC_mul),    *)
-(* затем `tr_conj_frob_le F (psd (v vᶜ))`.                                *)
+(* Шаг 2: \tr (v† (F† F) v) ≤ frob_sq F * \tr (v† v).                      *)
+(* Доказательство: LHS = \tr (F (v v†) F†) (cyclic trace + trmxC_mul),    *)
+(* затем `tr_conj_frob_le F (psd (v v†))`.                                *)
 have step2 :
    \tr (v^t* *m (F^t* *m F) *m v) <= frob_sq F * \tr (v^t* *m v).
   have e3 : v^t* *m (F^t* *m F) *m v = (F *m v)^t* *m (F *m v).
@@ -194,7 +255,7 @@ have step2 :
     have := psd_frob (v^t*); by rewrite trmxCK.
   apply: (le_trans (tr_conj_frob_le F vvtpsd)).
   by rewrite [\tr (v *m v^t*)]mxtrace_mulC.
-(* Шаг 3: `v^t* *m v` — strictly positive (v ≠ 0). *)
+(* Шаг 3: `v† ⋅ v` — strictly positive (v ≠ 0). *)
 have vvpos : 0 < \tr (v^t* *m v).
   rewrite lt0r; apply/andP; split; last first.
     by have := frob_sq_ge0 v; rewrite /frob_sq.
@@ -205,11 +266,83 @@ have lam2_le : `|lam| ^+ 2 <= frob_sq F.
   rewrite -(ler_pM2r vvpos).
   by rewrite step1.
 (* Шаг 5: но 1 ≤ |lam|, значит 1 ≤ |lam|^+2 ≤ frob_sq F < 1 — противоречие. *)
-have one_le : (1 : C) <= `|lam| ^+ 2.
+have one_le : (1 : ℂ) <= `|lam| ^+ 2.
   rewrite expr2 -[1]mul1r.
   apply: ler_pM => //; exact: ler01.
-have : (1 : C) < 1 by exact: (lt_le_trans (le_lt_trans one_le (le_lt_trans lam2_le Fc))).
+have : (1 : ℂ) < 1 by exact: (lt_le_trans (le_lt_trans one_le (le_lt_trans lam2_le Fc))).
 by rewrite ltxx.
 Qed.
 
 End SchurStableTrivialDet.
+
+(* ================================================================== *)
+(*  Pole-placement (Tier-C debt): обратное направление эквивалентности  *)
+(* ================================================================== *)
+
+(* Обратное к `detectable_stabilizing_detectable` направление —         *)
+(* «PBH-детектируемость => существование стабилизующего K» — это        *)
+(* теорема о назначении полюсов (pole placement) для детектируемой      *)
+(* пары.  Полное доказательство (через наблюдаемую каноническую форму / *)
+(* форму Бруновского) — ~3000 LOC; в mathcomp/CoqQ отсутствует.  Книга  *)
+(* Kailath–Sayed–Hassibi сама цитирует pole placement из стандартной    *)
+(* литературы, а не доказывает его в App. E/C.  Поэтому постулируем как  *)
+(* Tier-C debt с явной цитатой (см. план, Session 22 / Session 27).     *)
+(*                                                                       *)
+(* Цитаты:                                                               *)
+(*   W. M. Wonham, "Linear Multivariable Control: A Geometric           *)
+(*     Approach", 3rd ed., Springer 1985, Thm 2.2 (назначение полюсов). *)
+(*   T. Kailath, A. H. Sayed, B. Hassibi, "Linear Estimation",          *)
+(*     Prentice Hall 2000, App. C (Lem C.5.1) и гл. 14.5.               *)
+Axiom pole_placement_detect :
+  forall (ℂ : numClosedFieldType) (n p : nat)
+         (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)),
+    detectable F H -> detectable_stabilizing F H.
+
+(* Двойственное направление для стабилизируемости (назначение полюсов   *)
+(* через state-feedback).  Та же литература (Wonham 1985, Thm 2.1;      *)
+(* Kailath et al., гл. 14.5).                                           *)
+Axiom pole_placement_stab :
+  forall (ℂ : numClosedFieldType) (m n : nat)
+         (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m)),
+    stabilizable F G -> stabilizable_stabilizing F G.
+
+(* ================================================================== *)
+(*  Мост к АПОСТЕРИОРНОМУ замкнутому контуру `(I − K0 H) F`             *)
+(* ================================================================== *)
+
+(* Детектируемость переносится на пару `(F, H F)`: если каждый            *)
+(* неустойчивый собственный вектор наблюдаем через `H`, то и через `H F`. *)
+(* Для `F v = λ v` имеем `(H F) v = λ (H v)`; при `|λ| ≥ 1` и `H v ≠ 0`   *)
+(* скаляр `λ ≠ 0`, поэтому `λ (H v) ≠ 0`.                                 *)
+Lemma detectable_mulHF (ℂ : numClosedFieldType) (n p : nat)
+    (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)) :
+  detectable F H -> detectable F (H *m F).
+Proof.
+move=> Hdet lam v vNZ Fv lam_ge1.
+have key : (H *m F) *m v = lam *: (H *m v).
+  by rewrite -mulmxA Fv -scalemxAr.
+rewrite key scaler_eq0 negb_or; apply/andP; split.
+- by rewrite -normr_gt0; exact: lt_le_trans ltr01 lam_ge1.
+- exact: Hdet lam v vNZ Fv lam_ge1.
+Qed.
+
+(* Книжная детектируемость пары `(F, H)` даёт стабилизирующее ФИЛЬТР-     *)
+(* усиление `K0`, делающее АПОСТЕРИОРНЫЙ замкнутый контур                 *)
+(* `Mc = (I − K0 H) F` Schur-устойчивым — ровно гипотеза `cl_contract`   *)
+(* в `dare.v`.  Вывод без коспектральности и без обратимости `F`:        *)
+(* `(I − K0 H) F = F − K0 (H F)`, поэтому достаточно стабилизировать      *)
+(* ПРЕДСКАЗАТЕЛЬНЫЙ контур пары `(F, H F)` (которая детектируема по       *)
+(* `detectable_mulHF`), что и даёт `pole_placement_detect`.              *)
+Lemma detectable_stabilizing_filter (ℂ : numClosedFieldType) (n p : nat)
+    (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)) :
+  detectable F H ->
+  exists K0 : 'M[ℂ]_(n, p), spec_rad_lt1 ((1%:M - K0 *m H) *m F).
+Proof.
+move=> Hdet.
+have Hdet' : detectable F (H *m F) := detectable_mulHF Hdet.
+have [K0 HK0] := pole_placement_detect Hdet'.
+exists K0.
+have ->: (1%:M - K0 *m H) *m F = F - K0 *m (H *m F).
+  by rewrite mulmxBl mul1mx -mulmxA.
+exact: HK0.
+Qed.
