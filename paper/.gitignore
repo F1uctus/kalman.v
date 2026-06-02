@@ -1,0 +1,6 @@
+**/*.bak
+**/*.pdf
+**/*.txt
+**/*.md
+!README.md
+**/*.png

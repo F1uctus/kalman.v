@@ -1,5 +1,4 @@
 (lang dune 3.21)
-(using rocq 0.11)
+(name kalman)
 
-(warnings
- (deprecated_coq_lang disabled))
+(using rocq 0.11)

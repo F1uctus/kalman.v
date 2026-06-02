@@ -1,9 +1,10 @@
-(include_subdirs no)
-
 (rocq.theory
- (name Top)
- (mode vo)
- (modules psd_base psd_order spectral kalman)
- (theories Stdlib HB mathcomp.boot mathcomp.algebra mathcomp.order
-           mathcomp.fingroup mathcomp.classical mathcomp.reals
-           mathcomp.analysis))
+ (name Kalman)
+ (package kalman)
+ (synopsis "Kalman filter properties using Rocq and MathComp")
+ (flags :standard -w -notation-overridden)
+ (modules mxnotation mxdefinite mxloewner spectral expectation mxherm mxhermform mxfrob mxtopo mxmonotone riccati_cont riccati_mono obsv_bound lyapunov gramian_infty detectability spec_rad lyap_inv riccati_unique dare kalman PARITY)
+ (plugins rocq-elpi.elpi)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis Stdlib))

@@ -1,0 +1,47 @@
+opam-version: "2.0"
+maintainer: "ilya.i.nikitin@proton.me"
+version: "dev"
+
+homepage: "https://github.com/F1uctus/unn-rocq-kalman"
+dev-repo: "git+https://github.com/F1uctus/unn-rocq-kalman.git"
+bug-reports: "https://github.com/F1uctus/unn-rocq-kalman/issues"
+license: "CECILL-B"
+
+authors: [
+  "Ilya I. Nikitin"
+]
+
+synopsis: "Kalman filter implementation using Rocq and MathComp"
+description: """
+Formalization of Kalman filter properties using the Mathematical Components
+library."""
+
+build: [
+  "dune" "build" "-p" name "-j" jobs "--sandbox=none"
+]
+depends: [
+  "dune" {>= "3.21"}
+  "rocq-core" {>= "9.0" & < "9.2~"}
+  "rocq-stdlib" {>= "9.0" & < "9.2~"}
+  "elpi" {>= "1.17.0"}
+  "rocq-elpi" {>= "3"}
+  "rocq-hierarchy-builder" {>= "1.9.0"}
+  "rocq-mathcomp-boot" {>= "2.5.0"}
+  "rocq-mathcomp-order" {>= "2.5.0"}
+  "rocq-mathcomp-fingroup" {>= "2.5.0"}
+  "rocq-mathcomp-field" {>= "2.5.0"}
+  "rocq-mathcomp-solvable" {>= "2.5.0"}
+  "rocq-mathcomp-finmap" {>= "2.1.0"}
+  "rocq-mathcomp-algebra" {>= "2.5.0"}
+  "rocq-mathcomp-classical" {>= "1.16.0"}
+  "rocq-mathcomp-reals" {>= "1.16.0"}
+  "rocq-mathcomp-analysis" {>= "1.16.0"}
+]
+
+tags: [
+  "category:Mathematics/Algebra"
+  "keyword:Kalman filter"
+  "keyword:linear algebra"
+  "keyword:mathematical components"
+  "logpath:Kalman"
+]
