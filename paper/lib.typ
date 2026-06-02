@@ -9,6 +9,7 @@
 #import "common/glossary.typ": *
 #import "common/acronyms.typ": *
 #import "common/symbols.typ": *
+#import "common/fonts.typ": tnr-font
 #import "common/rocq.typ": *
 
 #let to-str(content) = {
@@ -53,7 +54,7 @@
   supervisor-first-name: "Имя Отчество",
   supervisor-last-name: "Фамилия",
   supervisor-regalia: "уч. степень, уч. звание",
-  font-type: "Times New Roman",
+  font-type: tnr-font,
   font-size: 12pt,
   link-color: blue.darken(60%),
   languages: (:),
@@ -301,7 +302,6 @@
     bodyfmt: body => mathblock-head(head-label, titlix, body),
     inset: mathblock-inset,
     clip: true,
-    breakable: false,
     ..block-args,
   )
   (title: none, ..call-args, body) => {

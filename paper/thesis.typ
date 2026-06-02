@@ -35,8 +35,6 @@
 
 #include "./parts/part1.typ"
 
-#include "./parts/math_prelim_kalman.typ"
-
 #include "./parts/part2.typ"
 
 #include "./parts/part3.typ"
@@ -53,9 +51,9 @@
 // #import "./common/symbols.typ": symbols-entries
 // #print-glossary()
 
-= Словарь терминов
-#import "./common/glossary.typ": glossary-entries
-#print-glossary(glossary-entries)
+//= Словарь терминов
+//#import "./common/glossary.typ": glossary-entries
+//#print-glossary(glossary-entries)
 
 #bibliography(
   title: "Список литературы",

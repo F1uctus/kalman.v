@@ -44,9 +44,11 @@ Mathematical Components (MathComp) и CoqQ.
   наблюдаемости пары $(H, F)$
   и управляемости пары $(F, G)$ через ранговые условия
   и связать их с поведением фильтра.
-+ *Сходимость / устойчивость.* Сформулировать поведение
-  неподвижной точки дискретного уравнения Риккати
-  при стандартных условиях (наблюдаемость, управляемость).
++ *Сходимость / устойчивость.* Доказать существование
+  положительно определённой неподвижной точки дискретного
+  алгебраического уравнения Риккати ($"DARE"$), её единственность
+  и сходимость траектории ковариации и матрицы усиления Калмана
+  к этой точке в количественной Фробениусовой $epsilon$--$N$ форме.
 
 = Предварительные сведения <ch:preliminaries>
 
@@ -118,6 +120,10 @@ Mathematical Components (MathComp) и CoqQ.
   [Порядок Лёвнера ($A <= B <==> B - A >= 0$)], $A prec.eq B$, `psd_le A B`,
 
   [Математическое ожидание], $EE$, `Exp`,
+
+  [Фробениусов квадрат нормы матрицы $M in CC^(r times c)$], $norm(M)_F^2 = "Tr"(M^* M)$, `frob_sq M`,
+
+  [Сходимость последовательности матриц $M_k$ к пределу $L$], $M_k arrow.r L$, `M @ \oo --> L`,
 )
 
 == Модель в пространстве состояний
@@ -258,14 +264,14 @@ $
   если дополнительно потребовать
   $forall v != 0 : v^* M v > 0$.
 
-  #rocq-snippet("psd_base.v", "Definition psd ")
-  #rocq-snippet("psd_base.v", "Definition pd ")
+  #rocq-snippet("mxdefinite.v", "Definition psd ")
+  #rocq-snippet("mxdefinite.v", "Definition pd ")
 ]
 
 #lemma[
   Если матрица определена положительно, то она обратима.
 
-  #rocq-snippet("psd_base.v", "Lemma pd_invertible ")
+  #rocq-snippet("mxdefinite.v", "Lemma pd_invertible ")
 ]
 
 #lemma[
@@ -273,13 +279,13 @@ $
   достаточно положительной определённости одной из них,
   и неотрицательной определённости второй.
 
-  #rocq-snippet("psd_base.v", "Lemma pd_add ")
+  #rocq-snippet("mxdefinite.v", "Lemma pd_add ")
 ]
 
 #lemma[
   Если матрица определена положительно, то и
   обратная к ней определена положительно.
 
-  #rocq-snippet("psd_base.v", "Lemma pd_inv ")
+  #rocq-snippet("mxdefinite.v", "Lemma pd_inv ")
 ]
 
