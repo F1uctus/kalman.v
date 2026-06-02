@@ -11,3 +11,11 @@
 *.md merge=weave
 *.typ merge=weave
 *.v merge=weave
+*.c merge=weave
+*.h merge=weave
+*.cpp merge=weave
+*.cc merge=weave
+*.cxx merge=weave
+*.hpp merge=weave
+*.hh merge=weave
+*.hxx merge=weave
