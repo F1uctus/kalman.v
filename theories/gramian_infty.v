@@ -78,10 +78,6 @@ Section GramianInf.
   Qed.
 
   (*
-    psd_frob дает psd (H† ⋅ H) напрямую (определение psd_frob: psd (M† ⋅ M)).
-  *)
-
-  (*
     ==================================================================
     Управляемый Грамиан в пределе
     ==================================================================
@@ -216,7 +212,7 @@ End GramianInf.
 
   Обобщение `obsv_gram_infty`
   (который = `obsv_gram_infty_w F (H† H)` по определению): вес `W` отвязан от
-  формы `M† M`. Нужен для меры `O_P`, вес которой `W := H† (invmx Rn) H` не
+  формы `M† M`. Нужен для меры `O_P`, вес которой `W := H† (invmx R) H` не
   имеет вида `M† M`.
 *)
 Section GramianInfWeighted.
@@ -271,20 +267,20 @@ Section ClosedLoopCtrlGramPd.
   Variable (N p : nat).
 
   Variables (A : 'M[ℂ]_N) (Kp : 'M[ℂ]_(N, p)) (Hm : 'M[ℂ]_(p, N)).
-  Variables (Z : 'M[ℂ]_N) (Rn : 'M[ℂ]_p).
+  Variables (Z : 'M[ℂ]_N) (R : 'M[ℂ]_p).
 
   Hypothesis Zpsd : psd Z.
-  Hypothesis Rnpd : pd Rn.
+  Hypothesis R_pd : pd R.
 
   Local Notation Fp := (A - Kp *m Hm).
-  Local Notation W := (Kp *m Rn *m Kp^t* + Z).
+  Local Notation W := (Kp *m R *m Kp^t* + Z).
 
   (*
     `controllable_oi_gram_pd` -
     ([kailath2000], App. E, Theorem E.5.1: полная управляемость влечёт `P > 0`)
     критерий положительной определённости для неподвижной точки Ляпунова
     замкнутого контура коррекции по выходу `Fp = A − Kp H` с весом
-    `W = Kp Rn Kp† + Z`, выводимый из полной управляемости исходной пары
+    `W = Kp R Kp† + Z`, выводимый из полной управляемости исходной пары
     `(A, Z)`
     (а не замкнутого контура - коррекция по выходу управляемость не сохраняет).
   *)
@@ -297,7 +293,7 @@ Section ClosedLoopCtrlGramPd.
     Схема: тождество Ляпунова даёт конечную частичную сумму
     `lyap_partial Fp W N <= P` (`lyap_partial_fix_le`); на ядре `P` форма
     частичной суммы зануляется, откуда `W (Fp†)^j v = 0` ∀j<N. Так как
-    `W u = 0 => Kp† u = 0` (Rn положительно определена) и `Z u = 0`
+    `W u = 0 => Kp† u = 0` (R положительно определена) и `Z u = 0`
     (Z неотрицательно определена), а `Kp† u = 0 => Fp† u = A† u`, по индукции
     `(Fp†)^j v = (A†)^j v`, значит `Z (A†)^j v = 0`; транспонирование даёт ядро
     управляемости `(A, Z)`, откуда `v = 0` - т.е. `P` положительно определена.
@@ -306,7 +302,7 @@ Section ClosedLoopCtrlGramPd.
     move=> Ppsd Pfix Hctrl.
     have Wpsd : psd W.
       apply: psd_add; last exact: Zpsd.
-      exact: psd_lcongr Kp (pd_psd Rnpd).
+      exact: psd_lcongr Kp (pd_psd R_pd).
     (*
       Извлечение Kp† u = 0 и Z u = 0 из W u = 0
       (разложение неотрицательно определённого веса).
@@ -315,18 +311,18 @@ Section ClosedLoopCtrlGramPd.
         Kp^t* *m u = 0 /\ Z *m u = 0.
       move=> u Wu0.
       have qf0' : \tr (u^t* *m W *m u) = 0 by rewrite -mulmxA Wu0 mulmx0 mxtrace0.
-      have hKR : 0 <= \tr (u^t* *m (Kp *m Rn *m Kp^t*) *m u)
-        by case: (psd_lcongr Kp (pd_psd Rnpd)) => _ /(_ u).
+      have hKR : 0 <= \tr (u^t* *m (Kp *m R *m Kp^t*) *m u)
+        by case: (psd_lcongr Kp (pd_psd R_pd)) => _ /(_ u).
       have hZ : 0 <= \tr (u^t* *m Z *m u) by case: Zpsd => _ /(_ u).
-      have split0 : \tr (u^t* *m (Kp *m Rn *m Kp^t*) *m u) = 0
+      have split0 : \tr (u^t* *m (Kp *m R *m Kp^t*) *m u) = 0
                 /\ \tr (u^t* *m Z *m u) = 0.
         move: qf0'; rewrite mulmxDr mulmxDl mxtraceD => /eqP.
         by rewrite paddr_eq0 // => /andP[/eqP ? /eqP ?].
       split; last exact: psd_qf0_mul0 Zpsd (proj2 split0).
       set uu := Kp^t* *m u.
-      have qfu : \tr (uu^t* *m Rn *m uu) = 0.
+      have qfu : \tr (uu^t* *m R *m uu) = 0.
         by rewrite -(proj1 split0) /uu trmxC_mul trmxCK !mulmxA.
-      exact: pd_qf0_col0 Rnpd qfu.
+      exact: pd_qf0_col0 R_pd qfu.
     split; first exact: (proj1 Ppsd).
     move=> v vNZ.
     rewrite lt0r; apply/andP; split; last by case: Ppsd => _ /(_ v).

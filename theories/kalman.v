@@ -181,8 +181,11 @@ Section KalmanFilter.
     set xt := x_true u k.
     set xh := x_hat u y Ps k.
     (*
-      Внутреннее выражение: H ⋅ x_true k+1 + v k+1 - H ⋅ (F⋅xh + G⋅u k) = H ⋅ F
-      ⋅ (xt - xh) + H ⋅ G ⋅ w k+1 + v k+1
+      Внутреннее выражение:
+      ```
+        H ⋅ x_true k+1 + v k+1 - H ⋅ (F ⋅ xh + G ⋅ (u k))
+      = H ⋅ F ⋅ (xt - xh) + H ⋅ G ⋅ w k+1 + v k+1
+      ```
     *)
     have inner :
       H *m (F *m xt + G *m u k + G *m w k.+1) + v k.+1 -
@@ -265,7 +268,7 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Форма Джозефа (алгебраически эквивалентна, удобна для доказательств).
+    Форма Джозефа (алгебраически эквивалентна).
 
     ([kailath2000], § 9.3, Lemma 9.3.2)
   *)
@@ -274,7 +277,7 @@ Section KalmanFilter.
     let ImKH := 1%:M - K *m H in
     ImKH *m P_pred *m ImKH^t* + K *m R *m K^t*.
 
-  (* Форма Джозефа совпадает со стандартным обновлением при усилении Калмана *)
+  (* Форма Джозефа совпадает со стандартным обновлением при усилении Калмана. *)
   Lemma joseph_eq_update (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
     joseph_form P_pred = update_cov P_pred.
@@ -296,7 +299,7 @@ Section KalmanFilter.
     by rewrite subrK mulmx1.
   Qed.
 
-  (* Сохранение неотрицательной определённости через обновление *)
+  (* Сохранение неотрицательной определённости через обновление. *)
   Lemma update_cov_psd (P_pred : 'M[ℂ]_n) :
     psd P_pred -> psd (joseph_form P_pred).
   Proof.
@@ -309,7 +312,7 @@ Section KalmanFilter.
     - exact: psd_lcongr K (pd_psd R_pd).
   Qed.
 
-  (* Симметричность обновлённой ковариации *)
+  (* Симметричность обновлённой ковариации. *)
   Lemma update_cov_sym (P_pred : 'M[ℂ]_n) :
     psd P_pred -> joseph_form P_pred = (joseph_form P_pred)^t*.
   Proof.
@@ -317,7 +320,7 @@ Section KalmanFilter.
     exact: (update_cov_psd psdP).1.
   Qed.
 
-  (* Монотонность ковариации: след не возрастает *)
+  (* Монотонность ковариации: след не возрастает. *)
   Lemma update_cov_trace_le (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
     \tr (update_cov P_pred) <= \tr P_pred.
@@ -343,17 +346,20 @@ Section KalmanFilter.
 
   (*
     Информационная форма обновления. При положительно определённой предсказанной
-    ковариации справедливо тождество Вудбери: (update_cov P)^(-1) = P^(-1) + H†
-    R^(-1) H. Доказательство чисто алгебраическое: используется уже выведенная
-    связь K * R = (E - K * H) * P * H† и обратимости P, R, S. Это даёт основу
-    для строгой убывающей версии Риккати-итерации без обращения к спектральной
-    теореме.
+    ковариации справедливо тождество Вудбери:
+    `(update_cov P)⁻¹ = P⁻¹ + H† R⁻¹ H`.
 
     ([kailath2000], § 9.5, Theorem 9.5.1)
   *)
   Lemma update_cov_information_form (P_pred : 'M[ℂ]_n) :
     pd P_pred ->
     update_cov P_pred *m (invmx P_pred + H^t* *m invmx R *m H) = 1%:M.
+  (*
+    Доказательство чисто алгебраическое: используется уже выведенная связь
+    `K * R = (E - K * H) * P * H†` и обратимости `P`, `R`, `S`. Это даёт основу
+    для строгой убывающей версии итерации Риккати без обращения к спектральной
+    теореме.
+  *)
   Proof.
     move=> Ppd.
     have psdP : psd P_pred := pd_psd Ppd.
@@ -400,8 +406,7 @@ Section KalmanFilter.
 
   (*
     Из информационной формы: шаг обновления сохраняет положительную
-    определённость. invmx(update_cov P) = invmx P + H† R^(-1) H - pd сумма pd и
-    psd; обратная к pd-матрице тоже pd (см. pd_inv).
+    определённость. `invmx (update_cov P) = invmx P + H† R⁻¹ H`.
 
     ([kailath2000], § 9.5, Lemma 9.5.1)
   *)
@@ -425,8 +430,8 @@ Section KalmanFilter.
   (*
     Порядок Лёвнера: апостериорная ковариация мажорируется априорной. Это
     содержательная (структурная) монотонность шага обновления, из которой
-    следует уже доказанная trace-монотонность. Алгебраически: P - update_cov P =
-    K H P = (HP)† S^(-1) (HP).
+    следует уже доказанная trace-монотонность. Алгебраически:
+    `P - update_cov P = K H P = (H P)† S⁻¹ (H P)`.
   *)
   Lemma update_cov_le (P_pred : 'M[ℂ]_n) :
     psd P_pred -> psd (P_pred - update_cov P_pred).
@@ -483,8 +488,8 @@ Section KalmanFilter.
       have := congr1 (fun M : 'M[ℂ]_(n, p) => M^t*) KS.
       by rewrite !trmxC_mul trmxCK -Psym -Ssym.
     (*
-      Шаг 1: раскрываем alt_update_cov K' P в виде P + K' S K'† - K' H P - P H†
-      K'†
+      Шаг 1: раскрываем `alt_update_cov K' P` в виде
+      `P + K' S K'† - K' H P - P H† K'†`
     *)
     have alt_e : alt_update_cov K' P_pred =
       P_pred + K' *m innov_cov P_pred *m K'^t*
@@ -500,10 +505,10 @@ Section KalmanFilter.
       rewrite -[in RHS]addrA -[in RHS]addrA.
       rewrite -addrA addrACA.
       by [].
-    (* Шаг 2: раскрываем update_cov *)
+    (* Шаг 2: раскрываем `update_cov` *)
     have upd_e : update_cov P_pred = P_pred - K *m H *m P_pred.
       by rewrite /update_cov -/K mulmxBl mul1mx.
-    (* Шаг 3: раскрываем dK ⋅ S ⋅ dK† *)
+    (* Шаг 3: раскрываем `dK S dK†` *)
     have dK_e : dK *m S *m dK^t* =
       K' *m S *m K'^t* - K' *m H *m P_pred
       - P_pred *m H^t* *m K'^t* + K *m H *m P_pred.
@@ -530,8 +535,11 @@ Section KalmanFilter.
       by rewrite ht.
     rewrite alt_e dK_e -/K -/S -/dK upd_e.
     (*
-      Цель: P + α - β - γ = (P - δ) + (α - β - γ + δ), где α = K'SK'†, β = K'HP,
-      γ = PH† K'†, δ = KHP.
+      Цель: `P + α - β - γ = (P - δ) + (α - β - γ + δ)`, где
+      - `α = K'SK'†`
+      - `β = K'HP`
+      - `γ = PH† K'†`
+      - `δ = KHP`.
     *)
     rewrite !addrA.
     rewrite [P_pred - K *m H *m P_pred + K' *m S *m K'^t*]addrAC.
@@ -559,7 +567,10 @@ Section KalmanFilter.
     exact: psd_lcongr dK (pd_psd (innov_cov_pd psdP)).
   Qed.
 
-  (* Характеристика через производную: dTr(P+)/dK = 0 при усилении Калмана *)
+  (*
+    Характеристика через производную: `dif tr(P+) / dif K = 0` при усилении
+    Калмана.
+  *)
   Theorem gain_stationary_point (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
     kalman_gain P_pred *m innov_cov P_pred = P_pred *m H^t*.
@@ -574,9 +585,9 @@ Section KalmanFilter.
     Наблюдаемость и управляемость
     ============================================================================
 
-    Наблюдаемость: пара (H, F) наблюдаема, когда составная матрица
-    [H; HF; HF^2; ...; HF^(n-1)] имеет полный столбцовый ранг. Вместо явного
-    построения блочной матрицы формулируем условие на ранг через ядро
+    Наблюдаемость: пара `(H, F)` наблюдаема, когда составная матрица
+    `[H; H F; H F^2; ...; H F^(n-1)]` имеет полный столбцовый ранг. Вместо
+    явного построения блочной матрицы формулируем условие на ранг через ядро
     отображения.
 
     ([kailath2000], App. C, § C.4)
@@ -589,8 +600,8 @@ Section KalmanFilter.
     forall (x : 'cV[ℂ]_n), (forall i : 'I_n, obsv_block i *m x = 0) -> x = 0.
 
   (*
-    Управляемость: пара (F, G) управляема, когда составная матрица
-    [G, F G, F^2 G, ..., F^(n-1) G] имеет полный строковый ранг.
+    Управляемость: пара `(F, G)` управляема, когда составная матрица
+    `[G, F G, F^2 G, ..., F^(n-1) G]` имеет полный строковый ранг.
 
     ([kailath2000], App. C, § C.3)
   *)
@@ -618,8 +629,6 @@ Section KalmanFilter.
     Сходимость / неподвижная точка Риккати
     ============================================================================
 
-    Дискретное алгебраическое уравнение Риккати (ДАУР, DARE).
-
     Сходимость траектории Риккати к стационарной точке `Pss` и сходимость
     матрицы усиления Калмана доказаны в `dare.v` ([kailath2000], § 14.5). Схема
     доказательства: детектируемость `[F,H]` даёт стабилизирующее усиление, а
@@ -637,17 +646,17 @@ Section KalmanFilter.
     Pss = riccati_step Pss.
 
   (*
-    Теоремы:
+    Теоремы, доказанные в `dare.v`:
     - Существование `Pss`;
     - Положительная определённость `Pss`;
     - Сходимость по норме Фробениуса траектории и коэффициента усиления;
     - Единственность.
-    доказаны в `dare.v`. Здесь указана определимость `riccati_step` и
-    `is_riccati_fix`, на которые ссылается dare.v. Завершающая теорема -
-    `dare.kalman_filter_convergence`: ковариационная часть реального цикла
-    фильтра `kf_step` (ниже) совпадает с `riccati_step` (`dare.kf_cov_step`),
-    поэтому ковариация и коэффициент усиления реального фильтра сходятся к
-    стационарным над любыми потоками входов/измерений.
+    Здесь указана определимость `riccati_step` и `is_riccati_fix`, на которые
+    ссылается dare.v. Завершающая теорема `dare.kalman_filter_convergence`:
+    ковариационная часть реального цикла фильтра `kf_step` (ниже) совпадает с
+    `riccati_step` (`dare.kf_cov_step`), поэтому ковариация и коэффициент
+    усиления реального фильтра сходятся к стационарным над любыми посл-тями
+    измерений.
   *)
 
   (* Один шаг фильтра. *)

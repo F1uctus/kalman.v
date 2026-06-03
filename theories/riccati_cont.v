@@ -68,10 +68,7 @@ Section Determinant.
 
   Variable (ℂ : numClosedFieldType).
 
-  (*
-    `det` непрерывен: формула Лейбница даёт сумму произведений элементов
-    матрицы.
-  *)
+  (* https://ru.wikipedia.org/wiki/Формула_Лейбница_для_определителей *)
   Lemma cvgn_det n (M : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     M @ \oo --> L -> (fun k => \det (M k)) @ \oo --> \det L.
   Proof.
@@ -165,7 +162,7 @@ Section KalmanCont.
   Variables (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m)) (H : 'M[ℂ]_(p, n)).
   Variables (Q : 'M[ℂ]_m) (R : 'M[ℂ]_p).
 
-  (* `predict_cov P = F ⋅ P ⋅ F† + G ⋅ Q ⋅ G†` - полином в P. *)
+  (* `predict_cov P = F P F† + G Q G†` - полином в P. *)
   Definition predict_cov (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
     F *m P *m F^t* + G *m Q *m G^t*.
 
@@ -178,7 +175,7 @@ Section KalmanCont.
     apply: cvgn_mulmx (cvg_cst _) HP.
   Qed.
 
-  (* `innov_cov P = H ⋅ P ⋅ H† + R` - полином в P. *)
+  (* `innov_cov P = H P H† + R` - полином в P. *)
   Definition innov_cov (P : 'M[ℂ]_n) : 'M[ℂ]_p :=
     H *m P *m H^t* + R.
 
@@ -192,7 +189,7 @@ Section KalmanCont.
   Qed.
 
   (*
-    `kalman_gain P = P ⋅ H† ⋅ invmx (innov_cov P)`. Непрерывен в точках, где
+    `kalman_gain P = P H† invmx (innov_cov P)`. Непрерывен в точках, где
     `innov_cov L \in unitmx`.
   *)
   Definition kalman_gain (P : 'M[ℂ]_n) : 'M[ℂ]_(n, p) :=
@@ -209,7 +206,7 @@ Section KalmanCont.
     - exact: cvgn_invmx (cvgn_innov_cov HP) Sunit.
   Qed.
 
-  (* `update_cov P = (1 - kalman_gain P ⋅ H) ⋅ P`. *)
+  (* `update_cov P = (1 - kalman_gain P H) P`. *)
   Definition update_cov (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
     (1%:M - kalman_gain P *m H) *m P.
 

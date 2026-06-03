@@ -142,8 +142,8 @@ Section Frob.
   Qed.
 
   (*
-    Квадрат нормы Фробениуса есть след psd-матрицы M† ⋅ M; в частности,
-    неотрицательность даёт >= 0.
+    Квадрат нормы Фробениуса есть след неотрицательно определённой матрицы
+    `M† M`; в частности, неотрицательность даёт >= 0.
   *)
   Lemma psd_frob r c (M : 'M[ℂ]_(r, c)) :
     psd (M^t* *m M).
@@ -158,8 +158,8 @@ Section Frob.
   Qed.
 
   (*
-    Неотрицательно определённая разность A - B имеет неотрицательный след; в
-    частности, tr A - tr B >= 0 при B <= A в смысле Лёвнера.
+    Неотрицательно определённая разность `A - B` имеет неотрицательный след; в
+    частности, `tr A - tr B >= 0` при `B <= A` согласно порядку Лёвнера.
   *)
   Lemma psd_le_trace n (A B : 'M[ℂ]_n) :
     psd (B - A) -> \tr A <= \tr B.
@@ -345,7 +345,7 @@ Section Frob.
 
   (*
     Контракция предсказывающего шага в норме Фробениуса:
-    `D \is hermsymmx => frob_sq (Fm ⋅ D ⋅ Fm†) <= (frob_sq Fm)² * frob_sq D`.
+    `D \is hermsymmx => frob_sq (Fm D Fm†) <= (frob_sq Fm)² * frob_sq D`.
   *)
   Lemma predict_diff_frob_bound n m (Fm : 'M[ℂ]_(n, m)) (D : 'M[ℂ]_m) :
     D \is hermsymmx ->
@@ -353,8 +353,8 @@ Section Frob.
   (*
     Схема: `Fm D Fm†` эрмитова (т.к. `D` эрмитова), значит
     `frob_sq (Fm D Fm†) = tr((Fm D Fm†)²)`. Применяем `tr_conj_frob_le`
-    (`psd (D ⋅ Fm† ⋅ Fm ⋅ D)`) и `tr_conj_frob_le` (`psd (Fm† ⋅ Fm)`) - каждое
-    даёт коэффициент `frob_sq Fm`. Итого
+    (`psd (D Fm† Fm D)`) и `tr_conj_frob_le` (`psd (Fm† Fm)`) - каждое даёт
+    коэффициент `frob_sq Fm`. Итого
     `(frob_sq Fm)² * tr(D²) = (frob_sq Fm)² * frob_sq D`
     (`D` эрмитова => `frob_sq D = tr D²`).
   *)
@@ -376,9 +376,9 @@ Section Frob.
     - by apply: psd_tr_ge0; exact: psd_DFtFD.
     - exact: lexx.
     (*
-      Цель: `tr(D F† F D) <= frob_sq Fm * frob_sq D`.
-      `D F† F D = D ⋅ (F† F) ⋅ D`, и `D = D†` (Эрмитовость); применяем
-      `tr_conj_frob_le` ещё раз с `Fm := D`, `M := F† Fm`.
+      Цель: `tr(D F† F D) <= frob_sq Fm * frob_sq D`. `D F† F D = D (F† F) D`, и
+      `D = D†` (Эрмитовость); применяем `tr_conj_frob_le` ещё раз с `Fm := D`,
+      `M := F† Fm`.
     *)
     - have hD : D = D^t* by exact: hermsym_eq.
       have rewriteDFtFD : D *m Fm^t* *m Fm *m D = D *m (Fm^t* *m Fm) *m D^t*.

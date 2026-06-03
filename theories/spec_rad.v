@@ -334,7 +334,7 @@ Section SchurPow.
 
   (*
     Субмультипликативность квадрата нормы Фробениуса:
-    `frob_sq (A ⋅ B) <= frob_sq A * frob_sq B`.
+    `frob_sq (A B) <= frob_sq A * frob_sq B`.
   *)
   Lemma frob_sq_mulmx_le n m p
       (A : 'M[ℂ]_(n, m)) (B : 'M[ℂ]_(m, p)) :

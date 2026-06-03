@@ -3,8 +3,8 @@
 
   В этом файле:
   - `predict_cov_mono` - безусловная монотонность шага предсказания:
-    `predict_cov` линеен в `P`, член `G ⋅ Q ⋅ G†` сокращается в разности,
-    остаётся `F ⋅ (P2 - P1) ⋅ F†`.
+    `predict_cov` линеен в `P`, член `G Q G†` сокращается в разности, остаётся
+    `F (P2 - P1) F†`.
   - `update_cov_mono` - монотонность шага обновления на всём конусе
     неотрицательно определённых матриц. Доказывается через тождество
     оптимальности `alt_update_cov_diff`: update_cov(P1) <=
@@ -72,14 +72,18 @@ Section RiccatiMonotone.
     psd P1 -> psd P2 -> psd_le P1 P2 ->
     psd_le (update_cov H R P1) (update_cov H R P2).
   (*
-    Идея: для любого альтернативного усиления `K'` имеем alt_update_cov K' P2 -
-    alt_update_cov K' P1 = (E - K'H) ⋅ (P2 - P1) ⋅ (E - K'H)† - неотрицательно
-    определена, то есть `alt_update_cov K' (·)` монотонен в `P`. Положив
-    `K2 := kalman_gain P2`, получаем alt_update_cov K2 P2 = update_cov P2
-    (член `(K2 - K2) ⋅ S2 ⋅ (K2 - K2)†` исчезает), и update_cov P1 <=
-    alt_update_cov K2 P1
-    (член `(K2 - K1) ⋅ S1 ⋅ (K2 - K1)†` неотрицательно определён).
-    Транзитивностью получаем `update_cov P1 <= update_cov P2`.
+    Идея: для любого альтернативного усиления `K'` имеем
+    ```
+    alt_update_cov K' P2 - alt_update_cov K' P1
+      = (E - K'H) (P2 - P1) (E - K'H)†
+    ```
+    неотрицательно определена, то есть `alt_update_cov K' (·)` монотонен в `P`.
+    Положив `K2 := kalman_gain P2`, получаем
+    `alt_update_cov K2 P2 = update_cov P2`
+    (член `(K2 - K2) S2 (K2 - K2)†` исчезает), и
+    `update_cov P1 <= alt_update_cov K2 P1`
+    (член `(K2 - K1) S1 (K2 - K1)†` неотрицательно определён). Транзитивностью
+    получаем `update_cov P1 <= update_cov P2`.
   *)
   Proof.
     move=> psd1 psd2 hLe.

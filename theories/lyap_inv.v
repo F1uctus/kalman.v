@@ -224,8 +224,7 @@ Section LyapInv.
     (`lyap_inversion_pdW_lt1`), откуда `spec_rad_lt1_of_dets` строит разложение
     Шура. Эта лемма устраняет `Hypothesis Fp_contract` в `dare.v`:
     `predict_cov Pss` - положительно определённая неподвижная точка с
-    положительно определённым весом `Kp Rn Kp† + G Q G†`
-    (положительно определён по `pd_GQGt`).
+    положительно определённым весом `Kp R Kp† + G Q G†`.
     ([kailath2000], App. D, Theorem D.3.1)
   *)
   Lemma lyap_inv_spec_rad n (X A W : 'M[ℂ]_n.+1) :
@@ -303,10 +302,10 @@ Section LyapInv.
   (*
     Стабилизируемость пары `(A, Z)` (PBH-вес `Z` неотрицательно определён)
     переносится на замкнутый контур коррекции по выходу `A − Kp H` с дополненным
-    весом `Kp Rn Kp† + Z` (Rn положительно определена). Это
+    весом `Kp R Kp† + Z` (R положительно определена). Это
     ([kailath2000], App. E, Lemma E.4.2): если левый собственный вектор `w`
     замкнутого контура с `|λ| >= 1` зануляет весь вес, то
-    `w Kp Rn Kp† w† = 0 => w Kp = 0` (Rn положительно определена) и
+    `w Kp R Kp† w† = 0 => w Kp = 0` (R положительно определена) и
     `w Z w† = 0 => w Z = 0` (Z неотрицательно определена), откуда
     `w (A − Kp H) = w A`, т.е. `w A = λ w` с `w Z = 0` - противоречие со
     стабилизируемостью `(A, Z)`.
@@ -316,21 +315,21 @@ Section LyapInv.
     `(F, G Q^½)`.
   *)
   Lemma stabilizable_oi_reduce n p (A : 'M[ℂ]_n.+1) (Kp : 'M[ℂ]_(n.+1, p))
-      (Hm : 'M[ℂ]_(p, n.+1)) (Z : 'M[ℂ]_n.+1) (Rn : 'M[ℂ]_p) :
-    psd Z -> pd Rn ->
+      (Hm : 'M[ℂ]_(p, n.+1)) (Z : 'M[ℂ]_n.+1) (R : 'M[ℂ]_p) :
+    psd Z -> pd R ->
     stabilizable A Z ->
-    stabilizable (A - Kp *m Hm) (Kp *m Rn *m Kp^t* + Z).
+    stabilizable (A - Kp *m Hm) (Kp *m R *m Kp^t* + Z).
   Proof.
-    move=> Zpsd Rnpd HAZ lam w wNZ wFp lam_ge1.
+    move=> Zpsd R_pd HAZ lam w wNZ wFp lam_ge1.
     apply/negP=> /eqP wW0.
     set v := w^t*.
-    have KRpsd : psd (Kp *m Rn *m Kp^t*) := psd_lcongr Kp (pd_psd Rnpd).
-    have qfW0 : \tr (v^t* *m (Kp *m Rn *m Kp^t* + Z) *m v) = 0.
+    have KRpsd : psd (Kp *m R *m Kp^t*) := psd_lcongr Kp (pd_psd R_pd).
+    have qfW0 : \tr (v^t* *m (Kp *m R *m Kp^t* + Z) *m v) = 0.
       by rewrite /v trmxCK wW0 mul0mx mxtrace0.
-    have split0 : \tr (v^t* *m (Kp *m Rn *m Kp^t*) *m v) = 0
+    have split0 : \tr (v^t* *m (Kp *m R *m Kp^t*) *m v) = 0
               /\ \tr (v^t* *m Z *m v) = 0.
       move: qfW0; rewrite mulmxDr mulmxDl mxtraceD => /eqP.
-      have hKR : 0 <= \tr (v^t* *m (Kp *m Rn *m Kp^t*) *m v)
+      have hKR : 0 <= \tr (v^t* *m (Kp *m R *m Kp^t*) *m v)
         by case: KRpsd => _ /(_ v).
       have hZ : 0 <= \tr (v^t* *m Z *m v) by case: Zpsd => _ /(_ v).
       by rewrite paddr_eq0 // => /andP[/eqP ? /eqP ?].
@@ -340,9 +339,9 @@ Section LyapInv.
       by rewrite e Zv0 trmxC0.
     have wKp0 : w *m Kp = 0.
       set u := Kp^t* *m v.
-      have qfu : \tr (u^t* *m Rn *m u) = 0.
+      have qfu : \tr (u^t* *m R *m u) = 0.
         by rewrite -(proj1 split0) /u trmxC_mul trmxCK !mulmxA.
-      have u0 : u = 0 := pd_qf0_col0 Rnpd qfu.
+      have u0 : u = 0 := pd_qf0_col0 R_pd qfu.
       have e : (w *m Kp)^t* = 0 by rewrite trmxC_mul -/v -/u u0.
       by rewrite -(trmxCK (w *m Kp)) e trmxC0.
     have wA : w *m A = lam *: w.
