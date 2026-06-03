@@ -1,3 +1,6 @@
+# This file was generated from `meta.yml`, please do not edit manually.
+# Follow the instructions on https://github.com/coq-community/templates to regenerate.
+
 opam-version: "2.0"
 maintainer: "ilya.i.nikitin@proton.me"
 version: "dev"
@@ -7,23 +10,16 @@ dev-repo: "git+https://github.com/F1uctus/kalman.v.git"
 bug-reports: "https://github.com/F1uctus/kalman.v/issues"
 license: "CECILL-B"
 
-authors: [
-  "Ilya I. Nikitin"
-]
-
-synopsis: "Kalman filter implementation using Rocq and MathComp"
+synopsis: "Kalman filter implementation using Rocq, MathComp, and CoqEAL"
 description: """
 Formalization of Kalman filter properties using the Mathematical Components
-library."""
+library and it's extraction using CoqEAL and refinements."""
 
-build: [
-  "dune" "build" "-p" name "-j" jobs "--sandbox=none"
-]
+build: ["dune" "build" "-p" name "-j" jobs]
 depends: [
+  "dune" {>= "3.6"}
+  "coq" {>= "9.0" & < "9.2~"}
   "dune" {>= "3.21"}
-  "rocq-core" {>= "9.0" & < "9.2~"}
-  "rocq-stdlib" {>= "9.0" & < "9.2~"}
-  "elpi" {>= "1.17.0"}
   "rocq-elpi" {>= "3"}
   "rocq-hierarchy-builder" {>= "1.9.0"}
   "rocq-mathcomp-boot" {>= "2.5.0"}
@@ -33,9 +29,11 @@ depends: [
   "rocq-mathcomp-solvable" {>= "2.5.0"}
   "rocq-mathcomp-finmap" {>= "2.1.0"}
   "rocq-mathcomp-algebra" {>= "2.5.0"}
+  "elpi" {>= "1.17.0"}
   "rocq-mathcomp-classical" {>= "1.16.0"}
   "rocq-mathcomp-reals" {>= "1.16.0"}
   "rocq-mathcomp-analysis" {>= "1.16.0"}
+  "rocq-bignums" {>= "9.0.0+rocq9.1"}
 ]
 
 tags: [
@@ -44,4 +42,7 @@ tags: [
   "keyword:linear algebra"
   "keyword:mathematical components"
   "logpath:Kalman"
+]
+authors: [
+  "Ilya I. Nikitin"
 ]

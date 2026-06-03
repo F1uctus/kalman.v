@@ -1,5 +1,6 @@
 _opam/
 _build/
+*.install
 theories/_RocqProject
 **/*.glob
 **/*.cache
