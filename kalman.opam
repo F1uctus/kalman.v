@@ -2,9 +2,9 @@ opam-version: "2.0"
 maintainer: "ilya.i.nikitin@proton.me"
 version: "dev"
 
-homepage: "https://github.com/F1uctus/unn-rocq-kalman"
-dev-repo: "git+https://github.com/F1uctus/unn-rocq-kalman.git"
-bug-reports: "https://github.com/F1uctus/unn-rocq-kalman/issues"
+homepage: "https://github.com/F1uctus/kalman.v"
+dev-repo: "git+https://github.com/F1uctus/kalman.v.git"
+bug-reports: "https://github.com/F1uctus/kalman.v/issues"
 license: "CECILL-B"
 
 authors: [
