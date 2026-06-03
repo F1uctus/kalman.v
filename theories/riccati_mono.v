@@ -143,8 +143,8 @@ Section RiccatiMonotone.
   Lemma riccati_step_psd (P : 'M[ℂ]_n) :
     psd P -> psd (riccati_step F G H Q R P).
   (*
-    - База `psd_le 0 (riccati_step 0)` - это просто неотрицательная
-      определённость `riccati_step 0` (получается через форму Джозефа).
+    - База `psd_le 0 (riccati_step 0)` - это неотрицательная определённость
+      `riccati_step 0` (получается через форму Джозефа).
     - Шаг - `riccati_step_mono`, применённый к IH.
   *)
   Proof.
