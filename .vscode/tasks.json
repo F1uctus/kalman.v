@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "rocq-comment-fmt: build",
+      "type": "shell",
+      "command": "opam exec --switch=. -- dune build --root tools/rocq-comment-fmt",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
