@@ -18,7 +18,7 @@
     `iter 0 = 0 <= iter 1 = riccati_step 0` - это неотрицательная определённость
     `riccati_step 0`; шаг - `riccati_step_mono`.
 
-  ([kailath2000], App. E, Lemma E.3.1)
+  - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)").
 *)
 
 Set Warnings "-notation-overridden,-coercions,-default".
@@ -125,7 +125,7 @@ Section RiccatiMonotone.
     Монотонность одного шага Риккати на конусе неотрицательно определённых
     матриц.
 
-    ([kailath2000], App. E, Lemma E.3.1)
+    - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)").
   *)
   Lemma riccati_step_mono (P1 P2 : 'M[ℂ]_n) :
     psd P1 -> psd P2 -> psd_le P1 P2 ->
@@ -163,7 +163,8 @@ Section RiccatiMonotone.
     Затравочная последовательность от нуля: `iter k riccati_step 0` неубывающая
     в порядке Лёвнера.
 
-    ([kailath2000], App. E, Lemma E.3.1; ср. § 14.3, Remark 7)
+    - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)");
+    - ср. § 11.2.1, Remark 7 [(Pᵢ) is now Monotone Nondecreasing].
   *)
   Lemma riccati_iter_mono_from_0 (k : nat) :
     psd_le (iter k (riccati_step F G H Q R) 0)

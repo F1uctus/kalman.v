@@ -33,7 +33,8 @@
     неограниченным вдоль некоторых направлений
     (цилиндр при наличии нулевых собственных значений).
 
-  ([kailath2000], App. D, § D.1; App. D, Theorem D.3.1)
+  - ([kailath2000], App. D, § D.1);
+  - ([kailath2000], App. D, Theorem D.3.1 "Lyapunov Condition").
 *)
 
 Set Warnings "-notation-overridden,-coercions,-default".
@@ -341,7 +342,7 @@ Section LyapunovFixpointUnique.
 
   (*
     Единственность эрмитовой неподвижной точки.
-    ([kailath2000], App. D, Lemma D.1.1)
+    - ([kailath2000], App. D, Lemma D.1.1 "Uniqueness of Solutions").
   *)
   Theorem lyap_fix_unique (X1 X2 : 'M[ℂ]_n) :
     X1 \is hermsymmx -> X2 \is hermsymmx ->
@@ -407,7 +408,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Предел частичных сумм (ряд `∑ Aᵏ Q (A†)ᵏ` - решение уравнения Ляпунова).
-    ([kailath2000], App. D, Lemma D.1.2)
+    - ([kailath2000], App. D, Lemma D.1.2 "Properties of the Lyapunov Equation").
   *)
   Definition lyap_sol : 'M[ℂ]_n :=
     mx_mono_lim P.
@@ -445,7 +446,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Неотрицательная определённость решения при неотрицательно определённом Q.
-    ([kailath2000], App. D, Lemma D.1.2)
+    - ([kailath2000], App. D, Lemma D.1.2 "Properties of the Lyapunov Equation").
   *)
   Theorem lyap_sol_psd :
     psd lyap_sol.
@@ -497,7 +498,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Решение уравнения Ляпунова является его неподвижной точкой.
-    ([kailath2000], App. D, Lemma D.1.2)
+    - ([kailath2000], App. D, Lemma D.1.2 "Properties of the Lyapunov Equation").
   *)
   Theorem lyap_sol_fix :
     lyap_sol = A *m lyap_sol *m A^t* + Q.
@@ -528,7 +529,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Единственность среди эрмитовых решений (частный случай lyap_fix_unique).
-    ([kailath2000], App. D, Lemma D.1.1)
+    - ([kailath2000], App. D, Lemma D.1.1 "Uniqueness of Solutions").
   *)
   Theorem lyap_sol_unique (X : 'M[ℂ]_n) :
     X \is hermsymmx ->

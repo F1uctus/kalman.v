@@ -1,6 +1,6 @@
 (*
   Теорема инверсии Ляпунова - дискретный критерий Ляпунова
-  ([kailath2000], App. D, Theorem D.3.1).
+  - ([kailath2000], App. D, Theorem D.3.1 "Lyapunov Condition").
 
   Если положительно определённое решение `X` дискретного уравнения Ляпунова
 
@@ -118,7 +118,7 @@ Section LyapInv.
 
     Двойственность PBH: управляемость (A, G) даёт детектируемость (A†, G†)
     (левый собственный вектор `w A = lam w` <=> правый `A† w† = lam^* w†`).
-    ([kailath2000], App. C, § C.4)
+    - ([kailath2000], App. C, § C.4).
   *)
   Lemma stabilizable_detectable_conj n m (A : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m)) :
     stabilizable A G -> detectable (A^t*) (G^t*).
@@ -153,7 +153,7 @@ Section LyapInv.
     определённое решение X = A X A† + Q с Q = G G† под управляемостью (A, G)
     влечёт устойчивость A по Шуру.
 
-    ([kailath2000], App. D, Theorem D.3.1)
+    - ([kailath2000], App. D, Theorem D.3.1 "Lyapunov Condition").
   *)
   Lemma lyap_inversion n m (X A Q : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m))
       (lam : ℂ) (w : 'rV[ℂ]_n) :
@@ -222,10 +222,10 @@ Section LyapInv.
     `spec_rad_lt1 A`. Каждый корень характеристического многочлена `A`
     (левый собственный вектор) строго внутри единичного диска
     (`lyap_inversion_pdW_lt1`), откуда `spec_rad_lt1_of_dets` строит разложение
-    Шура. Эта лемма устраняет `Hypothesis Fp_contract` в `dare.v`:
+    Шура. Эта лемма устраняет `Hypothesis Fp_contract` в `Section DARE`:
     `predict_cov Pss` - положительно определённая неподвижная точка с
     положительно определённым весом `Kp R Kp† + G Q G†`.
-    ([kailath2000], App. D, Theorem D.3.1)
+    - ([kailath2000], App. D, Theorem D.3.1 "Lyapunov Condition").
   *)
   Lemma lyap_inv_spec_rad n (X A W : 'M[ℂ]_n.+1) :
     pd X -> pd W -> X = A *m X *m A^t* + W -> spec_rad_lt1 A.
@@ -247,10 +247,11 @@ Section LyapInv.
   *)
 
   (*
-    ([kailath2000], App. D, Theorem D.3.1; App. E, Lemma E.4.2) критерий
-    устойчивости замкнутого контура, ослабляющий `lyap_inv_spec_rad`: вместо
-    положительно определённых `X` и веса `W` достаточно лишь неотрицательно
-    определённых `X`, `W` и стабилизируемости пары `(A, W)`
+    - ([kailath2000], App. D, Theorem D.3.1 "Lyapunov Condition");
+    - ([kailath2000], App. E, Lemma E.4.2 "Stable F − K_{P,Z} H")
+    критерий устойчивости замкнутого контура, ослабляющий `lyap_inv_spec_rad`:
+    вместо положительно определённых `X` и веса `W` достаточно лишь
+    неотрицательно определённых `X`, `W` и стабилизируемости пары `(A, W)`
     (левый PBH на `|λ| >= 1`). Энергетический баланс на левом собственном
     векторе `w A = λ w` даёт `(1 − |λ|²) (v† X v) = v† W v`; при `|λ| >= 1`
     левая часть <= 0, правая >= 0, обе зануляются, откуда
@@ -303,7 +304,9 @@ Section LyapInv.
     Стабилизируемость пары `(A, Z)` (PBH-вес `Z` неотрицательно определён)
     переносится на замкнутый контур коррекции по выходу `A − Kp H` с дополненным
     весом `Kp R Kp† + Z` (R положительно определена). Это
-    ([kailath2000], App. E, Lemma E.4.2): если левый собственный вектор `w`
+    - ([kailath2000], App. E, Lemma E.4.2 "Stable F − K_{P,Z} H"):
+    если левый
+    собственный вектор `w`
     замкнутого контура с `|λ| >= 1` зануляет весь вес, то
     `w Kp R Kp† w† = 0 => w Kp = 0` (R положительно определена) и
     `w Z w† = 0 => w Z = 0` (Z неотрицательно определена), откуда

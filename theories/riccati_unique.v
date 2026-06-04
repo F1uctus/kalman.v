@@ -1,10 +1,10 @@
 (*
   Единственность положительно определённой неподвижной точки апостериорного шага
-  Риккати - единственность стабилизирующего решения ДАУР
-  ([kailath2000], App. E, Lemma E.4.3), без внешних гипотез о стабилизирующем
-  усилении.
+  Риккати - единственность стабилизирующего решения ДАУР, без внешних гипотез о
+  стабилизирующем усилении.
+  - ([kailath2000], App. E, Lemma E.4.3 "Unique Stabilizing Solution").
 
-  См. Lemma 14.4.1 (Local Identities) для разности двух решений:
+  См. Lemma 14.4.1 "Local Identities" для разности двух решений:
   `M1 − M2 = Fp(M1) (M1 − M2) Fp(M2)†`, где `Fp(M) = F − F Kf(M) H` -
   предсказательный замкнутый контур. Каждый `Fp(Mi)` устойчив по Шуру
   (`lyap_inv_spec_rad`): положительно определённая предсказанная неподвижная
@@ -45,10 +45,11 @@ Section RiccatiUnique.
   Hypothesis R_pd : pd R.
 
   (*
-    ([kailath2000], App. E, Theorem E.5.1) стабилизируемость пары процессного
-    шума `(F, G Q^½)` (через неотрицательно определённый вес `G Q G†`).
-    Достаточна для устойчивости предсказательного контура `Fp` и единственности
+    Стабилизируемость пары процессного шума `(F, G Q^½)`
+    (через неотрицательно определённый вес `G Q G†`). Достаточна для
+    устойчивости предсказательного контура `Fp` и единственности
     стабилизирующего (неотрицательно определённого) решения ДАУР.
+    - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation").
   *)
   Hypothesis FG_stab : stabilizable F (G *m Q *m G^t*).
 
@@ -59,7 +60,7 @@ Section RiccatiUnique.
 
   (*
     Тождество для коэффициента усиления: `Fp(M) M H† = Kp(M) R`
-    (ср. dare.v `Fp_Ppss_Ht`).
+    (ср. `dare.Fp_Ppss_Ht`).
   *)
   Lemma Fp_M_Ht (M : 'M[ℂ]_n) :
     psd M ->
@@ -89,7 +90,7 @@ Section RiccatiUnique.
     Тождество замкнутого контура для предсказанной ковариации, для произвольной
     неотрицательно определённой предсказанной точки M
     (форма Ляпунова замкнутого контура для шага Риккати; ср. Theorem 9.2.1).
-    ([kailath2000], § 14.5)
+    - ([kailath2000], § 14.5).
   *)
   Lemma pred_closed_loop_id (M : 'M[ℂ]_n) :
     psd M ->
@@ -124,7 +125,7 @@ Section RiccatiUnique.
     ```
     M1 − M2 = Fp(M1) (M1 − M2) Fp(M2)†.
     ```
-    ([kailath2000], § 14.4, Lemma 14.4.1)
+    - ([kailath2000], § 14.4, Lemma 14.4.1 "Local Identities").
   *)
   Lemma pred_diff_id (M1 M2 : 'M[ℂ]_n) :
     psd M1 -> psd M2 ->
@@ -184,7 +185,7 @@ Section RiccatiUnique.
     Замкнутый контур неотрицательно определённой предсказанной неподвижной точки
     устойчив по Шуру.
 
-    ([kailath2000], App. E, Lemma E.4.2)
+    - ([kailath2000], App. E, Lemma E.4.2 "Stable F − K_{P,Z} H").
   *)
   Lemma Fp_schur (M : 'M[ℂ]_n) :
     psd M ->
@@ -233,8 +234,8 @@ Section RiccatiUnique.
   (*
     Единственность неотрицательно определённой неподвижной точки апостериорного
     шага Риккати.
-
-    ([kailath2000], App. E, Lemma E.4.3; Theorem E.5.1)
+    - ([kailath2000], App. E, Lemma E.4.3 "Unique Stabilizing Solution");
+    - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation").
   *)
   Theorem riccati_step_fix_unique (L1 L2 : 'M[ℂ]_n) :
     psd L1 -> psd L2 ->

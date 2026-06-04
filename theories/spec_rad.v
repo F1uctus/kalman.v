@@ -904,10 +904,9 @@ Section SchurLyapunov.
       Каждая частичная сумма <= предела (`lyap_sol`) в порядке Лёвнера: член
       монотонно возрастающей ограниченной последовательности мажорируется её
       супремумом (`mx_mono_lim_ge_term`). Нужна, в частности, для оценки
-      оптимальности ([kailath2000], § 14.2, факт (b)): `P°_i <= Π` через
-      конечный Грамиан замкнутого контура.
+      оптимальности: `P°_i <= Π` через конечный Грамиан замкнутого контура.
 
-      ([kailath2000], § 14.2)
+      - ([kailath2000], § 14.2, fact b, p. 507).
     *)
     Theorem lyap_partial_le_sol_schur k :
       psd_le (lyap_partial A Q k) (lyap_sol A Q).
@@ -923,7 +922,7 @@ Section SchurLyapunov.
     (*
       Неподвижная точка: lyap_sol = (A (lyap_sol) A†) + Q.
 
-      ([kailath2000], App. D, Lemma D.1.2)
+      - ([kailath2000], App. D, Lemma D.1.2).
     *)
     Theorem lyap_sol_fix_schur :
       lyap_sol A Q = A *m lyap_sol A Q *m A^t* + Q.

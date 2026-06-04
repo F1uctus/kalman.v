@@ -117,7 +117,11 @@ Section Spectral.
     by case: eqP=> [_|_]; rewrite ?subr0.
   Qed.
 
-  (* Спектральная теорема на основе результатов из mathcomp. *)
+  (*
+    Спектральная теорема на основе результатов из mathcomp.
+
+    - ([kailath2000], App. A, § A.1).
+  *)
 
   Lemma spectral_theorem n (M : 'M[ℂ]_n) :
     M \is hermsymmx ->

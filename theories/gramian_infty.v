@@ -85,7 +85,7 @@ Section GramianInf.
     Управляемый Грамиан в пределе - решение уравнения Ляпунова
     `Wc = F Wc F† + G Q G†`.
 
-    ([kailath2000], App. C, § C.3)
+    - ([kailath2000], App. C, § C.3).
   *)
   Definition ctrl_gram_infty : 'M[ℂ]_n :=
     lyap_sol F (G *m Q *m G^t*).
@@ -128,7 +128,7 @@ Section GramianInf.
   (*
     Положительная определённость бесконечного грамиана управляемости.
 
-    ([kailath2000], App. C, § C.3)
+    - ([kailath2000], App. C, § C.3).
   *)
   Theorem ctrl_gram_infty_pd_of_controllable :
     controllable F G -> pd Q -> pd ctrl_gram_infty.
@@ -143,7 +143,7 @@ Section GramianInf.
     Грамиан наблюдаемости в пределе - решение уравнения Ляпунова
     `Wo = F† Wo F + H† H`.
 
-    ([kailath2000], App. C, § C.4)
+    - ([kailath2000], App. C, § C.4).
   *)
   Definition obsv_gram_infty : 'M[ℂ]_n :=
     lyap_sol (F^t*) (H^t* *m H).
@@ -191,7 +191,7 @@ Section GramianInf.
   (*
     Положительная определённость бесконечного грамиана наблюдаемости.
 
-    ([kailath2000], App. C, § C.4)
+    - ([kailath2000], App. C, § C.4).
   *)
   Theorem obsv_gram_infty_pd_of_observable :
     observable F H -> pd obsv_gram_infty.
@@ -212,8 +212,8 @@ End GramianInf.
 
   Обобщение `obsv_gram_infty`
   (который = `obsv_gram_infty_w F (H† H)` по определению): вес `W` отвязан от
-  формы `M† M`. Нужен для меры `O_P`, вес которой `W := H† (invmx R) H` не
-  имеет вида `M† M`.
+  формы `M† M`. Нужен для меры `O_P`, вес которой `W := H† (invmx R) H` не имеет
+  вида `M† M`.
 *)
 Section GramianInfWeighted.
 
@@ -276,13 +276,15 @@ Section ClosedLoopCtrlGramPd.
   Local Notation W := (Kp *m R *m Kp^t* + Z).
 
   (*
-    `controllable_oi_gram_pd` -
-    ([kailath2000], App. E, Theorem E.5.1: полная управляемость влечёт `P > 0`)
-    критерий положительной определённости для неподвижной точки Ляпунова
+    Критерий положительной определённости для неподвижной точки Ляпунова
     замкнутого контура коррекции по выходу `Fp = A − Kp H` с весом
-    `W = Kp R Kp† + Z`, выводимый из полной управляемости исходной пары
-    `(A, Z)`
+    `W = Kp R Kp† + Z`, выводимый из полной управляемости исходной пары `(A, Z)`
     (а не замкнутого контура - коррекция по выходу управляемость не сохраняет).
+
+    - ([kailath2000], App. D, Lemma D.1.2 v "Properties of the Lyapunov Equation"):
+      управляемость пары `(F, Q^½)` влечёт положительную определённость решения;
+    - ([kailath2000], App. E, Theorem E.6.2 "Positive Definite Solution")Ж тот
+      же вывод на уровне ДАУР.
   *)
   Lemma controllable_oi_gram_pd (P : 'M[ℂ]_N) :
     psd P ->

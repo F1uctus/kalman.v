@@ -37,7 +37,8 @@
   unit_circle_controllable F G - условие управляемости на единичной окружности
   |λ| = 1.
 
-  ([kailath2000], App. C, § C.3; App. C, § C.4)
+  - ([kailath2000], App. C, § C.3);
+  - ([kailath2000], App. C, § C.4).
 *)
 
 Set Warnings "-notation-overridden,-coercions,-default".
@@ -64,7 +65,7 @@ Local Open Scope sesquilinear_scope.
   спектральный радиус строго меньше единицы, т.е. все собственные значения лежат
   строго внутри единичного круга.
 
-  ([kailath2000], App. C, § C.3)
+  - ([kailath2000], App. C, § C.3).
 *)
 Definition schur_stable
   (ℂ : numClosedFieldType) (n : nat) (A : 'M[ℂ]_n) : Prop :=
