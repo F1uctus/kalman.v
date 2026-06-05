@@ -27,8 +27,8 @@ From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp classical_sets.
 From mathcomp Require Import topology normedtype sequences.
 From mathcomp.reals Require Import reals.
-From Kalman Require Import mxnotation mxherm mxdefinite mxloewner mxfrob mxtopo.
-From Kalman Require Import mxmonotone lyapunov.
+From Kalman Require Import mxnotation mxherm mxdefinite mxloewner mxfrob mxtopo
+  mxmonotone lyapunov.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

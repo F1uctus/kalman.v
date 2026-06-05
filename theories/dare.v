@@ -53,11 +53,9 @@ From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp classical_sets.
 From mathcomp Require Import topology normedtype sequences.
 From mathcomp.reals Require Import reals.
-From Kalman Require Import mxnotation mxdefinite mxloewner spectral.
-From Kalman Require Import mxherm mxfrob mxtopo mxmonotone.
-From Kalman Require Import kalman riccati_mono obsv_bound.
-From Kalman Require Import lyapunov gramian_infty spec_rad.
-From Kalman Require Import detectability riccati_unique.
+From Kalman Require Import mxnotation mxdefinite mxloewner spectral mxherm
+  mxfrob mxtopo mxmonotone kalman riccati_mono obsv_bound lyapunov
+  gramian_infty spec_rad detectability riccati_unique.
 From Kalman Require riccati_cont.
 
 Set Implicit Arguments.
