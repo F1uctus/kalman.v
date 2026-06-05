@@ -287,7 +287,7 @@ Section KalmanFilter.
     ImKH *m P_pred *m ImKH^t* + K *m R *m K^t*.
 
   (* Форма Джозефа совпадает со стандартным обновлением при усилении Калмана. *)
-  Lemma joseph_eq_update (P_pred : 'M[ℂ]_n) :
+  Lemma joseph_formE (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
     joseph_form P_pred = update_cov P_pred.
   Proof.
@@ -582,7 +582,7 @@ Section KalmanFilter.
     Характеристика через производную: `dif tr(P+) / dif K = 0` при усилении
     Калмана.
   *)
-  Theorem gain_stationary_point (P_pred : 'M[ℂ]_n) :
+  Theorem kalman_gain_normal_eq (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
     kalman_gain P_pred *m innov_cov P_pred = P_pred *m H^t*.
   Proof.
@@ -632,7 +632,7 @@ Section KalmanFilter.
     move=> psdP; elim: k => [//|k IH] /=.
     have hPred : psd (predict_cov (iter k (fun P => update_cov (predict_cov P)) P0))
       := predict_cov_psd IH.
-    by rewrite -(joseph_eq_update hPred); exact: update_cov_psd hPred.
+    by rewrite -(joseph_formE hPred); exact: update_cov_psd hPred.
   Qed.
 
   (*
@@ -646,8 +646,8 @@ Section KalmanFilter.
     Схема доказательства: детектируемость `[F,H]` даёт стабилизирующее усиление,
     а оно - устойчивость по Шуру матрицы замкнутого контура.
 
-    См. `dare.riccati_steady_state_proven`, `dare.kalman_gain_convergence`,
-    `dare.riccati_convergence_frob`.
+    См. `dare.dare_stabilizing_sol_frob`, `dare.kalman_gain_frob_cvgn`,
+    `dare.riccati_frob_cvgn`.
 
     - ([kailath2000], § 9.2, Theorem 9.2.1);
     - ([kailath2000], § 14.5).
@@ -655,7 +655,7 @@ Section KalmanFilter.
   Definition riccati_step (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
     update_cov (predict_cov P).
 
-  Definition is_riccati_fix (Pss : 'M[ℂ]_n) : Prop :=
+  Definition riccati_fixpoint (Pss : 'M[ℂ]_n) : Prop :=
     Pss = riccati_step Pss.
 
   (*
@@ -664,12 +664,12 @@ Section KalmanFilter.
     - Положительная определённость `Pss`;
     - Сходимость по норме Фробениуса траектории и коэффициента усиления;
     - Единственность.
-    Здесь указана определимость `riccati_step` и `is_riccati_fix`, на которые
+    Здесь указана определимость `riccati_step` и `riccati_fixpoint`, на которые
     ссылается `Section DARE`. Завершающая теорема
-    `dare.kalman_filter_convergence`: ковариационная часть реального цикла
-    фильтра `kf_step` (ниже) совпадает с `riccati_step` (`dare.kf_cov_step`),
-    поэтому ковариация и коэффициент усиления реального фильтра сходятся к
-    стационарным над любыми посл-тями измерений.
+    `dare.kalman_filter_frob_cvgn`: ковариационная часть реального цикла фильтра
+    `kf_step` (ниже) совпадает с `riccati_step` (`dare.kf_cov_step`), поэтому
+    ковариация и коэффициент усиления реального фильтра сходятся к стационарным
+    над любыми посл-тями измерений.
   *)
 
   (* Один шаг фильтра. *)
@@ -688,7 +688,7 @@ Section KalmanFilter.
   (*
     Полный цикл фильтра. Ковариация `kf_P (kf_step st u y)` не зависит от данных
     `u`/`y` и равна `riccati_step (kf_P st)` (см. `dare.kf_cov_step`); отсюда
-    сходимость фильтра - `dare.kalman_filter_convergence`.
+    сходимость фильтра - `dare.kalman_filter_frob_cvgn`.
   *)
   Definition kf_step (st : kf_state) (u : 'cV[ℂ]_m) (y : 'cV[ℂ]_p) :
       kf_state :=
@@ -704,7 +704,7 @@ Section KalmanFilter.
     move=> hP.
     rewrite /kf_step /kf_update /kf_predict /=.
     have hPred : psd (predict_cov (kf_P st)) := predict_cov_psd hP.
-    rewrite -(joseph_eq_update hPred).
+    rewrite -(joseph_formE hPred).
     exact: update_cov_psd hPred.
   Qed.
 

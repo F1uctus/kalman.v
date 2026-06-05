@@ -49,6 +49,7 @@ Section RiccatiUnique.
     (через неотрицательно определённый вес `G Q G†`). Достаточна для
     устойчивости предсказательного контура `Fp` и единственности
     стабилизирующего (неотрицательно определённого) решения ДАУР.
+
     - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation").
   *)
   Hypothesis FG_stab : stabilizable F (G *m Q *m G^t*).
@@ -67,7 +68,7 @@ Section RiccatiUnique.
     (F - F *m Kf M *m H) *m M *m H^t* = F *m Kf M *m R.
   Proof.
     move=> Mpsd.
-    have gsp := gain_stationary_point H R_pd Mpsd.
+    have gsp := kalman_gain_normal_eq H R_pd Mpsd.
     have e : Kf M *m H *m M *m H^t* + Kf M *m R = M *m H^t*.
       by move: gsp; rewrite /innov_cov mulmxDr !mulmxA.
     have key : (1%:M - Kf M *m H) *m M *m H^t* = Kf M *m R.
@@ -89,8 +90,21 @@ Section RiccatiUnique.
   (*
     Тождество замкнутого контура для предсказанной ковариации, для произвольной
     неотрицательно определённой предсказанной точки M
-    (форма Ляпунова замкнутого контура для шага Риккати; ср. Theorem 9.2.1).
-    - ([kailath2000], § 14.5).
+    (форма Ляпунова замкнутого контура для шага Риккати):
+    `P_{i+1} = Fp P_i Fp† + Kp R Kp† + G Q G†`.
+
+    - ([kailath2000], § 9.3, Lemma 9.3.2 "Measurement Updates"): апостериорное
+      обновление (9.3.4); форма Джозефа, эквивалентная `update_cov`, первый шаг
+      в доказательстве;
+    - ([kailath2000], § 9.3, Lemma 9.3.3 "Time Updates"): шаг предсказания
+      (9.3.8 при S=0), т.е. `predict_cov`; в связке с 9.3.2 даёт закрытую форму;
+    - ([kailath2000], § 9.2, Theorem 9.2.1 "The Innovations Recursions"):
+      стандартная рекурсия Риккати (9.2.33); алгебраически эквивалентно тому же
+      шагу;
+    - ([kailath2000], Prob. 14.4 "Boundedness of P_i for Arbitrary P_0"):
+      ч.(a) - уравнение Ляпунова замкнутого контура `(F − K H) P (F − K H)† + …`
+      для наблюдателя с произвольным стабилизирующим K; при оптимальном Kf
+      совпадает с тождеством.
   *)
   Lemma pred_closed_loop_id (M : 'M[ℂ]_n) :
     psd M ->
@@ -99,7 +113,7 @@ Section RiccatiUnique.
       + F *m Kf M *m R *m (F *m Kf M)^t* + G *m Q *m G^t*.
   Proof.
     move=> Mpsd.
-    rewrite /predict_cov -(joseph_eq_update H R_pd Mpsd) /joseph_form.
+    rewrite /predict_cov -(joseph_formE H R_pd Mpsd) /joseph_form.
     rewrite mulmxDr mulmxDl; congr (_ + _ + _).
     - by rewrite -F_ImKfH trmxC_mul !mulmxA.
     - by rewrite trmxC_mul !mulmxA.
@@ -234,6 +248,7 @@ Section RiccatiUnique.
   (*
     Единственность неотрицательно определённой неподвижной точки апостериорного
     шага Риккати.
+
     - ([kailath2000], App. E, Lemma E.4.3 "Unique Stabilizing Solution");
     - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation").
   *)

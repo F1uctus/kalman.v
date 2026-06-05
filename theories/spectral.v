@@ -123,7 +123,7 @@ Section Spectral.
     - ([kailath2000], App. A, § A.1).
   *)
 
-  Lemma spectral_theorem n (M : 'M[ℂ]_n) :
+  Lemma spectral_decomp n (M : 'M[ℂ]_n) :
     M \is hermsymmx ->
     exists (U : 'M[ℂ]_n) (l : 'I_n -> ℂ),
       U \is unitarymx /\ (forall i, l i \is Num.real) /\
@@ -196,7 +196,7 @@ Section Spectral.
       M = U *m diag_of l *m U^t* /\ (forall i, 0 <= l i)).
   Proof.
     move=> hSym.
-    have [U [l [hU [hreal hEq]]]] := spectral_theorem hSym.
+    have [U [l [hU [hreal hEq]]]] := spectral_decomp hSym.
     split.
     - move=> hPsd.
       have hPsdD : psd (diag_of l).
@@ -236,7 +236,7 @@ Section Spectral.
   Proof.
     move=> Mpsd qf0.
     have Mherm : M \is hermsymmx := psd_hermsym Mpsd.
-    have [U [l [Uunit [lreal Meq]]]] := spectral_theorem Mherm.
+    have [U [l [Uunit [lreal Meq]]]] := spectral_decomp Mherm.
     have hUV : U^t* *m U = 1%:M := unitary_mulV Uunit.
     have lnn : forall i, 0 <= l i.
       apply/(psd_diag_iff_real lreal).
@@ -371,7 +371,7 @@ Section Spectral.
     move=> pdA pdB hAB.
     have Aherm := pd_hermsym pdA.
     have Bherm := pd_hermsym pdB.
-    have [U [l [hU [hreal hAdec]]]] := spectral_theorem Aherm.
+    have [U [l [hU [hreal hAdec]]]] := spectral_decomp Aherm.
     have lpos : forall i, 0 < l i := pd_eigvals_pos pdA hU hreal hAdec.
     have lnz : forall i, l i != 0 by move=> i; rewrite gt_eqF // lpos.
     have l_real_nneg : forall i, l i \is Num.nneg
@@ -432,7 +432,7 @@ Section Spectral.
       have -> : S *m B *m S - S *m A *m S = S *m (B - A) *m S
         by rewrite mulmxBr mulmxBl.
       rewrite {1}Ssym; exact: psd_congr.
-    have [V [lam [hV [lamreal B'dec]]]] := spectral_theorem B'herm.
+    have [V [lam [hV [lamreal B'dec]]]] := spectral_decomp B'herm.
     have lam_ge1 : forall i, 1 <= lam i.
       have hpsd0 : psd (B' - 1%:M) := hIB'.
       have key : B' - 1%:M = V *m diag_of (fun j : 'I_n => lam j - 1) *m V^t*.
@@ -525,7 +525,7 @@ Section Spectral.
   Proof.
     rewrite /psd_le => h1 h2.
     have Mherm : (B - A) \is hermsymmx := psd_hermsym h1.
-    have [U [l [hU [lreal Mdec]]]] := spectral_theorem Mherm.
+    have [U [l [hU [lreal Mdec]]]] := spectral_decomp Mherm.
     have UMU : U^t* *m (B - A) *m U = diag_of l := UAU_decomp hU Mdec.
     have psd_diag_l : psd (diag_of l).
       rewrite -UMU.
@@ -571,7 +571,7 @@ Section Spectral.
   Proof.
     move=> psdA.
     have herm := psd_hermsym psdA.
-    have [U [l [hU [lreal Adec]]]] := spectral_theorem herm.
+    have [U [l [hU [lreal Adec]]]] := spectral_decomp herm.
     have psdD : psd (diag_of l).
       apply: (psd_spec_conj_inj hU); by rewrite -Adec.
     have lnn := proj1 (psd_diag_iff_real lreal) psdD.

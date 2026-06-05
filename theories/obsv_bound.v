@@ -327,7 +327,7 @@ Section ObsvBound.
       apply: psd_le_refl; exact: psd0.
     rewrite [iter k.+1 _ _]/=.
     set Pk := iter k _ _.
-    have Pk_psd : psd Pk := riccati_iter_from_0_psd F G H Q_psd R_pd k.
+    have Pk_psd : psd Pk := riccati_iter0_psd F G H Q_psd R_pd k.
     have Ppred_psd : psd (predict_cov F G Q Pk) := predict_cov_psd F G Q_psd Pk_psd.
     (* Шаг 1: riccati_step Pk <= predict_cov Pk *)
     have step1 : psd_le (riccati_step F G H Q R Pk) (predict_cov F G Q Pk).

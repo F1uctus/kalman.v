@@ -230,7 +230,7 @@ Section Frob.
   Proof.
     move=> pM.
     have herm := psd_hermsym pM.
-    have [U [l [hU [lreal Mdec]]]] := spectral_theorem herm.
+    have [U [l [hU [lreal Mdec]]]] := spectral_decomp herm.
     have psdD : psd (diag_of l) by apply: (psd_spec_conj_inj hU); rewrite -Mdec.
     have lnn := proj1 (psd_diag_iff_real lreal) psdD.
     pose X := Fm *m U.
@@ -281,7 +281,7 @@ Section Frob.
   Proof.
     move=> pM.
     have herm := psd_hermsym pM.
-    have [U [l [hU [lreal Mdec]]]] := spectral_theorem herm.
+    have [U [l [hU [lreal Mdec]]]] := spectral_decomp herm.
     have psdD : psd (diag_of l) by apply: (psd_spec_conj_inj hU); rewrite -Mdec.
     have lnn := proj1 (psd_diag_iff_real lreal) psdD.
     have trM_eq : \tr M = \sum_(i < n) l i.

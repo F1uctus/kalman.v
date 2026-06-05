@@ -13,7 +13,7 @@
     неравенство.
   - `riccati_step_mono` - комбинация двух монотонностей; монотонна на конусе
     неотрицательно определённых матриц.
-  - `riccati_iter_mono_from_0` - последовательность `iter k riccati_step 0`
+  - `riccati_iter0_mono` - последовательность `iter k riccati_step 0`
     неубывающая в порядке Лёвнера. База
     `iter 0 = 0 <= iter 1 = riccati_step 0` - это неотрицательная определённость
     `riccati_step 0`; шаг - `riccati_step_mono`.
@@ -155,7 +155,7 @@ Section RiccatiMonotone.
     move=> psdP.
     rewrite /riccati_step.
     have hPred : psd (predict_cov F G Q P) := predict_cov_psd F G Q_psd psdP.
-    rewrite -(joseph_eq_update H R_pd hPred).
+    rewrite -(joseph_formE H R_pd hPred).
     apply: (update_cov_psd H R_pd hPred).
   Qed.
 
@@ -166,7 +166,7 @@ Section RiccatiMonotone.
     - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)");
     - ср. § 11.2.1, Remark 7 [(Pᵢ) is now Monotone Nondecreasing].
   *)
-  Lemma riccati_iter_mono_from_0 (k : nat) :
+  Lemma riccati_iter0_mono (k : nat) :
     psd_le (iter k (riccati_step F G H Q R) 0)
           (iter k.+1 (riccati_step F G H Q R) 0).
   Proof.
@@ -188,7 +188,7 @@ Section RiccatiMonotone.
   Qed.
 
   (* Следствие: неотрицательная определённость всех итераций. *)
-  Lemma riccati_iter_from_0_psd (k : nat) :
+  Lemma riccati_iter0_psd (k : nat) :
     psd (iter k (riccati_step F G H Q R) 0).
   Proof.
     exact: (riccati_iter_psd F G H Q_psd R_pd k (@psd0 ℂ n)).

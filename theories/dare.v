@@ -16,7 +16,7 @@
     (по непрерывности шага Риккати и единственности предела в матричной топологии).
 
   Схема.
-  1.  Равномерная верхняя оценка `P_iter_bound` - для каждой итерации
+  1.  Равномерная верхняя оценка `Pseq_bnd` - для каждой итерации
       `iter k riccati_step 0 <= Pbnd` в порядке Лёвнера. Эта оценка выводится из
       спектральной устойчивости по Шуру замкнутого контура `Mc = (E − K0 H) F`
       (`spec_rad_lt1 Mc`, для стабилизирующего усиления `K0`), а не из
@@ -26,7 +26,7 @@
       равномерная мажоранта из суммируемости грамиана при устойчивости по Шуру
   - (`lyap_partial_le_bnd_schur`, spec_rad.v);
   - ([kailath2000], § 14.5).
-  2.  `riccati_iter_mono_from_0` даёт монотонность.
+  2.  `riccati_iter0_mono` даёт монотонность.
   3.  `mx_mono_cvgn` - сходимость в матричной топологии.
   4.  `cvgn_riccati_step` (доказано здесь же) - непрерывность шага Риккати на
       неотрицательно определённых входах. Композиция с `Pss_cvgn` и
@@ -163,7 +163,7 @@ Section DARE.
      + K0 *m R *m K0^t*).
 
   (* Спектральная устойчивость по Шуру апостериорного замкнутого контура. *)
-  Lemma cl_contract : spec_rad_lt1 Mc.
+  Lemma Mc_schur : spec_rad_lt1 Mc.
   Proof.
     exact: proj2_sig (cid (detectable_stabilizing_filter F_detectable)).
   Qed.
@@ -182,7 +182,7 @@ Section DARE.
     - ([kailath2000], § 14.2);
     - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)").
   *)
-  Lemma riccati_step_le_cl (Sigma : 'M[ℂ]_n) :
+  Lemma riccati_step_le_Mc (Sigma : 'M[ℂ]_n) :
     psd Sigma ->
     psd_le (riccati_step F G H Q R Sigma) (Mc *m Sigma *m Mc^t* + Wc).
   (*
@@ -223,22 +223,22 @@ Section DARE.
     существования.
   *)
   Definition Pbnd : 'M[ℂ]_n :=
-    proj1_sig (cid (lyap_partial_le_bnd_schur ℂ_archi Wc_psd cl_contract)).
+    proj1_sig (cid (lyap_partial_le_bnd_schur ℂ_archi Wc_psd Mc_schur)).
 
   (*
     iter k riccati_step 0 <= lyap_partial Mc Wc k - индукция через завершение
     квадрата + лево-конгруэнтную монотонность + тождество сдвига частичной суммы
     Ляпунова.
   *)
-  Lemma P_iter_le_lyap_partial k :
+  Lemma Pseq_le_lyap_partial k :
     psd_le (iter k (riccati_step F G H Q R) 0) (lyap_partial Mc Wc k).
   Proof.
     elim: k => [|k IH].
     - rewrite lyap_partial0 /=; apply: psd_le_refl; exact: psd0.
     - rewrite iterS.
       have psd_k : psd (iter k (riccati_step F G H Q R) 0)
-        := riccati_iter_from_0_psd F G H Q_psd R_pd k.
-      apply: (psd_le_trans (riccati_step_le_cl psd_k)).
+        := riccati_iter0_psd F G H Q_psd R_pd k.
+      apply: (psd_le_trans (riccati_step_le_Mc psd_k)).
       rewrite (lyap_partial_shift Mc Wc k) [_ + Wc]addrC.
       apply: psd_le_add2l; apply: psd_le_lcongr; exact: IH.
   Qed.
@@ -246,14 +246,7 @@ Section DARE.
   Lemma lyap_partial_le_Pbnd k : psd_le (lyap_partial Mc Wc k) Pbnd.
   Proof.
     exact: (proj2_sig
-      (cid (lyap_partial_le_bnd_schur ℂ_archi Wc_psd cl_contract)) k).
-  Qed.
-
-  Lemma P_iter_bound k :
-    psd_le (iter k (riccati_step F G H Q R) 0) Pbnd.
-  Proof.
-    apply: (psd_le_trans (P_iter_le_lyap_partial k)).
-    exact: lyap_partial_le_Pbnd k.
+      (cid (lyap_partial_le_bnd_schur ℂ_archi Wc_psd Mc_schur)) k).
   Qed.
 
   (* Траектория из нуля и её базовые свойства. *)
@@ -261,17 +254,18 @@ Section DARE.
 
   Lemma Pseq_psd k : psd (Pseq k).
   Proof.
-    exact: (riccati_iter_from_0_psd F G H Q_psd R_pd k).
+    exact: (riccati_iter0_psd F G H Q_psd R_pd k).
   Qed.
 
   Lemma Pseq_mono k : psd_le (Pseq k) (Pseq k.+1).
   Proof.
-    exact: (riccati_iter_mono_from_0 F G H Q_psd R_pd k).
+    exact: (riccati_iter0_mono F G H Q_psd R_pd k).
   Qed.
 
   Lemma Pseq_bnd k : psd_le (Pseq k) Pbnd.
   Proof.
-    exact: P_iter_bound.
+    apply: (psd_le_trans (Pseq_le_lyap_partial k)).
+    exact: lyap_partial_le_Pbnd k.
   Qed.
 
   (* Существование предела `Pss` в матричной топологии. *)
@@ -395,7 +389,7 @@ Section DARE.
     Lemma Spred_psd k : psd (Spred k).
     Proof.
       apply: (predict_cov_psd F G Q_psd).
-      exact: (riccati_iter_from_0_psd F G H Q_psd R_pd k).
+      exact: (riccati_iter0_psd F G H Q_psd R_pd k).
     Qed.
 
     Lemma Spred_recr k :
@@ -450,7 +444,7 @@ Section DARE.
     Hypothesis K_stab : spec_rad_lt1 cl_loop.
 
     (* Факт (b), установившаяся форма: `P°_i <= Π` для всех i. *)
-    Lemma riccati_iter_le_fixed_gain_sol k :
+    Lemma riccati_iter_le_fixed_gain_lyap_sol k :
       psd_le (iter k (riccati_step F G H Q R) 0)
              (lyap_sol cl_loop cl_weight).
     Proof.
@@ -468,14 +462,14 @@ Section DARE.
 
       - ([kailath2000], § 14.2, факт b).
     *)
-    Theorem Pss_le_fixed_gain_sol :
+    Theorem Pss_le_fixed_gain_lyap_sol :
       psd_le Pss (lyap_sol cl_loop cl_weight).
     Proof.
       apply: (@mx_mono_lim_le ℝ ℂ r2c c2r
               ler_r2c c2rK c2r_continuous r2c_continuous
               n Pseq (lyap_sol cl_loop cl_weight)
               Pseq_psd Pseq_mono).
-      exact: riccati_iter_le_fixed_gain_sol.
+      exact: riccati_iter_le_fixed_gain_lyap_sol.
     Qed.
 
   End FixedGainBound.
@@ -604,7 +598,7 @@ Section DARE.
     Сводный результат: существование неотрицательно определённой неподвижной
     точки ДАУР.
   *)
-  Theorem dare_psd_fix :
+  Theorem dare_psd_sol :
     exists Pss0 : 'M[ℂ]_n,
       [/\ psd Pss0,
           Pss0 = riccati_step F G H Q R Pss0,
@@ -638,13 +632,6 @@ Section DARE.
   Lemma R_e_unit : R_e \in unitmx.
   Proof. apply: innov_cov_inv; [exact: R_pd | exact: P_pss_psd]. Qed.
 
-  (* Из определения `kalman_gain`: `Kf ⋅ R_e = P_pss ⋅ H†`. *)
-  Lemma Kf_R_e_eq : Kf *m R_e = P_pss *m H^t*.
-  Proof.
-    rewrite /kalman_gain -mulmxA mulVmx ?R_e_unit //.
-    by rewrite mulmx1.
-  Qed.
-
   (* `Pss = (E - Kf H) P_pss = update_cov P_pss` (Pss как неподвижная точка). *)
   Lemma Pss_eq_update : Pss = update_cov H R P_pss.
   Proof.
@@ -672,7 +659,8 @@ Section DARE.
   Lemma Fp_Ppss_Ht : Fp *m P_pss *m H^t* = Kp *m R.
   Proof.
     rewrite mulmxBl mulmxBl.
-    rewrite -[F *m P_pss *m H^t*]mulmxA -Kf_R_e_eq mulmxA.
+    rewrite -[F *m P_pss *m H^t*]mulmxA -(kalman_gain_normal_eq H R_pd P_pss_psd).
+    rewrite mulmxA.
     rewrite /innov_cov mulmxDr !mulmxA.
     by rewrite addrAC subrr add0r.
   Qed.
@@ -738,7 +726,7 @@ Section DARE.
     неподвижной точки.
     ============================================================================
 
-    `arb_iter_cvgn` («глобальная сходимость»): итерация ДАУР из любого
+    `riccati_iter_cvgn` («глобальная сходимость»): итерация ДАУР из любого
     неотрицательно определённого начала сходится к `Pss` в матричной топологии.
     Это стандартный результат классической теории ДАУР, требующий устойчивости
     замкнутого контура; у нас он доказан (теорема ниже) через суперрешение +
@@ -765,7 +753,7 @@ Section DARE.
     Схема: показываем, что `Xinf + a Yinf`
     (Xinf := lyap_sol Mc Wc, Yinf := lyap_sol Mc I, a >= 0) - суперрешение, то
     есть `riccati_step (Xinf + a Yinf) <= Xinf + a Yinf`
-    (`scalar_supersolution`). Тогда верхняя траектория
+    (`riccati_step_supersol`). Тогда верхняя траектория
     `iter k riccati_step (Xinf+ a Yinf)` монотонно убывает (в порядке Лёвнера) и
     сходится к неподвижной точке `L` (через mxmonotone.mx_mono_dec_cvgn). По
     единственности положительно определённой неподвижной точки `Pss_unique`
@@ -818,27 +806,27 @@ Section DARE.
   Lemma Xinf_psd : psd Xinf.
   Proof.
     exact: (lyap_sol_psd_schur ler_r2c c2rK c2r_continuous r2c_continuous
-              ℂ_archi Wc_psd cl_contract).
+              ℂ_archi Wc_psd Mc_schur).
   Qed.
 
   Lemma Xinf_fix : Xinf = Mc *m Xinf *m Mc^t* + Wc.
   Proof.
     exact: (lyap_sol_fix_schur ler_r2c c2rK r2c_continuous
-              ℂ_archi Wc_psd cl_contract).
+              ℂ_archi Wc_psd Mc_schur).
   Qed.
 
   Lemma Yinf_psd :
     psd Yinf.
   Proof.
     apply: (lyap_sol_psd_schur ler_r2c c2rK c2r_continuous r2c_continuous ℂ_archi);
-      [exact: pd_psd (pd1 ℂ n) | exact: cl_contract].
+      [exact: pd_psd (pd1 ℂ n) | exact: Mc_schur].
   Qed.
 
   Lemma Yinf_fix :
     Yinf = Mc *m Yinf *m Mc^t* + 1%:M.
   Proof.
     apply: (lyap_sol_fix_schur ler_r2c c2rK r2c_continuous ℂ_archi);
-      [exact: pd_psd (pd1 ℂ n) | exact: cl_contract].
+      [exact: pd_psd (pd1 ℂ n) | exact: Mc_schur].
   Qed.
 
   (* Yinf >= E (нижняя оценка - позволит `a Yinf` мажорировать любое `P0`). *)
@@ -850,14 +838,14 @@ Section DARE.
   Qed.
 
   (* Главная техническая лемма: `Xinf + a Yinf` - суперрешение Риккати. *)
-  Lemma scalar_supersolution (a : ℂ) :
+  Lemma riccati_step_supersol (a : ℂ) :
     a \is Num.real -> 0 <= a ->
     psd_le (riccati_step F G H Q R (Xinf + a *: Yinf)) (Xinf + a *: Yinf).
   Proof.
     move=> a_real a_ge0.
     have psdS : psd (Xinf + a *: Yinf).
       apply: psd_add; [exact: Xinf_psd | exact: psd_scaler a_real a_ge0 Yinf_psd].
-    apply: (psd_le_trans (riccati_step_le_cl psdS)).
+    apply: (psd_le_trans (riccati_step_le_Mc psdS)).
     (* Mc (Xinf + a Yinf) Mc† + Wc = Xinf + a Yinf − a E. *)
     have expand : Mc *m (Xinf + a *: Yinf) *m Mc^t* + Wc
                 = Xinf + a *: Yinf - a *: 1%:M.
@@ -900,7 +888,7 @@ Section DARE.
           (iter k (riccati_step F G H Q R) (Xinf + a *: Yinf)).
   Proof.
     elim: k => [|k IH] /=.
-    - exact: scalar_supersolution a_real a_ge0.
+    - exact: riccati_step_supersol a_real a_ge0.
     - have psd_k : psd (iter k.+1 (riccati_step F G H Q R) (Xinf + a *: Yinf))
         := Pup_psd a_real a_ge0 k.+1.
       have psd_Sk : psd (iter k (riccati_step F G H Q R) (Xinf + a *: Yinf))
@@ -1019,7 +1007,7 @@ Section DARE.
 
     - ([kailath2000], § 14.5, Theorem 14.5.1 "A Sufficiency Result").
   *)
-  Theorem arb_iter_cvgn (P0 : 'M[ℂ]_n) (HP0 : psd P0) :
+  Theorem riccati_iter_cvgn (P0 : 'M[ℂ]_n) (HP0 : psd P0) :
     (fun k => iter k (riccati_step F G H Q R) P0) @ \oo --> Pss.
   Proof.
     pose a : ℂ := \tr P0.
@@ -1151,7 +1139,7 @@ Section DARE.
                   (iter k (riccati_step F G H Q R) P0)))
       @ \oo --> kalman_gain H R (predict_cov F G Q Pss).
   Proof.
-    have HPcvg := arb_iter_cvgn HP0.
+    have HPcvg := riccati_iter_cvgn HP0.
     have HpredCvg :
       (fun k => predict_cov F G Q (iter k (riccati_step F G H Q R) P0))
         @ \oo --> predict_cov F G Q Pss
@@ -1178,10 +1166,10 @@ Section DARE.
               = (fun _ : nat => Pi)
         by apply/funext=> k; exact: HiterPi.
       by rewrite Heq; exact: cvg_cst.
-    (* Та же последовательность сходится к Pss по `arb_iter_cvgn`. *)
+    (* Та же последовательность сходится к Pss по `riccati_iter_cvgn`. *)
     have HarbCvg :
         (fun k => iter k (riccati_step F G H Q R) Pi) @ \oo --> Pss
-      := arb_iter_cvgn (pd_psd HPi_pd).
+      := riccati_iter_cvgn (pd_psd HPi_pd).
     (* Хаусдорфова единственность предела в матричной топологии. *)
     have HausM : hausdorff_space ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ).
       exact: norm_hausdorff.
@@ -1205,7 +1193,7 @@ Section DARE.
 
     - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation").
   *)
-  Theorem dare_full_topological :
+  Theorem dare_stabilizing_sol :
     exists Pss0 : 'M[ℂ]_n,
       [/\ Pss0 = riccati_step F G H Q R Pss0,
           pd Pss0,
@@ -1218,7 +1206,7 @@ Section DARE.
     - exact: Pss_fix.
     - exact: Pss_pd.
     - exact: Pss_le_bnd.
-    - by move=> P0 HP0; exact: arb_iter_cvgn.
+    - by move=> P0 HP0; exact: riccati_iter_cvgn.
     - exact: Pss_unique_pd.
   Qed.
 
@@ -1297,7 +1285,7 @@ Section DARE.
     - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation");
     - ([kailath2000], § 14.5, Theorem 14.5.1 "A Sufficiency Result").
   *)
-  Theorem riccati_steady_state_proven :
+  Theorem dare_stabilizing_sol_frob :
     exists Pss0 : 'M[ℂ]_n,
       Pss0 = riccati_step F G H Q R Pss0 /\ pd Pss0 /\
       forall (P0 : 'M[ℂ]_n), psd P0 ->
@@ -1319,12 +1307,12 @@ Section DARE.
     exists Pss; split; first exact: Pss_fix.
     split; first exact: Pss_pd.
     move=> P0 HP0; split.
-    - exact: cvgn_frob_sq_eps_N (arb_iter_cvgn HP0).
+    - exact: cvgn_frob_sq_eps_N (riccati_iter_cvgn HP0).
     - exact: cvgn_frob_sq_eps_N (Pss_gain_cvgn HP0).
   Qed.
 
   (* Сходимость коэффициента усиления Калмана. *)
-  Theorem kalman_gain_convergence (P0 : 'M[ℂ]_n) :
+  Theorem kalman_gain_frob_cvgn (P0 : 'M[ℂ]_n) :
     psd P0 ->
     exists (Pss0 : 'M[ℂ]_n) (Kp : 'M[ℂ]_(n, p)),
       [/\ Pss0 = riccati_step F G H Q R Pss0,
@@ -1348,7 +1336,7 @@ Section DARE.
   Qed.
 
   (* Сходимость траектории Риккати по норме Фробениуса. *)
-  Theorem riccati_convergence_frob (P0 : 'M[ℂ]_n) :
+  Theorem riccati_frob_cvgn (P0 : 'M[ℂ]_n) :
     psd P0 ->
     exists Pss0 : 'M[ℂ]_n,
       [/\ Pss0 = riccati_step F G H Q R Pss0,
@@ -1362,7 +1350,7 @@ Section DARE.
     exists Pss; split.
     - exact: Pss_fix.
     - exact: Pss_pd.
-    - exact: cvgn_frob_sq_eps_N (arb_iter_cvgn HP0).
+    - exact: cvgn_frob_sq_eps_N (riccati_iter_cvgn HP0).
   Qed.
 
   (*
@@ -1383,7 +1371,7 @@ Section DARE.
   *)
 
   (* Сжатие в порядке Лёвнера: Fp P_pss Fp† <= P_pss. *)
-  Theorem Fp_P_pss_Loewner :
+  Theorem Fp_Ppss_le :
     psd_le (Fp *m P_pss *m Fp^t*) P_pss.
   Proof.
     rewrite /psd_le.
@@ -1473,7 +1461,7 @@ Section DARE.
     зависящая от данных (управляющих входов `us` и измерений `ys`), поэтому
     траектория ковариации фильтра из любого неотрицательно определённого начала
     сходится к `Pss`, а матрица усиления Калмана - к стационарной, по норме
-    Фробениуса (следствие `riccati_steady_state_proven`). Один шаг фильтра
+    Фробениуса (следствие `dare_stabilizing_sol_frob`). Один шаг фильтра
     двигает ковариацию ровно как `riccati_step` (по определению:
     ```
     kf_P (kf_update (kf_predict st u) y)
@@ -1514,7 +1502,7 @@ Section DARE.
     последовательностях измерений имеет сходящуюся к `Pss` ковариацию и
     сходящееся к стационарному коэффициенту усиления (по норме Фробениуса).
   *)
-  Theorem kalman_filter_convergence
+  Theorem kalman_filter_frob_cvgn
       (st0 : kf_state ℂ n) (us : nat -> 'cV[ℂ]_m) (ys : nat -> 'cV[ℂ]_p) :
     psd (kf_P st0) ->
     exists Pss0 : 'M[ℂ]_n,
@@ -1534,7 +1522,7 @@ Section DARE.
                     kalman_gain H R (predict_cov F G Q Pss0))) < eps)].
   Proof.
     move=> psd0.
-    have [Pss0 [HPfix [HPpd Hconv]]] := riccati_steady_state_proven.
+    have [Pss0 [HPfix [HPpd Hconv]]] := dare_stabilizing_sol_frob.
     have [Hcov Hgain] := Hconv (kf_P st0) psd0.
     exists Pss0; split.
     - exact: HPfix.
