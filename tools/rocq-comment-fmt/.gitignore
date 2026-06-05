@@ -1,7 +1,5 @@
 _opam/
 _build/
-*.install
-theories/_RocqProject
 **/*.glob
 **/*.cache
 **/*.aux
@@ -10,5 +8,13 @@ theories/_RocqProject
 **/*.vos
 **/.coq-native/
 **/.rocq-native/
-tools/*
-!tools/rocq-comment-fmt/
+*.exe
+*.out
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+.DS_Store
+*.swp
+*~
