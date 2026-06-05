@@ -1,0 +1,14 @@
+(rocq.extraction
+ (prelude riccati_extract)
+ (extracted_modules riccati)
+ (flags :standard -w -all)
+ (plugins rocq-elpi.elpi)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
+           Kalman Bignums Stdlib))
+(executable
+ (name driver)
+ (libraries zarith yojson)
+ (modules riccati driver)
+ (flags (:standard -w -a)))
