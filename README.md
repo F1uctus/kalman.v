@@ -2,12 +2,12 @@
 This file was generated from `meta.yml`, please do not edit manually.
 Follow the instructions on https://github.com/coq-community/templates to regenerate.
 --->
-# Kalman filter and it's properties
+# Kalman Filter
 
-[![Docker CI][docker-action-shield]][docker-action-link]
+[![Nix CI][nix-action-shield]][nix-action-link]
 
-[docker-action-shield]: https://github.com/F1uctus/kalman.v/actions/workflows/docker-action.yml/badge.svg?branch=main
-[docker-action-link]: https://github.com/F1uctus/kalman.v/actions/workflows/docker-action.yml
+[nix-action-shield]: https://github.com/F1uctus/kalman.v/actions/workflows/nix-action-rocq-9.1.yml/badge.svg?branch=main
+[nix-action-link]: https://github.com/F1uctus/kalman.v/actions/workflows/nix-action-rocq-9.1.yml
 
 
 
@@ -44,7 +44,7 @@ library and it's extraction using CoqEAL and refinements.
 
 ## Building and installation instructions
 
-The easiest way to install the latest released version of Kalman filter and it's properties
+The easiest way to install the latest released version of Kalman Filter
 is via [OPAM](https://opam.ocaml.org/doc/Install.html):
 
 ```shell
