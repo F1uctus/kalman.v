@@ -34,6 +34,7 @@ depends: [
   "rocq-mathcomp-reals" {>= "1.16.0"}
   "rocq-mathcomp-analysis" {>= "1.16.0"}
   "rocq-bignums" {>= "9.0.0+rocq9.1"}
+  "coq-coqeal" {>= "2.1.1"}
 ]
 
 tags: [

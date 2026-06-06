@@ -21,8 +21,8 @@ From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral archimedean.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
-From Kalman Require Import mxnotation mxherm mxdefinite mxloewner mxfrob.
-From Kalman Require Import kalman spec_rad detectability lyap_inv.
+From Kalman Require Import mxnotation mxherm mxdefinite mxloewner mxfrob
+  kalman spec_rad detectability lyap_inv.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

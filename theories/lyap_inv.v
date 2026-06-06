@@ -30,8 +30,8 @@ From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
-From Kalman Require Import mxnotation mxherm mxdefinite mxfrob detectability.
-From Kalman Require Import spectral spec_rad.
+From Kalman Require Import mxnotation mxherm mxdefinite mxfrob detectability
+  spectral spec_rad.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

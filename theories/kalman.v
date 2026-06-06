@@ -51,7 +51,7 @@ Section KalmanFilter.
   Definition predict_cov (P_prev : 'M[ℂ]_n) : 'M[ℂ]_n :=
     F *m P_prev *m F^t* + G *m Q *m G^t*.
 
-  (* Предсказанная ковариация симметрична. *)
+  (* Предсказанная ковариация эрмитова. *)
   Lemma predict_cov_sym (P : 'M[ℂ]_n) :
     P = P^t* -> predict_cov P = (predict_cov P)^t*.
   Proof.
@@ -321,7 +321,7 @@ Section KalmanFilter.
     - exact: psd_lcongr K (pd_psd R_pd).
   Qed.
 
-  (* Симметричность обновлённой ковариации. *)
+  (* Эрмитовость обновлённой ковариации. *)
   Lemma update_cov_sym (P_pred : 'M[ℂ]_n) :
     psd P_pred -> joseph_form P_pred = (joseph_form P_pred)^t*.
   Proof.
