@@ -1,4 +1,7 @@
 _opam/
+result
+result-*
+cachix.txt
 _build/
 *.install
 theories/_RocqProject

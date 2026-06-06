@@ -1,10 +1,10 @@
 ---
-fullname: Kalman filter and it's properties
+fullname: Kalman Filter
 shortname: kalman.v
 opam_name: kalman
 organization: F1uctus
 community: false
-action: true
+action: false
 nix: false
 coqdoc: false
 dune: true
@@ -121,17 +121,6 @@ dependencies:
 tested_rocq_opam_versions:
   - version: "2.5.0-rocq-prover-9.1"
     repo: "mathcomp/mathcomp"
-
-action_appendix: |2-
-            install: |
-              startGroup "Install dependencies"
-                sudo apt-get update -y -q
-                opam pin remove dune -y || true
-                opam install -y "dune>=3.21"
-                opam pin add -n -y -k path $PACKAGE $WORKDIR
-                opam update -y
-                opam install --confirm-level=unsafe-yes -j 2 $PACKAGE --deps-only
-              endGroup
 
 namespace: Kalman
 
