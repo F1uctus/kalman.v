@@ -10,5 +10,3 @@ theories/_RocqProject
 **/*.vos
 **/.coq-native/
 **/.rocq-native/
-tools/*
-!tools/rocq-comment-fmt/

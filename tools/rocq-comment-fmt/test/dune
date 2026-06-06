@@ -1,3 +1,0 @@
-(test
- (name test_fmt)
- (libraries rcf))
