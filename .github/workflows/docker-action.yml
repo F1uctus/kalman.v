@@ -26,7 +26,15 @@ jobs:
         with:
           opam_file: 'kalman.opam'
           custom_image: ${{ matrix.image }}
-
+          install: |
+            startGroup "Install dependencies"
+              sudo apt-get update -y -q
+              opam pin remove dune -y || true
+              opam install -y "dune>=3.21"
+              opam pin add -n -y -k path $PACKAGE $WORKDIR
+              opam update -y
+              opam install --confirm-level=unsafe-yes -j 2 $PACKAGE --deps-only
+            endGroup
 
 # See also:
 # https://github.com/coq-community/docker-coq-action#readme
