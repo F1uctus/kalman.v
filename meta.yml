@@ -112,6 +112,11 @@ dependencies:
       version: '{>= "9.0.0+rocq9.1"}'
     description: |-
       [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution in `riccati_seqmx`
+  - opam:
+      name: coq-coqeal
+      version: '{>= "2.1.1"}'
+    description: |-
+      [CoqEAL](https://github.com/coq-community/coqeal) refinements for seqmx extraction
 
 tested_rocq_opam_versions:
   - version: "2.5.0-rocq-prover-9.1"

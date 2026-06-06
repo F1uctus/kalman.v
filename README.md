@@ -37,6 +37,7 @@ library and it's extraction using CoqEAL and refinements.
   - [MathComp analysis](https://github.com/math-comp/analysis) reals library
   - [MathComp analysis](https://github.com/math-comp/analysis) 1.16.0 or later
   - [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution in `riccati_seqmx`
+  - [CoqEAL](https://github.com/coq-community/coqeal) refinements for seqmx extraction
   - [Dune](https://dune.build) 3.6 or later
 - Rocq/Coq namespace: `Kalman`
 - Related publication(s): none
