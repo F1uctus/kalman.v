@@ -37,8 +37,6 @@
   - @kailath2000[App. D, Theorem D.3.1 "Lyapunov Condition"].
 *)
 
-Set Warnings "-notation-overridden,-coercions,-default".
-
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.

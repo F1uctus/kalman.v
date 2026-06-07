@@ -2,7 +2,7 @@
  (name Kalman)
  (package kalman)
  (synopsis "Kalman filter properties using Rocq and MathComp")
- (flags :standard -w -notation-overridden)
+ (flags :standard -w -notation-overridden -w -ambiguous-paths)
  (modules mxnotation mxdefinite mxloewner spectral expectation mxherm mxhermform
           mxfrob mxtopo mxmonotone riccati_cont riccati_mono obsv_bound lyapunov
           gramian_infty detectability spec_rad lyap_inv riccati_unique dare

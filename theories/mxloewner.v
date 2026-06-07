@@ -4,8 +4,6 @@
   https://en.wikipedia.org/wiki/Loewner_order.
 *)
 
-Set Warnings "-ambiguous-paths,-coercions,-default".
-
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.

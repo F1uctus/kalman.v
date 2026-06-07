@@ -1,5 +1,3 @@
-Set Warnings "-coercions".
-
 From HB Require Import structures.
 From Kalman Require Import mxnotation mxdefinite mxloewner mxherm.
 From mathcomp.boot Require Import all_boot.

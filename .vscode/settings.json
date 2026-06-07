@@ -355,7 +355,15 @@
   ],
   "tinymist.formatterProseWrap": true,
   "tinymist.formatterPrintWidth": 80,
-  "vsrocq.args": ["-R", "_build/default/theories", "Kalman"],
+  "vsrocq.args": [
+    "-R",
+    "_build/default/theories",
+    "Kalman",
+    "-w",
+    "-notation-overridden",
+    "-w",
+    "-ambiguous-paths"
+  ],
   "vsrocq.completion.enable": true,
   "vsrocq.goals.auto": true,
   "vsrocq.path": "./_opam/bin/vsrocqtop",

@@ -13,8 +13,6 @@
   $M_1 - M_2 = 0$.
 *)
 
-Set Warnings "-notation-overridden,-coercions,-default".
-
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.

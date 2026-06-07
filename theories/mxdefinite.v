@@ -8,8 +8,6 @@
   (`psdmxD`, `psdmx_bimap_closed_gen`, `psdmx_dot`).
 *)
 
-Set Warnings "-coercions".
-
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.

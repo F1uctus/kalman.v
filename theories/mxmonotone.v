@@ -14,8 +14,6 @@
   $delta_i + delta_j$ и $delta_i + i delta_j$.
 *)
 
-Set Warnings "-notation-overridden,-coercions,-default".
-
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.

@@ -14,8 +14,6 @@
   неотрицательно определённых матриц (по `innov_cov_inv`).
 *)
 
-Set Warnings "-coercions".
-
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
