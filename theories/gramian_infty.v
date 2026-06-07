@@ -1,12 +1,12 @@
 (*
   Бесконечные грамианы наблюдаемости и управляемости.
 
-  При сжатии по норме Фробениуса `frob_sq F < 1` определены бесконечные грамианы
+  При сжатии по норме Фробениуса $"frob_sq" F < 1$ определены бесконечные грамианы
   как пределы решений соответствующих уравнений Ляпунова:
 
-  obsv_gram_infty F H := lyap_sol (F†) (H† H) <=> X = F† X F + H† H
+  $"obsv_gram_infty" F H := "lyap_sol" (F†) (H† H) <=> X = F† X F + H† H$
 
-  ctrl_gram_infty F G Q := lyap_sol F (G Q G†) <=> X = F X F† + G Q G†
+  $"ctrl_gram_infty" F G Q := "lyap_sol" F (G Q G†) <=> X = F X F† + G Q G†$
 
   Положительная определённость бесконечных грамианов выводится из положительной
   определённости их конечных предшественников
@@ -59,7 +59,7 @@ Section GramianInf.
   Hypothesis Q_psd : psd Q.
   Hypothesis F_contract : frob_sq F < 1.
 
-  (* `frob_sq F† = frob_sq F < 1`. *)
+  (* $"frob_sq" F† = "frob_sq" F < 1$. *)
   Lemma F_trmxC_contract : frob_sq (F^t*) < 1.
   Proof.
     by rewrite frob_sq_trmxC.
@@ -77,14 +77,10 @@ Section GramianInf.
   Qed.
 
   (*
-    ==================================================================
-    Управляемый Грамиан в пределе
-    ==================================================================
-
     Управляемый Грамиан в пределе - решение уравнения Ляпунова
-    `Wc = F Wc F† + G Q G†`.
+    $W_c = F W_c F† + G Q G†$.
 
-    - ([kailath2000], App. C, § C.3).
+    - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
   *)
   Definition ctrl_gram_infty : 'M[ℂ]_n :=
     lyap_sol F (G *m Q *m G^t*).
@@ -127,7 +123,7 @@ Section GramianInf.
   (*
     Положительная определённость бесконечного грамиана управляемости.
 
-    - ([kailath2000], App. C, § C.3).
+    - @kailath2000[App. C, § C.3].
   *)
   Theorem ctrl_gram_infty_pd_of_controllable :
     controllable F G -> pd Q -> pd ctrl_gram_infty.
@@ -140,9 +136,9 @@ Section GramianInf.
 
   (*
     Грамиан наблюдаемости в пределе - решение уравнения Ляпунова
-    `Wo = F† Wo F + H† H`.
+    $W_o = F† W_o F + H† H$.
 
-    - ([kailath2000], App. C, § C.4).
+    - @kailath2000[App. C, § C.4].
   *)
   Definition obsv_gram_infty : 'M[ℂ]_n :=
     lyap_sol (F^t*) (H^t* *m H).
@@ -164,7 +160,7 @@ Section GramianInf.
 
   (*
     Связь конечного `obsv_gram F H E` (без веса `R⁻¹`) с `lyap_partial`.
-    Используем существующий `obsv_gram` с единичной матрицей `E = R`.
+    Используем существующий `obsv_gram` с единичной матрицей $E = R$.
   *)
   Lemma obsv_gram_id_eq_partial k :
     obsv_gram F H 1%:M k = lyap_partial (F^t*) (H^t* *m H) k.
@@ -190,7 +186,7 @@ Section GramianInf.
   (*
     Положительная определённость бесконечного грамиана наблюдаемости.
 
-    - ([kailath2000], App. C, § C.4).
+    - @kailath2000[App. C, § C.4].
   *)
   Theorem obsv_gram_infty_pd_of_observable :
     observable F H -> pd obsv_gram_infty.
@@ -205,14 +201,14 @@ End GramianInf.
 
 (*
   Взвешенный грамиан наблюдаемости с произвольным неотрицательно определённым
-  весом `W`
+  весом $W$:
 
-  `obsv_gram_infty_w F W := lyap_sol (F†) W` <=> X = F† X F + W
+  $"obsv_gram_infty_w" F W := "lyap_sol" (F†) W <=> X = F† X F + W$
 
   Обобщение `obsv_gram_infty`
-  (который = `obsv_gram_infty_w F (H† H)` по определению): вес `W` отвязан от
-  формы `M† M`. Нужен для меры `O_P`, вес которой `W := H† (invmx R) H` не имеет
-  вида `M† M`.
+  (который = $"obsv_gram_infty_w" F (H† H)$ по определению): вес $W$ отвязан от
+  формы $M† M$. Нужен для меры `O_P`, вес которой $W := H† ("invmx" R) H$ не имеет
+  вида $M† M$.
 *)
 Section GramianInfWeighted.
 
@@ -233,7 +229,7 @@ Section GramianInfWeighted.
 
   Definition obsv_gram_infty_w : 'M[ℂ]_n := lyap_sol (F^t*) W.
 
-  (* `frob_sq F† = frob_sq F < 1`. *)
+  (* $"frob_sq" F† = "frob_sq" F < 1$. *)
   Lemma F_trmxC_contract_w : frob_sq (F^t*) < 1.
   Proof. by rewrite frob_sq_trmxC. Qed.
 
@@ -276,14 +272,14 @@ Section ClosedLoopCtrlGramPd.
 
   (*
     Критерий положительной определённости для неподвижной точки Ляпунова
-    замкнутого контура коррекции по выходу `Fp = A − Kp H` с весом
-    `W = Kp R Kp† + Z`, выводимый из полной управляемости исходной пары `(A, Z)`
+    замкнутого контура коррекции по выходу $F_p = A - K_p H$ с весом
+    $W = K_p R K_p† + Z$, выводимый из полной управляемости исходной пары $(A, Z)$
     (а не замкнутого контура - коррекция по выходу управляемость не сохраняет).
 
-    - ([kailath2000], App. D, Lemma D.1.2 v "Properties of the Lyapunov Equation"):
-      управляемость пары `(F, Q^½)` влечёт положительную определённость решения;
-    - ([kailath2000], App. E, Theorem E.6.2 "Positive Definite Solution")Ж тот
-      же вывод на уровне ДАУР.
+    - @kailath2000[App. D, Lemma D.1.2 v "Properties of the Lyapunov Equation"]:
+      управляемость пары $(F, Q^(1/2))$ влечёт положительную определённость решения;
+    - @kailath2000[App. E, Theorem E.6.2 "Positive Definite Solution"]Ж тот же
+      вывод на уровне ДАУР.
   *)
   Lemma controllable_oi_gram_pd (P : 'M[ℂ]_N) :
     psd P ->
@@ -292,12 +288,12 @@ Section ClosedLoopCtrlGramPd.
     pd P.
   (*
     Схема: тождество Ляпунова даёт конечную частичную сумму
-    `lyap_partial Fp W N <= P` (`lyap_partial_fix_le`); на ядре `P` форма
-    частичной суммы зануляется, откуда `W (Fp†)^j v = 0` ∀j<N. Так как
-    `W u = 0 => Kp† u = 0` (R положительно определена) и `Z u = 0`
-    (Z неотрицательно определена), а `Kp† u = 0 => Fp† u = A† u`, по индукции
-    `(Fp†)^j v = (A†)^j v`, значит `Z (A†)^j v = 0`; транспонирование даёт ядро
-    управляемости `(A, Z)`, откуда `v = 0` - т.е. `P` положительно определена.
+    $"lyap_partial" F_p W N prec.eq P$ (`lyap_partial_fix_le`); на ядре $P$ форма
+    частичной суммы зануляется, откуда $W (F_p†)^j v = 0$ для всех $j < N$. Так как
+    $W u = 0 => K_p† u = 0$ ($R$ положительно определена) и $Z u = 0$
+    ($Z$ неотрицательно определена), а $K_p† u = 0 => F_p† u = A† u$, по индукции
+    $(F_p†)^j v = (A†)^j v$, значит $Z (A†)^j v = 0$; транспонирование даёт ядро
+    управляемости $(A, Z)$, откуда $v = 0$ - т.е. $P$ положительно определена.
   *)
   Proof.
     move=> Ppsd Pfix Hctrl.
@@ -340,7 +336,7 @@ Section ClosedLoopCtrlGramPd.
       have h := hge v.
       by rewrite mulmxBr mulmxBl raddfB /= qf0 sub0r oppr_ge0 in h.
     rewrite lyap_partial_qform in Lqf0.
-    (* Зануление W-формы на сопряжённых итерациях `(Fp†)^j v`. *)
+    (* Зануление $W$-формы на сопряжённых итерациях $(F_p†)^j v$. *)
     have ge0 : forall i : 'I_N,
         0 <= \tr (((Fp^t*)^+i *m v)^t* *m W *m ((Fp^t*)^+i *m v)).
       by move=> i; case: Wpsd => _ /(_ ((Fp^t*)^+i *m v)).

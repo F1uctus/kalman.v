@@ -1,8 +1,8 @@
 (*
   Положительная и неотрицательная определённость над алг. замкнутым полем.
 
-  Эрмитова матрица: `A = A^t*`
-  (где `^t* = (^T)^conjC` из `mathcomp.algebra.sesquilinear`).
+  Эрмитова матрица: $A = A†$
+  (где Rocq-нотация `^t*` означает `(^T)^conjC` из `mathcomp.algebra.sesquilinear`).
 
   Доказательства адаптированы из `CoqQ/src/mxpred.v`
   (`psdmxD`, `psdmx_bimap_closed_gen`, `psdmx_dot`).
@@ -69,7 +69,10 @@ Section MatrixDefiniteness.
     exact: addr_ge0 (psdA v) (psdB v).
   Qed.
 
-  (* Определённость матрицы сохраняется при эрмитовой конгруэнтности. *)
+  (*
+    Полуопределённость матрицы сохраняется при правой эрмитовой конгруэнтности
+    матрицей $P$: $A |-> P† A P$.
+  *)
   Lemma psd_congr m (A : 'M[ℂ]_m) (P : 'M[ℂ]_(m, n)) :
     @psd m A -> @psd n (P^t* *m A *m P).
   Proof.
@@ -80,7 +83,10 @@ Section MatrixDefiniteness.
       exact: hA (P *m v).
   Qed.
 
-  (* Определённость матрицы сохраняется при эрмитовой конгруэнтности (слева). *)
+  (*
+    Полуопределённость матрицы сохраняется при левой эрмитовой конгруэнтности
+    матрицей $P$: $A |-> P A P†$.
+  *)
   Lemma psd_lcongr m (A : 'M[ℂ]_m) (P : 'M[ℂ]_(n, m)) :
     @psd m A -> @psd n (P *m A *m P^t*).
   Proof.
@@ -125,7 +131,7 @@ Section MatrixDefiniteness.
 
   (*
     Зануление квадратичной формы положительно определённой матрицы влечёт
-    зануление вектора: pd R -> u† R u = 0 -> u = 0
+    зануление вектора: $"pd" R and u† R u = 0 => u = 0$
     (контрапозиция определения `pd`).
   *)
   Lemma pd_qf0_col0 p (R : 'M[ℂ]_p) (u : 'cV[ℂ]_p) :
@@ -149,7 +155,9 @@ Section MatrixDefiniteness.
     exact: ltr_wpDl (psdB v) (pdA v vNZ).
   Qed.
 
-  (* Обратная к положительно определённой тоже положительно определена. *)
+  (*
+    Обратная к положительно определённой матрице тоже положительно определена.
+  *)
   Lemma pd_inv A :
     pd A -> pd (invmx A).
   Proof.

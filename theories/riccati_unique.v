@@ -2,14 +2,14 @@
   Единственность положительно определённой неподвижной точки апостериорного шага
   Риккати - единственность стабилизирующего решения ДАУР, без внешних гипотез о
   стабилизирующем усилении.
-  - ([kailath2000], App. E, Lemma E.4.3 "Unique Stabilizing Solution").
+  - @kailath2000[App. E, Lemma E.4.3 "Unique Stabilizing Solution"].
 
   См. Lemma 14.4.1 "Local Identities" для разности двух решений:
-  `M1 − M2 = Fp(M1) (M1 − M2) Fp(M2)†`, где `Fp(M) = F − F Kf(M) H` -
-  предсказательный замкнутый контур. Каждый `Fp(Mi)` устойчив по Шуру
+  $M_1 - M_2 = "Fp"(M_1) (M_1 - M_2) "Fp"(M_2)†$, где $"Fp"(M) = F - F "Kf"(M) H$ -
+  предсказательный замкнутый контур. Каждый $"Fp"(M_i)$ устойчив по Шуру
   (`lyap_inv_spec_rad`): положительно определённая предсказанная неподвижная
-  точка с положительно определённым весом `Kp R Kp† + G Q G†`. Отсюда
-  `lyap_two_sided_zero_schur` даёт `M1 − M2 = 0`.
+  точка с положительно определённым весом $K_p R K_p† + G Q G†$. Отсюда
+  `lyap_two_sided_zero_schur` даёт $M_1 - M_2 = 0$.
 *)
 
 Set Warnings "-notation-overridden,-coercions,-default".
@@ -45,12 +45,12 @@ Section RiccatiUnique.
   Hypothesis R_pd : pd R.
 
   (*
-    Стабилизируемость пары процессного шума `(F, G Q^½)`
-    (через неотрицательно определённый вес `G Q G†`). Достаточна для
+    Стабилизируемость пары процессного шума $(F, G Q^(1/2))$
+    (через неотрицательно определённый вес $G Q G†$). Достаточна для
     устойчивости предсказательного контура `Fp` и единственности
     стабилизирующего (неотрицательно определённого) решения ДАУР.
 
-    - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation").
+    - @kailath2000[App. E, Theorem E.5.1 "Algebraic Riccati Equation"].
   *)
   Hypothesis FG_stab : stabilizable F (G *m Q *m G^t*).
 
@@ -60,7 +60,7 @@ Section RiccatiUnique.
   Local Notation predM M := (predict_cov F G Q (update_cov H R M)).
 
   (*
-    Тождество для коэффициента усиления: `Fp(M) M H† = Kp(M) R`
+    Тождество для коэффициента усиления: $"Fp"(M) M H† = "Kp"(M) R$
     (ср. `dare.Fp_Ppss_Ht`).
   *)
   Lemma Fp_M_Ht (M : 'M[ℂ]_n) :
@@ -80,7 +80,7 @@ Section RiccatiUnique.
     by rewrite factor key mulmxA.
   Qed.
 
-  (* `F (E − Kf M H) = Fp M` (свёртка усиления). *)
+  (* $F (E - "Kf" M H) = "Fp" M$ (свёртка усиления). *)
   Lemma F_ImKfH (M : 'M[ℂ]_n) :
     F *m (1%:M - Kf M *m H) = F - F *m Kf M *m H.
   Proof.
@@ -91,20 +91,20 @@ Section RiccatiUnique.
     Тождество замкнутого контура для предсказанной ковариации, для произвольной
     неотрицательно определённой предсказанной точки M
     (форма Ляпунова замкнутого контура для шага Риккати):
-    `P_{i+1} = Fp P_i Fp† + Kp R Kp† + G Q G†`.
+    $P_(i+1) = "Fp" P_i "Fp"† + "Kp" R "Kp"† + G Q G†$.
 
-    - ([kailath2000], § 9.3, Lemma 9.3.2 "Measurement Updates"): апостериорное
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"]: апостериорное
       обновление (9.3.4); форма Джозефа, эквивалентная `update_cov`, первый шаг
       в доказательстве;
-    - ([kailath2000], § 9.3, Lemma 9.3.3 "Time Updates"): шаг предсказания
+    - @kailath2000[§ 9.3, Lemma 9.3.3 "Time Updates"]: шаг предсказания
       (9.3.8 при S=0), т.е. `predict_cov`; в связке с 9.3.2 даёт закрытую форму;
-    - ([kailath2000], § 9.2, Theorem 9.2.1 "The Innovations Recursions"):
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "The Innovations Recursions"]:
       стандартная рекурсия Риккати (9.2.33); алгебраически эквивалентно тому же
       шагу;
-    - ([kailath2000], Prob. 14.4 "Boundedness of P_i for Arbitrary P_0"):
-      ч.(a) - уравнение Ляпунова замкнутого контура `(F − K H) P (F − K H)† + …`
-      для наблюдателя с произвольным стабилизирующим K; при оптимальном Kf
-      совпадает с тождеством.
+    - @kailath2000[Prob. 14.4 "Boundedness of P_i for Arbitrary P_0"]: ч.(a) -
+      уравнение Ляпунова замкнутого контура $(F - K H) P (F - K H)† + dots$ для
+      наблюдателя с произвольным стабилизирующим $K$; при оптимальном $"Kf"$ совпадает
+      с тождеством.
   *)
   Lemma pred_closed_loop_id (M : 'M[ℂ]_n) :
     psd M ->
@@ -119,7 +119,7 @@ Section RiccatiUnique.
     - by rewrite trmxC_mul !mulmxA.
   Qed.
 
-  (* Транспонированное усиление, тождество `H M A2† = R (Kp M)†`. *)
+  (* Транспонированное усиление, тождество $H M A_2† = R ("Kp" M)†$. *)
   Lemma Ht_M_Fp (M : 'M[ℂ]_n) :
     psd M ->
     H *m M *m (F - F *m Kf M *m H)^t* = R *m (F *m Kf M)^t*.
@@ -136,10 +136,8 @@ Section RiccatiUnique.
   (*
     Разностное тождество для двух неотрицательно определённых предсказанных
     неподвижных точек (локальное тождество для разности двух решений):
-    ```
-    M1 − M2 = Fp(M1) (M1 − M2) Fp(M2)†.
-    ```
-    - ([kailath2000], § 14.4, Lemma 14.4.1 "Local Identities").
+    $M_1 - M_2 = "Fp"(M_1) (M_1 - M_2) "Fp"(M_2)†$.
+    - @kailath2000[§ 14.4, Lemma 14.4.1 "Local Identities"].
   *)
   Lemma pred_diff_id (M1 M2 : 'M[ℂ]_n) :
     psd M1 -> psd M2 ->
@@ -199,15 +197,15 @@ Section RiccatiUnique.
     Замкнутый контур неотрицательно определённой предсказанной неподвижной точки
     устойчив по Шуру.
 
-    - ([kailath2000], App. E, Lemma E.4.2 "Stable F − K_{P,Z} H").
+    - @kailath2000[App. E, Lemma E.4.2 "Stable F − K_{P,Z} H"].
   *)
   Lemma Fp_schur (M : 'M[ℂ]_n) :
     psd M ->
     M = predict_cov F G Q (update_cov H R M) ->
     spec_rad_lt1 (F - F *m Kf M *m H).
   (*
-    Схема: баланс по Ляпунову `M = Fp M Fp† + W`
-    (`W := Kp R Kp† + G Q G†`, лишь неотрицательно определён) + перенос
+    Схема: баланс по Ляпунову $M = "Fp" M "Fp"† + W$
+    ($W := "Kp" R "Kp"† + G Q G†$, лишь неотрицательно определён) + перенос
     стабилизируемости на коррекцию по выходу (`stabilizable_oi_reduce`) =>
     устойчивость по Шуру через `lyap_inv_spec_rad_stab`.
   *)
@@ -249,8 +247,8 @@ Section RiccatiUnique.
     Единственность неотрицательно определённой неподвижной точки апостериорного
     шага Риккати.
 
-    - ([kailath2000], App. E, Lemma E.4.3 "Unique Stabilizing Solution");
-    - ([kailath2000], App. E, Theorem E.5.1 "Algebraic Riccati Equation").
+    - @kailath2000[App. E, Lemma E.4.3 "Unique Stabilizing Solution"];
+    - @kailath2000[App. E, Theorem E.5.1 "Algebraic Riccati Equation"].
   *)
   Theorem riccati_step_fix_unique (L1 L2 : 'M[ℂ]_n) :
     psd L1 -> psd L2 ->

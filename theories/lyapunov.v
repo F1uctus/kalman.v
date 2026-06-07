@@ -1,5 +1,5 @@
 (*
-  Дискретное уравнение Ляпунова: `X = A ⋅ X ⋅ A† + Q`.
+  Дискретное уравнение Ляпунова: $X = A dot X dot A† + Q$.
 
   Условия устойчивости и разрешимости:
   1.  Матрица Q должна быть эрмитовой и неотрицательно определённой
@@ -16,16 +16,16 @@
       (frob_sq A < 1), откуда сразу следует |λ| < 1.
 
   При таких условиях частичная сумма
-  `lyap_partial A Q N := ∑_(k<N) A^k Q (A†)^k` монотонно возрастает в порядке
+  $"lyap_partial" A Q N := sum_(k < N) A^k Q (A†)^k$ монотонно возрастает в порядке
   Лёвнера и равномерно ограничена (в том же порядке) матрицей, пропорциональной
   единичной (эквивалентно, ограничена по спектральной норме). Поэтому через
   `mx_mono_lim` определён предел `lyap_sol A Q`, являющийся решением
   (неотрицательно определённой неподвижной точкой) уравнения Ляпунова.
 
   Единственность эрмитовых неподвижных точек разрешается чисто алгебраически
-  через `predict_diff_frob_bound`: для разности `D = X1 - X2` имеем
-  `D = A D A† => frob_sq D <= (frob_sq A)² * frob_sq D`, и из
-  `(frob_sq A)² < 1 => frob_sq D = 0`.
+  через `predict_diff_frob_bound`: для разности $D = X_1 - X_2$ имеем
+  $D = A D A† => "frob_sq" D <= ("frob_sq" A)^2 dot "frob_sq" D$, и из
+  $("frob_sq" A)^2 < 1 => "frob_sq" D = 0$.
 
   Определения:
   - Область неопределенности: В зависимости от ранга ковариационной матрицы это
@@ -33,8 +33,8 @@
     неограниченным вдоль некоторых направлений
     (цилиндр при наличии нулевых собственных значений).
 
-  - ([kailath2000], App. D, § D.1);
-  - ([kailath2000], App. D, Theorem D.3.1 "Lyapunov Condition").
+  - @kailath2000[App. D, § D.1];
+  - @kailath2000[App. D, Theorem D.3.1 "Lyapunov Condition"].
 *)
 
 Set Warnings "-notation-overridden,-coercions,-default".
@@ -80,12 +80,12 @@ Section LyapunovPartialSum.
   Qed.
 
   (*
-    Поскольку матрица шума `Q` определена неотрицательно, `A^N Q (A†)^N` также
+    Поскольку матрица шума $Q$ определена неотрицательно, $A^N Q (A†)^N$ также
     гарантированно будет неотрицательно определён. Следовательно, по правилам
-    порядка Лёвнера: `P_N <= P_(N+1)`
+    порядка Лёвнера: $P_N prec.eq P_(N+1)$.
 
     Геометрически: область неопределённости монотонно расширяется. Область на
-    шаге `N+1` полностью включает в себя область шага `N`.
+    шаге $N+1$ полностью включает в себя область шага $N$.
   *)
   Lemma lyap_partial_recr N :
     lyap_partial N.+1 =
@@ -95,7 +95,7 @@ Section LyapunovPartialSum.
   Qed.
 
   (*
-    Слагаемое шума, добавляемое на `k`-й итерации неотрицательно определено.
+    Слагаемое шума, добавляемое на $k$-й итерации неотрицательно определено.
 
     Геометрически: шум не сужает область неопределённости ни по какому
     направлению.
@@ -119,7 +119,7 @@ Section LyapunovPartialSum.
     матриц соответствует сумме Минковского для их эллипсоидов
     (или, точнее, сложению 'стоимостей' неопределенности в каждом направлении).
     Лемма доказывает, что результат такого сложения `psd (lyap_partial N)`
-    всегда остается выпуклым эллипсоидом, задаваемым `x† P_N x = 1`.
+    всегда остается выпуклым эллипсоидом, задаваемым $x† P_N x = 1$.
   *)
   Lemma lyap_partial_psd N :
     psd (lyap_partial N).
@@ -142,8 +142,8 @@ Section LyapunovPartialSum.
   Qed.
 
   (*
-    Тождество сдвига: `lyap_partial N+1 = Q + A * lyap_partial N * A†`.
-    Доказывается индукцией по `N`.
+    Тождество сдвига: $"lyap_partial" (N+1) = Q + A dot "lyap_partial" N dot A†$.
+    Доказывается индукцией по $N$.
   *)
   Lemma lyap_partial_shift N :
     lyap_partial N.+1 = Q + A *m lyap_partial N *m A^t*.
@@ -161,9 +161,9 @@ Section LyapunovPartialSum.
 
   (*
     Нижняя оценка любой неотрицательно определённой неподвижной точки уравнения
-    Ляпунова `P = A P A† + Q` её частичными суммами: `lyap_partial N <= P`.
+    Ляпунова $P = A P A† + Q$ её частичными суммами: $"lyap_partial" N prec.eq P$.
     Чисто алгебраически (конечная частичная сумма), без устойчивости: разность
-    `P − lyap_partial (N+1) = A (P − lyap_partial N) A†` неотрицательно
+    $P - "lyap_partial" (N+1) = A (P - "lyap_partial" N) A†$ неотрицательно
     определена, по индукции.
   *)
   Lemma lyap_partial_fix_le (P : 'M[ℂ]_n) :
@@ -181,11 +181,11 @@ Section LyapunovPartialSum.
   Qed.
 
   (*
-    Квадратичная форма частичной суммы в точке `v` как сумма W-форм на
-    сопряжённых итерациях `(A†)^j v`, аналогично `obsv_bound.ctrl_gram_qform`
+    Квадратичная форма частичной суммы в точке $v$ как сумма $Q$-форм на
+    сопряжённых итерациях $(A†)^j v$, аналогично `obsv_bound.ctrl_gram_qform`
     для факторизованной весовой матрицы. Лемма используется для выделения
-    поточечного зануления `Q ((A†)^j v) = 0` из условия неотрицательной
-    определённости квадратичной формы `v^* (lyap_partial N) v = 0`.
+    поточечного зануления $Q ((A†)^j v) = 0$ из условия неотрицательной
+    определённости квадратичной формы $v^* ("lyap_partial" N) v = 0$.
   *)
   Lemma lyap_partial_qform (v : 'cV[ℂ]_n) N :
     \tr (v^t* *m lyap_partial N *m v)
@@ -202,8 +202,8 @@ Section LyapunovPartialSum.
   (*
     Геометрическая оценка следа.
 
-    При условии `frob_sq A < 1` след частичной суммы равномерно ограничен
-    `tr Q / (1 - frob_sq A)`.
+    При условии $"frob_sq" A < 1$ след частичной суммы равномерно ограничен
+    $"tr" Q / (1 - "frob_sq" A)$.
   *)
   Lemma lyap_partial_tr_bound (Ac : frob_sq A < 1) (N : nat) :
     \tr (lyap_partial N) <= \tr Q / (1 - frob_sq A).
@@ -284,9 +284,9 @@ Section LyapunovPartialSum.
 End LyapunovPartialSum.
 
 (*
-  Блочная декомпозиция: сумма на [0, N0 M) есть частичная сумма Ляпунова для
-  матрицы `B := A^N0` с весом `W0 := lyap_partial A Q N0`. Это сводит случай
-  устойчивости по Шуру к ограничению `frob_sq B < 1`.
+  Блочная декомпозиция: сумма на $[0, N_0 M)$ есть частичная сумма Ляпунова для
+  матрицы $B := A^(N_0)$ с весом $W_0 := "lyap_partial" A Q N_0$. Это сводит случай
+  устойчивости по Шуру к ограничению $"frob_sq" B < 1$.
 *)
 Lemma lyap_partial_block (ℂ : numClosedFieldType) (n : nat)
     (A Q : 'M[ℂ]_n) N0 M :
@@ -342,7 +342,7 @@ Section LyapunovFixpointUnique.
 
   (*
     Единственность эрмитовой неподвижной точки.
-    - ([kailath2000], App. D, Lemma D.1.1 "Uniqueness of Solutions").
+    - @kailath2000[App. D, Lemma D.1.1 "Uniqueness of Solutions"].
   *)
   Theorem lyap_fix_unique (X1 X2 : 'M[ℂ]_n) :
     X1 \is hermsymmx -> X2 \is hermsymmx ->
@@ -367,8 +367,8 @@ Section LyapunovFixpointUnique.
     have fd_eq0 : frob_sq D = 0.
       apply: le_anti; apply/andP; split; last exact: fd_ge0.
       (*
-        `frob_sq D - c * frob_sq D <= 0 => (1 - c) * frob_sq D <= 0`
-        `=> frob_sq D <= 0`.
+        $"frob_sq" D - c dot "frob_sq" D <= 0 => (1 - c) dot "frob_sq" D <= 0$
+        $=> "frob_sq" D <= 0$.
       *)
       have step : frob_sq D - (frob_sq A) ^+ 2 * frob_sq D <= 0.
         by rewrite subr_le0.
@@ -407,8 +407,8 @@ Section LyapunovSolutionExistence.
   Local Notation P := (lyap_partial A Q).
 
   (*
-    Предел частичных сумм (ряд `∑ Aᵏ Q (A†)ᵏ` - решение уравнения Ляпунова).
-    - ([kailath2000], App. D, Lemma D.1.2 "Properties of the Lyapunov Equation").
+    Предел частичных сумм (ряд $sum_k A^k Q (A†)^k$ - решение уравнения Ляпунова).
+    - @kailath2000[App. D, Lemma D.1.2 "Properties of the Lyapunov Equation"].
   *)
   Definition lyap_sol : 'M[ℂ]_n :=
     mx_mono_lim P.
@@ -446,7 +446,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Неотрицательная определённость решения при неотрицательно определённом Q.
-    - ([kailath2000], App. D, Lemma D.1.2 "Properties of the Lyapunov Equation").
+    - @kailath2000[App. D, Lemma D.1.2 "Properties of the Lyapunov Equation"].
   *)
   Theorem lyap_sol_psd :
     psd lyap_sol.
@@ -498,7 +498,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Решение уравнения Ляпунова является его неподвижной точкой.
-    - ([kailath2000], App. D, Lemma D.1.2 "Properties of the Lyapunov Equation").
+    - @kailath2000[App. D, Lemma D.1.2 "Properties of the Lyapunov Equation"].
   *)
   Theorem lyap_sol_fix :
     lyap_sol = A *m lyap_sol *m A^t* + Q.
@@ -529,7 +529,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Единственность среди эрмитовых решений (частный случай lyap_fix_unique).
-    - ([kailath2000], App. D, Lemma D.1.1 "Uniqueness of Solutions").
+    - @kailath2000[App. D, Lemma D.1.1 "Uniqueness of Solutions"].
   *)
   Theorem lyap_sol_unique (X : 'M[ℂ]_n) :
     X \is hermsymmx ->

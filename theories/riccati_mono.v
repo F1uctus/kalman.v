@@ -3,8 +3,8 @@
 
   В этом файле:
   - `predict_cov_mono` - безусловная монотонность шага предсказания:
-    `predict_cov` линеен в `P`, член `G Q G†` сокращается в разности, остаётся
-    `F (P2 - P1) F†`.
+    `predict_cov` линеен в $P$, член $G Q G†$ сокращается в разности, остаётся
+    $F (P_2 - P_1) F†$.
   - `update_cov_mono` - монотонность шага обновления на всём конусе
     неотрицательно определённых матриц. Доказывается через тождество
     оптимальности `alt_update_cov_diff`: update_cov(P1) <=
@@ -15,10 +15,10 @@
     неотрицательно определённых матриц.
   - `riccati_iter0_mono` - последовательность `iter k riccati_step 0`
     неубывающая в порядке Лёвнера. База
-    `iter 0 = 0 <= iter 1 = riccati_step 0` - это неотрицательная определённость
+    $"iter" 0 = 0 <= "iter" 1 = "riccati_step" 0$ - это неотрицательная определённость
     `riccati_step 0`; шаг - `riccati_step_mono`.
 
-  - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)").
+  - @kailath2000[App. E, Lemma E.3.1 "Monotonicity Properties of α(·)"].
 *)
 
 Set Warnings "-notation-overridden,-coercions,-default".
@@ -50,7 +50,13 @@ Section RiccatiMonotone.
   Hypothesis Q_psd : psd Q.
   Hypothesis R_pd  : pd R.
 
-  (* Монотонность шага предсказания (безусловная). *)
+  (*
+    Монотонность шага предсказания.
+
+    Безусловная монотонность по порядку Лёвнера.
+
+    - @kailath2000[App. E, § E.4 "Properties of the Maximal Solution"].
+  *)
   Lemma predict_cov_mono (P1 P2 : 'M[ℂ]_n) :
     psd_le P1 P2 -> psd_le (predict_cov F G Q P1) (predict_cov F G Q P2).
   Proof.
@@ -65,25 +71,25 @@ Section RiccatiMonotone.
   Qed.
 
   (*
-    Монотонность шага обновления на всём конусе неотрицательно определённых
-    матриц (через тождество оптимальности коэффициента усиления Калмана).
+    Монотонность шага обновления на конусе неотрицательно определённых матриц.
+
+    $P_1 prec.eq P_2 arrow.r.double "update_cov" P_1 prec.eq "update_cov" P_2$.
+
+    - @kailath2000[App. E, § E.4 "Properties of the Maximal Solution"].
   *)
   Lemma update_cov_mono (P1 P2 : 'M[ℂ]_n) :
     psd P1 -> psd P2 -> psd_le P1 P2 ->
     psd_le (update_cov H R P1) (update_cov H R P2).
   (*
-    Идея: для любого альтернативного усиления `K'` имеем
-    ```
-    alt_update_cov K' P2 - alt_update_cov K' P1
-      = (E - K'H) (P2 - P1) (E - K'H)†
-    ```
-    неотрицательно определена, то есть `alt_update_cov K' (·)` монотонен в `P`.
-    Положив `K2 := kalman_gain P2`, получаем
-    `alt_update_cov K2 P2 = update_cov P2`
-    (член `(K2 - K2) S2 (K2 - K2)†` исчезает), и
-    `update_cov P1 <= alt_update_cov K2 P1`
-    (член `(K2 - K1) S1 (K2 - K1)†` неотрицательно определён). Транзитивностью
-    получаем `update_cov P1 <= update_cov P2`.
+    Для любого усиления $K'$ разность
+    $"alt_update_cov" K' P_2 - "alt_update_cov" K' P_1 = (E - K' H)(P_2 - P_1)(E - K' H)†$
+    неотрицательно определена, то есть $"alt_update_cov" K' (dot)$ монотонен по
+    $P$. Положив $K_2 := "kalman_gain" P_2$, имеем
+    $"alt_update_cov" K_2 P_2 = "update_cov" P_2$
+    (член $(K_2 - K_2) S_2 (K_2 - K_2)†$ исчезает) и
+    $"update_cov" P_1 prec.eq "alt_update_cov" K_2 P_1$
+    (член $(K_2 - K_1) S_1 (K_2 - K_1)†$ неотрицательно определён).
+    Транзитивностью $"update_cov" P_1 prec.eq "update_cov" P_2$.
   *)
   Proof.
     move=> psd1 psd2 hLe.
@@ -122,10 +128,12 @@ Section RiccatiMonotone.
   Qed.
 
   (*
-    Монотонность одного шага Риккати на конусе неотрицательно определённых
-    матриц.
+    Монотонность шага Риккати.
 
-    - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)").
+    $P_1 prec.eq P_2 arrow.r.double "riccati_step" P_1 prec.eq "riccati_step" P_2$
+    (на конусе неотрицательно определённых матриц).
+
+    - @kailath2000[App. E, § E.4 "Properties of the Maximal Solution"].
   *)
   Lemma riccati_step_mono (P1 P2 : 'M[ℂ]_n) :
     psd P1 -> psd P2 -> psd_le P1 P2 ->
@@ -141,15 +149,19 @@ Section RiccatiMonotone.
   Qed.
 
   (*
-    Затравочная последовательность от нуля: `iter k riccati_step 0` неубывающая
-    в порядке Лёвнера.
+    Сохранение неотрицательной определённости одним шагом Риккати.
+
+    Шаг Риккати из неотрицательно определённой матрицы даёт неотрицательно
+    определённую матрицу.
+
+    - @kailath2000[App. E, § E.3 "Existence of Solutions to the DARE"].
   *)
   Lemma riccati_step_psd (P : 'M[ℂ]_n) :
     psd P -> psd (riccati_step F G H Q R P).
   (*
-    - База `psd_le 0 (riccati_step 0)` - это неотрицательная определённость
-      `riccati_step 0` (получается через форму Джозефа).
-    - Шаг - `riccati_step_mono`, применённый к IH.
+    Шаг Риккати равен форме Джозефа предсказанной ковариации
+    (лемма $"joseph_formE"$), которая сохраняет неотрицательную определённость
+    (лемма $"update_cov_psd"$).
   *)
   Proof.
     move=> psdP.
@@ -160,11 +172,12 @@ Section RiccatiMonotone.
   Qed.
 
   (*
-    Затравочная последовательность от нуля: `iter k riccati_step 0` неубывающая
-    в порядке Лёвнера.
+    Монотонность траектории из нуля.
 
-    - ([kailath2000], App. E, Lemma E.3.1 "Monotonicity Properties of α(·)");
-    - ср. § 11.2.1, Remark 7 [(Pᵢ) is now Monotone Nondecreasing].
+    Последовательность $"iter" k thin "riccati_step" thin 0$ неубывающая в
+    порядке Лёвнера.
+
+    - @kailath2000[App. E, § E.4 "Properties of the Maximal Solution"].
   *)
   Lemma riccati_iter0_mono (k : nat) :
     psd_le (iter k (riccati_step F G H Q R) 0)
