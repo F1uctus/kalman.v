@@ -5,7 +5,7 @@ on:
   push:
     branches: [main, typst]
     tags: [thesis-*]
-    paths: [paper/**, .github/workflows/thesis.yaml]
+    paths: [paper/**, theories/**, references/**, .github/workflows/thesis.yaml]
 
 permissions:
   contents: write
@@ -16,10 +16,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install typst-djvu (@local)
+        run: |
+          mkdir -p paper/packages/local/djvu
+          rm -rf paper/packages/local/djvu/0.1.0
+          git clone --depth 1 --branch v0.1.0 \
+            https://github.com/F1uctus/typst-djvu \
+            paper/packages/local/djvu/0.1.0
+
       - uses: typst-community/setup-typst@v4
 
       - name: Build PDF
-        run: typst compile paper/thesis.typ paper/thesis.pdf --root .
+        env:
+          TYPST_PACKAGE_PATH: paper/packages
+        run: typst compile paper/thesis.typ paper/thesis.pdf --root . --package-path paper/packages
 
       - uses: softprops/action-gh-release@v2
         if: github.event_name != 'pull_request'
