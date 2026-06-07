@@ -1,8 +1,8 @@
 (*
   Спектральная теорема для эрмитовых матриц над numClosedFieldType.
 
-  Используется напрямую mathcomp.algebra.spectral.orthomx_spectralP: всякая
-  эрмитова матрица унитарно диагонализируема с вещественным спектром
+  Использует mathcomp.algebra.spectral.orthomx_spectralP: всякая эрмитова
+  матрица унитарно диагонализируема и имеет вещественный спектр
   (hermitian_spectral_diag_real).
 *)
 
@@ -30,46 +30,6 @@ Local Open Scope sesquilinear_scope.
 Section Spectral.
 
   Variable (ℂ : numClosedFieldType).
-
-  (* Производные факты об эрмитовых и унитарных матрицах. *)
-
-  Lemma psd_hermsym n (M : 'M[ℂ]_n) :
-    psd M -> M \is hermsymmx.
-  Proof.
-    case=> Msym _; apply/is_hermitianmxP.
-    by rewrite expr0 scale1r -Msym.
-  Qed.
-
-  Lemma pd_hermsym n (M : 'M[ℂ]_n) :
-    pd M -> M \is hermsymmx.
-  Proof.
-    by move/pd_psd/psd_hermsym.
-  Qed.
-
-  Lemma hermsym_eq n (M : 'M[ℂ]_n) :
-    M \is hermsymmx -> M = M^t*.
-  Proof.
-    move/is_hermitianmxP; rewrite expr0 scale1r => <-.
-    by [].
-  Qed.
-
-  Lemma unitary_mulV n (U : 'M[ℂ]_n) :
-    U \is unitarymx -> U^t* *m U = 1%:M.
-  Proof.
-    move=> hU.
-    have hUu : U \in unitmx := unitarymx_unit hU.
-    have := invmx_unitary hU; move=> <-.
-    by rewrite mulVmx.
-  Qed.
-
-  Lemma hermsym_congr n (U M : 'M[ℂ]_n) :
-    M \is hermsymmx -> (U^t* *m M *m U) \is hermsymmx.
-  Proof.
-    move=> hM.
-    apply/is_hermitianmxP; rewrite expr0 scale1r.
-    rewrite [in RHS]trmxC_mul trmxC_mul trmxCK mulmxA.
-    by rewrite -[in RHS](hermsym_eq hM).
-  Qed.
 
   (* diag_of и базовая алгебра диагональных матриц. *)
 
@@ -407,7 +367,7 @@ Section Spectral.
       rewrite /S.
       have hD : diag_of isl \is hermsymmx := diag_of_hermsym isl_real.
       have hH : (U *m diag_of isl *m U^t*) \is hermsymmx.
-        have := @hermsym_congr n (U^t*) (diag_of isl) hD.
+        have := @hermsym_congr ℂ n (U^t*) (diag_of isl) hD.
         by rewrite trmxCK.
       exact: hH.
     have Ssym : S = S^t* by exact: hermsym_eq.
@@ -537,7 +497,7 @@ Section Spectral.
   Qed.
 
   (*
-    Антисимметрия порядка Лёвнера.
+    Антисимметричность порядка Лёвнера.
 
     Если $A prec.eq B$ и $B prec.eq A$, то $A = B$.
   *)
@@ -587,16 +547,16 @@ Section Spectral.
   Qed.
 
   (*
-    Для любой неотрицательно определённой матрицы $A$ выполнено $A prec.eq ("tr" A) E$
-    в порядке Лёвнера.
+    Для любой неотрицательно определённой матрицы $A$ выполнено
+    $A prec.eq ("tr" A) E$ в порядке Лёвнера.
   *)
   Lemma psd_le_trace_id n (A : 'M[ℂ]_n) :
     psd A -> psd_le A (\tr A *: 1%:M).
   (*
-    Пусть A = U diag(λ_1,...,λ_n) U†, где U унитарна, λ_i >= 0. Тогда (tr A) E −
-    A = U ((tr A) E − diag(λ_i)) U† = U diag(tr A − λ_i) U†, причём tr A − λ_i =
-    Σ_(j!=i) λ_j >= 0, поэтому разность неотрицательно определена, откуда и
-    следует неравенство.
+    Пусть $A = U "diag"(λ_1,...,λ_n) U†$, где $U$ унитарна, $λ_i >= 0$. Тогда
+    $(tr A) E − A = U ((tr A) E − "diag"(λ_i)) U† = U "diag"(tr A − λ_i) U†$,
+    причём $tr A − λ_i = Σ_(j!=i) λ_j >= 0$, поэтому разность неотрицательно
+    определена, откуда и следует неравенство.
   *)
   Proof.
     move=> psdA.

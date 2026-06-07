@@ -2,29 +2,29 @@
   Дискретное алгебраическое уравнение Риккати (ДАУР, DARE). Существование и
   неподвижная точка стационарной ковариации.
 
-  $ P = F P F† + G Q G† - K_p R_e K_p†, \ R_e = R + H P_"pss" H†. $
+  - $ P = F P F† + G Q G† - K_p R_e K_p† $
+  - $ R_e = R + H P_pss H†. $
 
   - `Pss := mx_mono_lim (fun k => iter k riccati_step 0)` - предел монотонной
     траектории `iter k riccati_step 0` в матричной топологии
     (получается через `mxmonotone.mx_mono_cvgn`).
   - `Pss_cvgn` - сходимость итерации из нуля к `Pss`.
   - `Pss_psd` - неотрицательная определённость предельной матрицы.
-  - `Pss_fix` - $P_"ss" = "riccati_step" P_"ss"$
+  - `Pss_fix` - $P_ss = "riccati_step" P_ss$
     (по непрерывности шага Риккати и единственности предела в матричной топологии).
 
   Схема.
   1.  Равномерная верхняя оценка `Pseq_bnd` - для каждой итерации
-      $"iter" k "riccati_step" 0 prec.eq P_"bnd"$ в порядке Лёвнера. Эта оценка
+      $"iter" k "riccati_step" 0 prec.eq P_bnd$ в порядке Лёвнера. Эта оценка
       выводится из спектральной устойчивости по Шуру замкнутого контура
       $M_c = (E - K_0 H) F$
       (`spec_rad_lt1 Mc`, для стабилизирующего усиления $K_0$), а не из
-      контракции системной матрицы $"frob_sq" F < 1$: завершение квадрата даёт
-      $"riccati_step" Sigma prec.eq M_c Sigma M_c† + W_c$, откуда
-      $"iter" k "riccati_step" 0 prec.eq "lyap_partial" M_c W_c k prec.eq P_"bnd"$,
-      где $P_"bnd"$ - равномерная мажоранта из суммируемости грамиана при
-      устойчивости по Шуру
-  - (`lyap_partial_le_bnd_schur`, spec_rad.v);
-  - @kailath2000[§ 14.5].
+      контракции системной матрицы $"frob_sq" F < 1$: выделение полного квадрата
+      даёт $"riccati_step" Sigma prec.eq M_c Sigma M_c† + W_c$, откуда
+      $"iter" k "riccati_step" 0 prec.eq "lyap_partial" M_c W_c k prec.eq P_bnd$,
+      где $P_bnd$ - равномерная мажоранта из суммируемости грамиана при
+      устойчивости по Шуру - (`lyap_partial_le_bnd_schur`, spec_rad.v);
+      @kailath2000[§ 14.5].
   2.  `riccati_iter0_mono` даёт монотонность.
   3.  `mx_mono_cvgn` - сходимость в матричной топологии.
   4.  `cvgn_riccati_step` (доказано здесь же) - непрерывность шага Риккати на
@@ -34,11 +34,10 @@
   5.  Положительная определённость `Pss` (`Pss_pd`) выводится из полной
       управляемости `FG_ctrl : controllable F (G Q G†)` гипотеза
   - @kailath2000[App. E, Theorem E.6.2 "Positive Definite Solution"]:
-  предсказанная ss-ковариация
-  $P_"pss" = F_p P_"pss" F_p† + (K_p R K_p† + G Q G†)$
+  предсказанная ss-ковариация $P_pss = F_p P_pss F_p† + (K_p R K_p† + G Q G†)$
   (`riccati_closed_loop_identity`) положительно определена через грамиан
   управляемости замкнутого контура (`gramian_infty.controllable_oi_gram_pd`),
-  затем $P_"ss" = "update_cov" P_"pss"$ сохраняет положительную определённость
+  затем $P_ss = "update_cov" P_pss$ сохраняет положительную определённость
   (`update_cov_pd`).
 *)
 
@@ -137,7 +136,7 @@ Section DARE.
     устойчивым по Шуру. Выделение полного квадрата по $K_0$ даёт неравенство
     $"riccati_step" Sigma prec.eq M_c Sigma M_c† + W_c$,
     $W_c := (E - K_0 H) G Q G† (E - K_0 H)† + K_0 R K_0†$, откуда следует
-    равномерная мажоранта $P_"bnd"$
+    равномерная мажоранта $P_bnd$
     (через суммируемость грамиана при устойчивости по Шуру, `lyap_partial_le_bnd_schur`).
     Суперрешение
     (матрица $X$ с $"riccati_step" X prec.eq X$, мажорирующая итерацию сверху)
@@ -150,7 +149,7 @@ Section DARE.
   Hypothesis F_detectable : detectable F H.
 
   (*
-    Стабилизирующий коэффициент усиления `K0` извлекается из детектируемости
+    Стабилизирующий коэффициент усиления $K_0$ извлекается из детектируемости
     конструктивным выбором `cid` из существования
     (`detectable_stabilizing_filter`).
   *)
@@ -168,7 +167,7 @@ Section DARE.
     exact: proj2_sig (cid (detectable_stabilizing_filter F_detectable)).
   Qed.
 
-  (* Весовая матрица `Wc` замкнутого контура неотрицательно определена. *)
+  (* Весовая матрица $W_c$ замкнутого контура неотрицательно определена. *)
   Lemma Wc_psd : psd Wc.
   Proof.
     apply: psd_add.
@@ -177,7 +176,7 @@ Section DARE.
   Qed.
 
   (*
-    Неравенство с выделением полного квадрата по усилению K0.
+    Неравенство с выделением полного квадрата по усилению $K_0$.
 
     - @kailath2000[§ 14.2];
     - @kailath2000[App. E, Lemma E.3.1 "Monotonicity Properties of α(·)"].
@@ -186,9 +185,10 @@ Section DARE.
     psd Sigma ->
     psd_le (riccati_step F G H Q R Sigma) (Mc *m Sigma *m Mc^t* + Wc).
   (*
-    Схема: riccati_step Σ <= Mc Σ Mc† + Wc. Через `alt_update_cov_diff`
-    (апостериорное усиление K0): update_cov(predict Σ) <= alt_update_cov K0
-    (predict Σ) = (E−K0H)(F Σ F† + G Q G†)(E−K0H)† + K0 R K0† = Mc Σ Mc† + Wc.
+    Схема: $"riccati_step" Σ <= M_c Σ M_c† + W_c$. Через `alt_update_cov_diff`
+    (апостериорное усиление K0):
+    $"update_cov"("predict" Σ) <= "alt_update_cov" K_0$
+    $("predict" Σ) = (E − K_0 H)(F Σ F† + G Q G†)(E − K_0 H)† + K_0 R K_0† = M_c Σ M_c† + W_c$.
   *)
   Proof.
     move=> psdS.
@@ -226,9 +226,9 @@ Section DARE.
     proj1_sig (cid (lyap_partial_le_bnd_schur ℂ_archi Wc_psd Mc_schur)).
 
   (*
-    iter k riccati_step 0 <= lyap_partial Mc Wc k - индукция через завершение
-    квадрата + лево-конгруэнтную монотонность + тождество сдвига частичной суммы
-    Ляпунова.
+    $"iter" k "riccati_step" 0 <= "lyap_partial" M_c W_c k$ - индукция через
+    выделение полного квадрата + лево-конгруэнтную монотонность + тождество
+    сдвига частичной суммы Ляпунова.
   *)
   Lemma Pseq_le_lyap_partial k :
     psd_le (iter k (riccati_step F G H Q R) 0) (lyap_partial Mc Wc k).
@@ -269,7 +269,7 @@ Section DARE.
   Qed.
 
   (*
-    Существование предела `Pss` в матричной топологии.
+    Существование предела $P_ss$ в матричной топологии.
 
     - @kailath2000[App. E, § E.3 "Existence of Solutions to the DARE"].
   *)
@@ -278,7 +278,7 @@ Section DARE.
   (*
     Сходимость траектории из нуля.
 
-    Последовательность $"Pseq"$ сходится к $"Pss"$ в матричной топологии.
+    Последовательность $P_seq$ сходится к $P_ss$ в матричной топологии.
 
     - @kailath2000[§ 14.5, Theorem 14.5.1 "Sufficiency"].
   *)
@@ -324,14 +324,15 @@ Section DARE.
 
     (§ 14.2, обсуждение нулевой Риккати-рекурсии (14.2.1), факт b, c. 507): для
     любого усиления $K$, делающего замкнутый контур наблюдателя $M = F - K_p H$
-    устойчивым ($K_p := F K$), нулевая Риккати-итерация мажорируется сверху $P^circle_i
-    <= Pi$, $Pi = M Pi M† + (G Q G† + K_p R K_p†)$, где $Pi = "lyap_sol" M W$ -
-    установившаяся ковариация ошибки суб-оптимального наблюдателя с усилением
-    $K$. "Наблюдатель с усилением K не может превзойти оптимальный фильтр
-    Калмана" (cf. Prob. 14.4) - отсюда оптимальность (минимальность) `Pss`.
+    устойчивым ($K_p := F K$), нулевая Риккати-итерация мажорируется сверху
+    $P^degree_i <= Pi$, $Pi = M Pi M† + (G Q G† + K_p R K_p†)$, где
+    $Pi = "lyap_sol" M W$ - установившаяся ковариация ошибки суб-оптимального
+    наблюдателя с усилением $K$. "Наблюдатель с усилением K не может превзойти
+    оптимальный фильтр Калмана" (cf. Prob. 14.4) - отсюда оптимальность
+    (минимальность) `Pss`.
 
-    Наша `iter k riccati_step 0` - это в точности $P^circle_i$ (14.2.1), а
-    `Pss = mx_mono_lim` - её предел $P^circle$. Эта же оценка снизу $P^circle_i$
+    Наша `iter k riccati_step 0` - это в точности $P^degree_i$ (14.2.1), а
+    `Pss = mx_mono_lim` - её предел $P^degree$. Эта же оценка снизу $P^degree_i$
     суб-оптимальным наблюдателем - основной шаг ограниченности в Theorem 14.5.1
     (см. также § 14.1.3, c. 502).
   *)
@@ -361,10 +362,10 @@ Section DARE.
     Qed.
 
     (*
-      Завершение полного квадрата (Lem 14.5.1 для произвольного `K`): один
+      Выделение полного квадрата (Lem 14.5.1 для произвольного `K`): один
       предсказательный шаг Риккати мажорируется замкнутым контуром наблюдателя.
       $"update_cov" <= "alt_update_cov"_K$
-      (разность - конгруэнция неотрицательно определённых матриц $(K - K_"калман") R_e (dot)†$),
+      (разность - конгруэнция неотрицательно определённых матриц $(K - K_kalman) R_e (dot)†$),
       далее монотонность `predict_cov` и тождество
       $F dot "alt_update_cov"_K (Sigma F† + G Q G†) = M Sigma M† + W$.
     *)
@@ -411,8 +412,8 @@ Section DARE.
     Proof. by rewrite /Spred iterS /riccati_step. Qed.
 
     (*
-      Spred k <= lyap_partial M W (k+1) - индукция через завершение квадрата +
-      лево-конгруэнтную монотонность + сдвиг частичной суммы.
+      Spred k <= lyap_partial M W (k+1) - индукция через выделение полного
+      квадрата + лево-конгруэнтную монотонность + сдвиг частичной суммы.
     *)
     Lemma Spred_le k :
       psd_le (Spred k) (lyap_partial cl_loop cl_weight k.+1).
@@ -435,7 +436,7 @@ Section DARE.
     Qed.
 
     (*
-      Факт (b), конечная (Грамианная) форма: нулевая Риккати-итерация <=
+      Факт (b), конечная (грамианная) форма: нулевая Риккати-итерация <=
       конечный управляемый Грамиан замкнутого контура любого усиления `K`
       (= ковариация суб-оптимального наблюдателя).
     *)
@@ -457,7 +458,7 @@ Section DARE.
     *)
     Hypothesis K_stab : spec_rad_lt1 cl_loop.
 
-    (* Факт (b), установившаяся форма: $P^circle_i <= Pi$ для всех i. *)
+    (* Факт (b), установившаяся форма: $P^degree_i <= Pi$ для всех i. *)
     Lemma riccati_iter_le_fixed_gain_lyap_sol k :
       psd_le (iter k (riccati_step F G H Q R) 0)
              (lyap_sol cl_loop cl_weight).
@@ -471,7 +472,7 @@ Section DARE.
     Оптимальность установившейся ковариации.
 
     Для любого стабилизирующего наблюдателя с усилением $K$ предельная
-    ковариация $P_(s s)$ не превосходит установившуюся ковариацию ошибки этого
+    ковариация $P_ss$ не превосходит установившуюся ковариацию ошибки этого
     наблюдателя в порядке Лёвнера.
 
     - @kailath2000[App. E, § E.4 "Properties of the Maximal Solution"].
@@ -493,8 +494,7 @@ Section DARE.
 
     Используем элементарные леммы о непрерывности из mxtopo и riccati_cont
     (cvgn_invmx). Имена `predict_cov`, `innov_cov`, `update_cov`, `riccati_step`
-    ниже относятся к kalman.v
-    (не делаем `Import riccati_cont`, только `Require`).
+    ниже относятся к kalman.v.
   *)
   Lemma cvgn_predict_cov_k (Pf : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pf @ \oo --> L ->
@@ -555,7 +555,7 @@ Section DARE.
   (*
     Неподвижная точка Риккати.
 
-    $P_(s s) = "riccati_step"(P_(s s))$.
+    $P_ss = "riccati_step"(P_ss)$.
 
     - @kailath2000[§ 14.5, Theorem 14.5.1 "Sufficiency"].
   *)
@@ -622,7 +622,7 @@ Section DARE.
   Qed.
 
   (*
-    Тождества замкнутого контура для предсказанной ss-ковариации `P_pss`.
+    Тождества замкнутого контура для предсказанной ковариации $P_pss$.
 
     - @kailath2000[§ 14.5].
   *)
@@ -640,9 +640,7 @@ Section DARE.
   Lemma R_e_unit : R_e \in unitmx.
   Proof. apply: innov_cov_inv; [exact: R_pd | exact: P_pss_psd]. Qed.
 
-  (*
-    $P_"ss" = (E - "Kf" H) P_"pss" = "update_cov" P_"pss"$ (неподвижная точка).
-  *)
+  (* $P_ss = (E - "Kf" H) P_pss = "update_cov" P_pss$ (неподвижная точка). *)
   Lemma Pss_eq_update : Pss = update_cov H R P_pss.
   Proof.
     have := Pss_fix.
@@ -657,7 +655,7 @@ Section DARE.
 
   (*
     Предиктор на неподвижной точке свёрнут на замкнутый контур:
-    $P_"pss" = F_p P_"pss" F† + G Q G†$.
+    $P_pss = F_p P_pss F† + G Q G†$.
   *)
   Lemma predict_cov_closed_loop :
     predict_cov F G Q Pss = Fp *m P_pss *m F^t* + G *m Q *m G^t*.
@@ -665,7 +663,7 @@ Section DARE.
     by rewrite {1}/predict_cov {1}Pss_eq_update /update_cov mulmxA F_update_factor.
   Qed.
 
-  (* Важное перекрёстное тождество: $F_p P_"pss" H† = K_p R$. *)
+  (* Важное перекрёстное тождество: $F_p P_pss H† = K_p R$. *)
   Lemma Fp_Ppss_Ht : Fp *m P_pss *m H^t* = Kp *m R.
   Proof.
     rewrite mulmxBl mulmxBl.
@@ -710,11 +708,11 @@ Section DARE.
     pd Pss.
   (*
     Предсказанная установившаяся ковариация
-    $P_("pss") = F_p P_("pss") F_p† + (K_p R K_p† + G Q G†)$ есть неподвижная
-    точка уравнения Ляпунова замкнутого контура; её положительную определённость
-    даёт управляемость исходной пары $(F, G Q G†)$
+    $P_pss = F_p P_pss F_p† + (K_p R K_p† + G Q G†)$ есть неподвижная точка
+    уравнения Ляпунова замкнутого контура; её положительную определённость даёт
+    управляемость исходной пары $(F, G Q G†)$
     (коррекция по выходу управляемость не сохраняет, но перенос условия PBH на ядре даёт результат).
-    Затем $P_(s s) = "update_cov" H R P_("pss")$ сохраняет положительную
+    Затем $P_ss = "update_cov" H R P_pss$ сохраняет положительную
     определённость.
   *)
   Proof.
@@ -757,17 +755,18 @@ Section DARE.
     Глобальная сходимость через суперрешение + теорему о двух милиционерах.
 
     Схема: показываем, что $X_oo + a Y_oo$
-    ($X_oo := "lyap_sol" M_c W_c$, $Y_oo := "lyap_sol" M_c E$, $a >= 0$) - суперрешение, то
-    есть $"riccati_step"(X_oo + a Y_oo) <= X_oo + a Y_oo$
+    ($X_oo := "lyap_sol" M_c W_c$, $Y_oo := "lyap_sol" M_c E$, $a >= 0$) -
+    суперрешение, то есть $"riccati_step"(X_oo + a Y_oo) <= X_oo + a Y_oo$
     (`riccati_step_supersol`). Тогда верхняя траектория
-    $"iter"_k "riccati_step"(X_oo + a Y_oo)$ монотонно убывает (в порядке Лёвнера) и
-    сходится к неподвижной точке $L$ (через mxmonotone.mx_mono_dec_cvgn). По
-    единственности положительно определённой неподвижной точки `Pss_unique`
-    имеем $L = P_(s s)$. Для произвольного неотрицательно определённого $P_0$ берём $a
-    := "tr" P_0$ (тогда $P_0 <= a E <= a Y_oo <= X_oo + a Y_oo$, т.к. $E <= Y_oo$);
-    теорема о двух милиционерах с `iter k r.s. 0` и оценкой $"frob_sq" <= ("tr")^2$
-    даёт сходимость к `Pss`. Суперрешение работает при спектральной устойчивости
-    по Шуру замкнутого контура `spec_rad_lt1 Mc`
+    $"iter"_k "riccati_step"(X_oo + a Y_oo)$ монотонно убывает
+    (в порядке Лёвнера) и сходится к неподвижной точке $L$
+    (через mxmonotone.mx_mono_dec_cvgn). По единственности положительно
+    определённой неподвижной точки `Pss_unique` имеем $L = P_ss$. Для
+    произвольного неотрицательно определённого $P_0$ берём $a := "tr" P_0$
+    (тогда $P_0 <= a E <= a Y_oo <= X_oo + a Y_oo$, т.к. $E <= Y_oo$); теорема о
+    двух милиционерах с `iter k r.s. 0` и оценкой $"frob_sq" <= ("tr")^2$ даёт
+    сходимость к `Pss`. Суперрешение работает при спектральной устойчивости по
+    Шуру замкнутого контура `spec_rad_lt1 Mc`
     (а не системной $"frob_sq" F < 1$): возмущение по Ляпунову $Y_oo$ заменяет
     скаляр $E$, не требуя оценки операторной нормы $M_c$.
 
@@ -775,9 +774,10 @@ Section DARE.
     результат теории ДАУР: любая положительно определённая неподвижная точка
     совпадает с Pss. Доказана через Lemma 14.4.1 (Local Identities) для разности
     двух решений `riccati_step_fix_unique` (riccati_unique.v): разность
-    предсказанных ковариаций удовлетворяет $M_1 - M_2 = F_p(M_1)(M_1 - M_2)F_p(M_2)†$ с
-    обоими устойчивыми по Шуру контурами (`lyap_inv_spec_rad`), откуда
-    `lyap_two_sided_zero_schur` даёт ноль.
+    предсказанных ковариаций удовлетворяет
+    $M_1 - M_2 = F_p(M_1)(M_1 - M_2)F_p(M_2)†$ с обоими устойчивыми по Шуру
+    контурами (`lyap_inv_spec_rad`), откуда `lyap_two_sided_zero_schur` даёт
+    ноль.
 
     - @kailath2000[§ 14.5].
   *)
@@ -790,7 +790,8 @@ Section DARE.
   Qed.
 
   (*
-    Суперрешение Риккати: $"lyap_sol" M_c W_c + a dot "lyap_sol" M_c E$ ($a >= 0$).
+    Суперрешение Риккати: $"lyap_sol" M_c W_c + a dot "lyap_sol" M_c E$
+    ($a >= 0$).
 
     $X_oo := "lyap_sol" M_c W_c$ - решение уравнения Ляпунова замкнутого контура
     $X_oo = M_c X_oo M_c† + W_c$; $Y_oo := "lyap_sol" M_c E$ - положительно
@@ -1001,7 +1002,7 @@ Section DARE.
 
   (*
     Для произвольного неотрицательно определённого P0 - сходимость к Pss.
-    Выбираем a := tr P0; тогда P0 <= a E <= Xinf + a E (суперрешение- старт),
+    Выбираем a := tr P0; тогда P0 <= a E <= Xinf + a E (начальное суперрешение),
     теорема о двух милиционерах с нижней (Pseq) и верхней (Pup) траекториями.
 
     - @kailath2000[§ 14.5, Theorem 14.5.1 "A Sufficiency Result"].
@@ -1132,7 +1133,7 @@ Section DARE.
     Сходимость матрицы усиления Калмана в матричной топологии.
 
     Усиление Калмана, вычисленное по $"iter" k thin "riccati_step" thin P_0$,
-    сходится к $K_(s s) := "kalman_gain"("predict_cov" P_(s s))$.
+    сходится к $K_(s s) := "kalman_gain"("predict_cov" P_ss$.
 
     - @kailath2000[§ 14.5, Theorem 14.5.1 "Sufficiency"].
   *)
@@ -1157,7 +1158,7 @@ Section DARE.
   (*
     Единственность положительно определённой неподвижной точки.
 
-    Если $P_i succ 0$ и $P_i = "riccati_step"(P_i)$, то $P_i = P_(s s)$.
+    Если $P_i succ 0$ и $P_i = "riccati_step"(P_i)$, то $P_i = P_ss$.
 
     - @kailath2000[App. E, Theorem E.5.1 "Algebraic Riccati Equation"].
   *)
@@ -1373,8 +1374,7 @@ Section DARE.
 
   (*
     Стабильность замкнутого контура F_p.
-    $P_"pss" = F_p dot P_"pss" dot F_p† + K_p dot R dot K_p† + G dot Q dot G†$.
-    где:
+    $P_pss = F_p dot P_pss dot F_p† + K_p dot R dot K_p† + G dot Q dot G†$. где:
     - P_pss = predict_cov Pss = F Pss F† + GQG†
       (предсказательная ss-ковариация),
     - Kf = kalman_gain P_pss (усиление фильтра),
@@ -1405,7 +1405,7 @@ Section DARE.
   Qed.
 
   (*
-    Спектральная устойчивость по Шуру матрицы замкнутого контура `Fp`. `P_pss` -
+    Спектральная устойчивость по Шуру матрицы замкнутого контура `Fp`. $P_pss$ -
     положительно определённая неподвижная точка предсказанной ковариации с
     положительно определённым весом $K_p R K_p† + G Q G†$; инверсия Ляпунова
     (`riccati_unique.Fp_schur`) даёт `spec_rad_lt1 Fp`.
@@ -1429,7 +1429,7 @@ Section DARE.
     $
     - @kailath2000[§ 14].
     Для произвольного начала $P_0$ отклонение ковариации
-    $P_k - P_(s s)$ от установившейся распространяется замкнутым контуром `Fp`
+    $P_k - P_ss$ от установившейся распространяется замкнутым контуром `Fp`
     (предикторная форма $F - K_p H$). Энергия этого распространения в норме с
     весом $R^(-1)$ равна бесконечной сумме $sum_k (F_p†)^k (H† R^(-1) H) F_p^k$, т.е.
     бесконечным грамианом наблюдаемости замкнутого контура под весом $H† R^(-1) H$.

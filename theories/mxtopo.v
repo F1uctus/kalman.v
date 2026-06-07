@@ -109,12 +109,13 @@ Section FrobeniusBridge.
 End FrobeniusBridge.
 
 (*
-  Обратное направление: frob_sq (Pf k - L) -> 0 => Pf @ ∞ --> L.
+  Обратное направление: $frob_sq (P_f k - L) -> 0$ => Pf @ ∞ --> L.
 
   Достаточно показать поэлементную сходимость $P^f_k i j -> L_(i j)$
-  (через `mxcvgn_to_cvgn`). Из $|M_(i j)|^2 <= "frob_sq" M$ (`frob_sq_entry_ge` выше)
-  и $"frob_sq" -> 0$ (вместе с $0 <= |P^f_k i j - L_(i j)|^2 <= "frob_sq"(P^f_k - L)$)
-  получаем $|P^f_k i j - L_(i j)|^2 -> 0$, откуда $|dot| -> 0$ и $(P^f_k - L)_(i j) -> 0$
+  (через `mxcvgn_to_cvgn`). Из $|M_(i j)|^2 <= "frob_sq" M$
+  (`frob_sq_entry_ge` выше) и $"frob_sq" -> 0$
+  (вместе с $0 <= |P^f_k i j - L_(i j)|^2 <= "frob_sq"(P^f_k - L)$) получаем
+  $|P^f_k i j - L_(i j)|^2 -> 0$, откуда $|dot| -> 0$ и $(P^f_k - L)_(i j) -> 0$
   поэлементно - что и даёт $P^f_k i j -> L_(i j)$.
 *)
 Section FrobToMxCvg.
@@ -124,8 +125,8 @@ Section FrobToMxCvg.
   Implicit Types (Pf : nat -> 'M[ℂ]_(r, c)) (L : 'M[ℂ]_(r, c)).
 
   (*
-    Технический шаг: для ℂ-значной последовательности s >= 0, если s <= t и t ->
-    0 в ℂ^o, то s -> 0 в ℂ^o.
+    Технический шаг: для ℂ-значной последовательности $s >= 0$, если $s <= t$ и
+    $t -> 0$ в ℂ^o, то $s -> 0$ в ℂ^o.
   *)
   Lemma cvgC_le0_squeeze (s t : nat -> ℂ) :
     (forall k, 0 <= s k) -> (forall k, s k <= t k) ->
@@ -166,7 +167,7 @@ Section FrobToMxCvg.
       - by move=> k; exact: frob_sq_entry_ge.
       - exact: Hfrob.
     (*
-      Шаг 2: $|dot|^2 -> 0$ => $|dot| -> 0$. Доказательство: для любого ε > 0
+      Шаг 2: $|dot|^2 -> 0$ => $|dot| -> 0$. Доказательство: для любого $ε > 0$
       достаточно подойти к $|dot|^2 < epsilon^2$.
     *)
     have Habs_sq_o :
@@ -188,8 +189,8 @@ Section FrobToMxCvg.
       have nneg : 0 <= `|(Pf k - L) i j| by exact: normr_ge0.
       have eps_ge0 : 0 <= eps by exact: ltW eps_pos.
       (*
-        $|dot|^2 < "eps"^2$ и $0 <= |dot|$, $0 <= "eps"$ => $|dot| < "eps"$. Через mono-форму
-        `ltr_pXn2r`: $(x^2 < y^2) = (x < y)$ на `Num.nneg`.
+        $|dot|^2 < "eps"^2$ и $0 <= |dot|$, $0 <= "eps"$ => $|dot| < "eps"$.
+        Через mono-форму `ltr_pXn2r`: $(x^2 < y^2) = (x < y)$ на `Num.nneg`.
       *)
       have abs_in : `|(Pf k - L) i j| \is Num.nneg by rewrite nnegrE.
       have eps_in : eps \is Num.nneg by rewrite nnegrE.
@@ -219,7 +220,9 @@ Section FrobToMxCvg.
     apply/mxcvgn_to_cvgn=> i j.
     have Hdiff : (fun k => (Pf k - L) i j) @ \oo --> (0 : ℂ)
       := frob_sq_to_entry_cvg0 i j Hfrob.
-    (* $P^f_k i j = (P^f_k - L)_(i j) + L_(i j)$ - добавляем константу $L_(i j)$. *)
+    (*
+      $P^f_k i j = (P^f_k - L)_(i j) + L_(i j)$ - добавляем константу $L_(i j)$.
+    *)
     have Heq_decomp : (fun k => Pf k i j) = (fun k => (Pf k - L) i j + L i j).
       apply/funext=> k.
       by rewrite !mxE subrK.
@@ -263,8 +266,8 @@ End IsometryContinuous.
 (*
   Непрерывность матричных операций.
 
-  Сложение и вычитание берём напрямую через `pseudoMetricNormedZmodType`-инстанс
-  для `'M[ℂ]_(r, c)`.
+  Сложение и вычитание берём напрямую через инстанцирование
+  `pseudoMetricNormedZmodType` для `'M[ℂ]_(r, c)`.
 
   Для произведения, следа и эрмитова сопряжения сводимся к поэлементной
   сходимости (через `mxcvgnP`). На скалярном уровне арифметика над
@@ -434,15 +437,15 @@ End Continuity.
 (*
   Сходимость комплексной геометрической прогрессии при аксиоме Архимеда.
 
-  Геометрическое затухание r^k -> 0 при 0 <= r < 1. Доказывается напрямую через
-  бином Бернулли + натуральный мажорант (через `truncn`).
+  Геометрическая прогрессия $r^k -> 0$ при $0 <= r < 1$. Доказывается напрямую
+  через бином Бернулли + натуральный мажорант (через `truncn`).
 *)
 Section MxCvgArchi.
 
   Variable (ℂ : numClosedFieldType).
   Hypothesis ℂ_archi : Num.archimedean_axiom ℂ.
 
-  (* Натуральный мажорант: для 0 <= x существует N с x < N%:R. *)
+  (* Натуральный мажорант: для $0 <= x$ существует $N$ с x < N%:R. *)
   Lemma archi_natbound {x : ℂ} : 0 <= x -> exists N : nat, x < N%:R.
   Proof.
     by move=> x_ge0; have [N hN] := ℂ_archi x; exists N;
@@ -459,9 +462,9 @@ Section MxCvgArchi.
   Qed.
 
   (*
-    Неравенство Бернулли в мультипликативной форме: k.+1 (1 - r) r^k <=
-    (r + (1 - r))^(k+1) = 1. Извлекаем i = 1 член бинома Ньютона (bigD1),
-    остальные >= 0.
+    Неравенство Бернулли в мультипликативной форме:
+    $k+1 (1 - r) r^k <= (r + (1 - r))^(k+1) = 1$. Извлекаем $i = 1$ член бинома
+    Ньютона (bigD1), остальные $>= 0$.
   *)
   Lemma bernoulli_bound (r : ℂ) (k : nat) :
     0 <= r -> r <= 1 -> k.+1%:R * (1 - r) * r ^+ k <= 1.
@@ -480,9 +483,9 @@ Section MxCvgArchi.
   Qed.
 
   (*
-    Геометрическое затухание степеней: r^(k+1) -> 0 при 0 <= r < 1. Через ε–N:
-    r^(k+1) <= r^k <= (k.+1 (1 - r))^-1 (Бернулли), и (k.+1 (1 - r))^-1 < ε при
-    k.+1 > (ε (1 - r))^-1 (archi_natbound).
+    Геометрическая прогрессия: $r^(k+1) -> 0$ при $0 <= r < 1$. Через ε–N:
+    $r^(k+1) <= r^k <= (k+1 (1 - r))^(-1)$ (Бернулли), и
+    $(k+1 (1 - r))^(-1) < ε$ при $k+1 > (ε (1 - r))^(-1)$ (archi_natbound).
   *)
   Lemma r_pow_cvgn0 (r : ℂ) :
     0 <= r -> r < 1 ->

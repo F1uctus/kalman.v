@@ -15,8 +15,8 @@
     неотрицательно определённых матриц.
   - `riccati_iter0_mono` - последовательность `iter k riccati_step 0`
     неубывающая в порядке Лёвнера. База
-    $"iter" 0 = 0 <= "iter" 1 = "riccati_step" 0$ - это неотрицательная определённость
-    `riccati_step 0`; шаг - `riccati_step_mono`.
+    $"iter" 0 = 0 <= "iter" 1 = "riccati_step" 0$ - это неотрицательная
+    определённость `riccati_step 0`; шаг - `riccati_step_mono`.
 
   - @kailath2000[App. E, Lemma E.3.1 "Monotonicity Properties of α(·)"].
 *)

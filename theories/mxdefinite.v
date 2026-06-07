@@ -51,6 +51,21 @@ Section MatrixDefiniteness.
     exact: ltW (pdA v vNZ).
   Qed.
 
+  (* Неотрицательно определённая матрица эрмитова. *)
+  Lemma psd_hermsym (M : 'M[ℂ]_n) :
+    psd M -> M \is hermsymmx.
+  Proof.
+    case=> Msym _; apply/is_hermitianmxP.
+    by rewrite expr0 scale1r -Msym.
+  Qed.
+
+  (* Положительно определённая матрица эрмитова. *)
+  Lemma pd_hermsym (M : 'M[ℂ]_n) :
+    pd M -> M \is hermsymmx.
+  Proof.
+    by move/pd_psd/psd_hermsym.
+  Qed.
+
   (* Нулевая матрица определена неотрицательно. *)
   Lemma psd0 :
     psd (0 : 'M[ℂ]_n).

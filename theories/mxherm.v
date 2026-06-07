@@ -72,4 +72,36 @@ Section HermitianTranspose.
     by apply/eqP; rewrite -(trmxCK M) h trmxC0.
   Qed.
 
+  Lemma hermsym_eq n (M : 'M[ℂ]_n) :
+    M \is hermsymmx -> M = M^t*.
+  (*
+    Лемму рефлексии is_hermitianmxP:
+    `reflect (M = (-1) ^+ eps *: M ^t theta) (M \is hermitianmx n eps theta)`
+    можно использовать как на эрмитовых ($eps = 0$), так и на косоэрмитовых
+    ($eps = 1$) матрицах.
+  *)
+  Proof.
+    move/is_hermitianmxP.
+    rewrite expr0 scale1r => <-.
+    by [].
+  Qed.
+
+  Lemma unitary_mulV n (U : 'M[ℂ]_n) :
+    U \is unitarymx -> U^t* *m U = 1%:M.
+  Proof.
+    move=> hU.
+    have hUu : U \in unitmx := unitarymx_unit hU.
+    have := invmx_unitary hU; move=> <-.
+    by rewrite mulVmx.
+  Qed.
+
+  Lemma hermsym_congr n (U M : 'M[ℂ]_n) :
+    M \is hermsymmx -> (U^t* *m M *m U) \is hermsymmx.
+  Proof.
+    move=> hM.
+    apply/is_hermitianmxP; rewrite expr0 scale1r.
+    rewrite [in RHS]trmxC_mul trmxC_mul trmxCK mulmxA.
+    by rewrite -[in RHS](hermsym_eq hM).
+  Qed.
+
 End HermitianTranspose.

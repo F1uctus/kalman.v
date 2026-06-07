@@ -283,8 +283,8 @@ Section KalmanFilter.
   (*
     Положительная определённость инновационной ковариации.
 
-    Если $P_(k|k-1) succ.eq 0$, то $"innov_cov" P_(k|k-1) succ 0$, откуда существует
-    $S^(-1)$.
+    Если $P_(k|k-1) succ.eq 0$, то $"innov_cov" P_(k|k-1) succ 0$, откуда
+    существует $S^(-1)$.
 
     - @kailath2000[§ 9.5 "An Important Special Assumption: R"].
   *)
@@ -524,8 +524,8 @@ Section KalmanFilter.
   (*
     Лёвнерова доминированность шага обновления.
 
-    Если $P_(k|k-1) succ.eq 0$, то $P_(k|k-1) - P_(k|k) succ.eq 0$, причём явная формула
-    разности равна $(H P_(k|k-1))† S_k^(-1) (H P_(k|k-1))$.
+    Если $P_(k|k-1) succ.eq 0$, то $P_(k|k-1) - P_(k|k) succ.eq 0$, причём явная
+    формула разности равна $(H P_(k|k-1))† S_k^(-1) (H P_(k|k-1))$.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)

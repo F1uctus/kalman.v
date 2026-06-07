@@ -1,10 +1,6 @@
 (*
   Норма Фробениуса для матриц над алгебраически замкнутым полем.
-  $
-    norm(M)_F^2 = "tr" (M† dot M) \
-               = sum_(i,j) (M_(i j))† dot M_(i j) \
-               = sum_(i,j) |M_(i j)|^2
-  $
+  $ norm(M)_F^2 = "tr" (M† dot M) \ = sum_(i,j) (M_(i j))† dot M_(i j) \ = sum_(i,j) |M_(i j)|^2 $
   Нужна для:
   - Метрики на матрицах (через $norm(A - B)_F^2$);
   - Монотонной сходимости неотрицательно определённых последовательностей;
@@ -272,8 +268,8 @@ Section Frob.
     psd M -> frob_sq M <= (\tr M) ^+ 2.
   (*
     Через спектральное разложение $M = U "diag"(l) U†, space l_i >= 0$:
-    $"frob_sq" M = "tr"(M† M) = "tr" M^2 = sum_i l_i^2$, $"tr" M = sum_i l_i$,
-    и для неотрицательных $l_i$: $sum l_i^2 <= (sum l_i)^2$ (перекрёстные $>= 0$).
+    $"frob_sq" M = "tr"(M† M) = "tr" M^2 = sum_i l_i^2$, $"tr" M = sum_i l_i$, и
+    для неотрицательных $l_i$: $sum l_i^2 <= (sum l_i)^2$ (перекрёстные $>= 0$).
 
     Нужно, чтобы из $"tr"(U_k - L_k) -> 0$ и $0 <= X_k - L_k <= U_k - L_k$
     (неотрицательно определены) вывести $"frob_sq" -> 0$.
@@ -328,8 +324,8 @@ Section Frob.
   Qed.
 
   (*
-    Неотрицательная определённость $D dot F_m† dot F_m dot D$ при эрмитовой $D$ - частный
-    случай `psd_congr` для неотрицательно определённой матрицы
+    Неотрицательная определённость $D dot F_m† dot F_m dot D$ при эрмитовой
+    $D$ - частный случай `psd_congr` для неотрицательно определённой матрицы
     $F_m† dot F_m$ (через `psd_frob`).
   *)
   Lemma psd_conj_herm_FtF n m (Fm : 'M[ℂ]_(n, m)) (D : 'M[ℂ]_m) :
@@ -353,8 +349,8 @@ Section Frob.
   (*
     Схема: $F_m D F_m†$ эрмитова (т.к. $D$ эрмитова), значит
     $"frob_sq"(F_m D F_m†) = "tr"((F_m D F_m†)^2)$. Применяем `tr_conj_frob_le`
-    ($"psd"(D F_m† F_m D)$) и `tr_conj_frob_le` ($"psd"(F_m† F_m)$) - каждое даёт
-    коэффициент $"frob_sq" F_m$. Итого
+    ($"psd"(D F_m† F_m D)$) и `tr_conj_frob_le` ($"psd"(F_m† F_m)$) - каждое
+    даёт коэффициент $"frob_sq" F_m$. Итого
     $("frob_sq" F_m)^2 dot "tr"(D^2) = ("frob_sq" F_m)^2 dot "frob_sq" D$
     ($D$ эрмитова $=> "frob_sq" D = "tr" D^2$).
   *)
@@ -376,9 +372,9 @@ Section Frob.
     - by apply: psd_tr_ge0; exact: psd_DFtFD.
     - exact: lexx.
     (*
-      Цель: $"tr"(D F† F D) <= "frob_sq" F_m dot "frob_sq" D$. $D F† F D = D (F† F) D$, и
-      $D = D†$ (Эрмитовость); применяем `tr_conj_frob_le` ещё раз с $F_m := D$,
-      $M := F† F_m$.
+      Цель: $"tr"(D F† F D) <= "frob_sq" F_m dot "frob_sq" D$.
+      $D F† F D = D (F† F) D$, и $D = D†$ (Эрмитовость); применяем
+      `tr_conj_frob_le` ещё раз с $F_m := D$, $M := F† F_m$.
     *)
     - have hD : D = D^t* by exact: hermsym_eq.
       have rewriteDFtFD : D *m Fm^t* *m Fm *m D = D *m (Fm^t* *m Fm) *m D^t*.
