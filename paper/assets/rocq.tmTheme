@@ -3,7 +3,7 @@
 <plist version="1.0">
   <dict>
     <key>name</key>
-    <string>Rocq Prover</string>
+    <string>Rocq Prover (Proof General)</string>
     <key>settings</key>
     <array>
       <dict>
@@ -12,79 +12,13 @@
           <key>background</key>
           <string>#ffffff</string>
           <key>foreground</key>
-          <string>#1f2933</string>
+          <string>#000000</string>
           <key>caret</key>
-          <string>#0f172a</string>
+          <string>#000000</string>
           <key>lineHighlight</key>
-          <string>#f1f5f9</string>
+          <string>#f5f5f5</string>
           <key>selection</key>
-          <string>#e2e8f0</string>
-        </dict>
-      </dict>
-      <dict>
-        <key>name</key>
-        <string>Rocq Keywords</string>
-        <key>scope</key>
-        <string>keyword.source.rocq, keyword.control.import.rocq, keyword.control.gallina,
-          keyword.control.ltac, keyword.debug.rocq</string>
-        <key>settings</key>
-        <dict>
-          <key>foreground</key>
-          <string>#0f4c81</string>
-          <key>fontStyle</key>
-          <string>bold</string>
-        </dict>
-      </dict>
-      <dict>
-        <key>name</key>
-        <string>Rocq Declaration Keywords</string>
-        <key>scope</key>
-        <string>keyword</string>
-        <key>settings</key>
-        <dict>
-          <key>foreground</key>
-          <string>#0369a1</string>
-          <key>fontStyle</key>
-          <string>bold</string>
-        </dict>
-      </dict>
-      <dict>
-        <key>name</key>
-        <string>Rocq Gallina Core</string>
-        <key>scope</key>
-        <string>keyword.control.gallina, keyword.operator.rocq, support.type.rocq</string>
-        <key>settings</key>
-        <dict>
-          <key>foreground</key>
-          <string>#be185d</string>
-          <key>fontStyle</key>
-          <string>bold</string>
-        </dict>
-      </dict>
-      <dict>
-        <key>name</key>
-        <string>Rocq Entities</string>
-        <key>scope</key>
-        <string>entity.name.function.theorem.rocq, entity.name.function.ltac.rocq,
-          entity.name.type.rocq, entity.name.assumption.rocq, support.function.builtin.ltac</string>
-        <key>settings</key>
-        <dict>
-          <key>foreground</key>
-          <string>#0f766e</string>
-          <key>fontStyle</key>
-          <string>bold</string>
-        </dict>
-      </dict>
-      <dict>
-        <key>name</key>
-        <string>Rocq Strings</string>
-        <key>scope</key>
-        <string>string.quoted.double.rocq, punctuation.definition.string.begin.rocq,
-          punctuation.definition.string.end.rocq</string>
-        <key>settings</key>
-        <dict>
-          <key>foreground</key>
-          <string>#15803d</string>
+          <string>#d0d0d0</string>
         </dict>
       </dict>
       <dict>
@@ -95,31 +29,171 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#64748b</string>
+          <string>#228B22</string>
           <key>fontStyle</key>
           <string>italic</string>
         </dict>
       </dict>
       <dict>
         <key>name</key>
-        <string>Rocq Numbers</string>
+        <string>Rocq Vernacular</string>
         <key>scope</key>
-        <string>constant.numeric.gallina</string>
+        <string>keyword.vernacular.rocq</string>
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#7c3aed</string>
+          <string>#8B008B</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Gallina and Sorts</string>
+        <key>scope</key>
+        <string>keyword.gallina.rocq, keyword.sort.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#228B22</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Tactics</string>
+        <key>scope</key>
+        <string>keyword.tactic.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#0000CD</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Terminators</string>
+        <key>scope</key>
+        <string>keyword.terminator.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#EE0000</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Tacticals</string>
+        <key>scope</key>
+        <string>keyword.tactical.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#9400D3</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Operators</string>
+        <key>scope</key>
+        <string>keyword.operator.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#696969</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Debug</string>
+        <key>scope</key>
+        <string>keyword.debug.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#8B008B</string>
+          <key>fontStyle</key>
+          <string>italic</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Entities</string>
+        <key>scope</key>
+        <string>entity.name.function.theorem.rocq, entity.name.function.rocq,
+          entity.name.function.ltac.rocq, entity.name.type.decl.rocq,
+          entity.name.assumption.rocq, entity.name.intro.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#0f766e</string>
+          <key>fontStyle</key>
+          <string>bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Uppercase Identifiers</string>
+        <key>scope</key>
+        <string>entity.name.type.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#000000</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Primitives</string>
+        <key>scope</key>
+        <string>constant.language.primitive.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#000000</string>
         </dict>
       </dict>
       <dict>
         <key>name</key>
         <string>Rocq Builtins</string>
         <key>scope</key>
-        <string>constant.language.constructor.rocq, constant.language.wildcard.rocq</string>
+        <string>constant.language.builtin.rocq, constant.language.constructor.rocq,
+          constant.language.wildcard.rocq</string>
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b45309</string>
+          <string>#000000</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Strings</string>
+        <key>scope</key>
+        <string>string.quoted.double.rocq, string.quoted.single.rocq,
+          punctuation.definition.string.begin.rocq,
+          punctuation.definition.string.end.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#15803d</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Numbers</string>
+        <key>scope</key>
+        <string>constant.numeric.rocq</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#191970</string>
         </dict>
       </dict>
       <dict>
@@ -133,6 +207,17 @@
           <string>#b91c1c</string>
           <key>fontStyle</key>
           <string>italic bold</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Rocq Keyword Fallback</string>
+        <key>scope</key>
+        <string>keyword</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#0000AA</string>
         </dict>
       </dict>
     </array>

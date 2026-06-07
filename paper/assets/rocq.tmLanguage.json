@@ -5,157 +5,6 @@
   "name": "Rocq",
   "patterns": [
     {
-      "match": "\\b(From|Require|Import|Export|Local|Global|Include)\\b",
-      "comment": "Vernacular import keywords",
-      "name": "keyword.control.import.rocq"
-    },
-    {
-      "match": "\\b((Open|Close|Delimit|Undelimit|Bind)\\s+Scope)\\b",
-      "comment": "Vernacular scope keywords",
-      "name": "keyword.control.import.rocq"
-    },
-    {
-      "match": "\\b(Theorem|Lemma|Remark|Fact|Corollary|Property|Proposition)\\s+((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
-      "comment": "Theorem declarations",
-      "captures": {
-        "1": {
-          "name": "keyword.source.rocq"
-        },
-        "2": {
-          "name": "entity.name.function.theorem.rocq"
-        }
-      }
-    },
-    {
-      "match": "\\bGoal\\b",
-      "name": "keyword.source.rocq"
-    },
-    {
-      "match": "\\b(Parameters?|Axioms?|Conjectures?|Variables?|Hypothesis|Hypotheses)(\\s+Inline)?\\b\\s*\\(?\\s*((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
-      "comment": "Assumptions",
-      "captures": {
-        "1": {
-          "name": "keyword.source.rocq"
-        },
-        "2": {
-          "name": "keyword.source.rocq"
-        },
-        "3": {
-          "name": "entity.name.assumption.rocq"
-        }
-      }
-    },
-    {
-      "match": "\\b(Context)\\b\\s*`?\\s*(\\(|\\{)?\\s*((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
-      "comment": "Context",
-      "captures": {
-        "1": {
-          "name": "keyword.source.rocq"
-        },
-        "3": {
-          "name": "entity.name.assumption.rocq"
-        }
-      }
-    },
-    {
-      "match": "(\\b(?:Program|Local)\\s+)?\\b(Definition|Fixpoint|CoFixpoint|Function|Example|Let(?:\\s+Fixpoint|\\s+CoFixpoint)?|Instance|Equations|Equations?)\\s+((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
-      "comment": "Definitions",
-      "captures": {
-        "1": {
-          "name": "keyword.source.rocq"
-        },
-        "2": {
-          "name": "keyword.source.rocq"
-        },
-        "3": {
-          "name": "entity.name.function.rocq"
-        }
-      }
-    },
-    {
-      "match": "\\b((Show\\s+)?Obligation\\s+Tactic|Obligations\\s+of|Obligation|Next\\s+Obligation(\\s+of)?|Solve\\s+Obligations(\\s+of)?|Solve\\s+All\\s+Obligations|Admit\\s+Obligations(\\s+of)?|Instance)\\b",
-      "comment": "Obligations",
-      "captures": {
-        "1": {
-          "name": "keyword.source.rocq"
-        }
-      }
-    },
-    {
-      "match": "\\b(CoInductive|Inductive|Variant|Record|Structure|Class)\\s+(>\\s*)?((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
-      "comment": "Type declarations",
-      "captures": {
-        "1": {
-          "name": "keyword.source.rocq"
-        },
-        "3": {
-          "name": "entity.name.type.rocq"
-        }
-      }
-    },
-    {
-      "match": "\\b(Ltac)\\s+((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
-      "comment": "Ltac declarations",
-      "captures": {
-        "1": {
-          "name": "keyword.source.rocq"
-        },
-        "2": {
-          "name": "entity.name.function.ltac"
-        }
-      }
-    },
-    {
-      "match": "\\b(Hint(\\s+Mode)?|Create\\s+HintDb|Constructors|Resolve|Rewrite|Ltac|Ltac2|Implicit(\\s+Types)?|Set|Unset|Remove\\s+Printing|Arguments|((Tactic|Reserved)\\s+)?Notation|Infix|Section|Module(\\s+Type)?|End|Check|Print(\\s+All)?|Eval|Compute|Search|Universe|Coercions|Generalizable(\\s+(All|Variable))?|Existing(\\s+(Class|Instance))?|Canonical|About|Locate|Collection|Typeclasses\\s+(Opaque|Transparent))\\b",
-      "comment": "Vernacular keywords",
-      "name": "keyword.source.rocq"
-    },
-    {
-      "match": "\\b(Proof|Qed|Defined|Save|Abort(\\s+All)?|Undo(\\s+To)?|Restart|Focus|Unfocus|Unfocused|Show\\s+Proof|Show\\s+Existentials|Show|Unshelve)\\b",
-      "comment": "Proof keywords",
-      "name": "keyword.source.rocq"
-    },
-    {
-      "match": "\\b(Quit|Drop|Time|Redirect|Timeout|Fail)\\b",
-      "comment": "Vernacular Debug keywords",
-      "name": "keyword.debug.rocq"
-    },
-    {
-      "match": "\\b(admit|Admitted)\\b",
-      "comment": "Admits are bad",
-      "name": "invalid.illegal.admit.rocq"
-    },
-    {
-      "match": ":|\\||=|<|>|\\*|\\+|-|\\{|\\}|≠|∨|∧|↔|¬|→|≤|≥",
-      "comment": "Operators",
-      "name": "keyword.operator.rocq"
-    },
-    {
-      "match": "\\b(forall|exists|Type|Set|Prop|nat|bool|option|list|unit|sum|prod|comparison|Empty_set)\\b|∀|∃",
-      "comment": "Type keywords",
-      "name": "support.type.rocq"
-    },
-    {
-      "match": "\\b(try|repeat|rew|progress|fresh|solve|now|first|tryif|at|once|do|only)\\b",
-      "comment": "Ltac keywords",
-      "name": "keyword.control.ltac"
-    },
-    {
-      "match": "\\b(into|with|eqn|by|move|as|using)\\b",
-      "comment": "Common Ltac connectors",
-      "name": "keyword.control.ltac"
-    },
-    {
-      "match": "\\b(match|lazymatch|multimatch|match!|lazy_match!|multi_match!|fun|with|return|end|let|in|if|then|else|fix|for|where|and)\\b|λ",
-      "comment": "Gallina keywords",
-      "name": "keyword.control.gallina"
-    },
-    {
-      "match": "\\b(intro|intros|revert|induction|destruct|auto|eauto|tauto|eassumption|apply|eapply|assumption|constructor|econstructor|reflexivity|inversion|injection|assert|split|esplit|omega|fold|unfold|specialize|rewrite|erewrite|change|symmetry|refine|simpl|intuition|firstorder|generalize|idtac|exist|exists|eexists|elim|eelim|rename|subst|congruence|trivial|left|right|set|pose|discriminate|clear|clearbody|contradict|contradiction|exact|dependent|remember|case|easy|unshelve|pattern|transitivity|etransitivity|f_equal|exfalso|replace|abstract|cycle|swap|revgoals|shelve|unshelve)\\b",
-      "comment": "Ltac builtins",
-      "name": "support.function.builtin.ltac"
-    },
-    {
       "applyEndPatternLast": 1,
       "begin": "\\(\\*\\*(?!\\*)",
       "end": "\\*\\)",
@@ -187,13 +36,205 @@
       ]
     },
     {
-      "match": "\\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\\.[0-9]+)?))\\b",
-      "name": "constant.numeric.gallina"
+      "match": "\\b(Theorem|Lemma|Remark|Fact|Corollary|Property|Proposition)\\s+((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
+      "comment": "Theorem declarations",
+      "captures": {
+        "1": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "2": {
+          "name": "entity.name.function.theorem.rocq"
+        }
+      }
     },
     {
-      "match": "\\b(True|False|tt|false|true|Some|None|nil|cons|pair|inl|inr|O|S|Eq|Lt|Gt|id|ex|all|unique)\\b",
+      "match": "\\bGoal\\b",
+      "name": "keyword.vernacular.rocq"
+    },
+    {
+      "match": "\\b(Parameters?|Axioms?|Conjectures?|Variables?|Hypothesis|Hypotheses)(\\s+Inline)?\\b\\s*\\(?\\s*((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
+      "comment": "Assumptions",
+      "captures": {
+        "1": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "2": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "3": {
+          "name": "entity.name.assumption.rocq"
+        }
+      }
+    },
+    {
+      "match": "\\b(Context)\\b\\s*`?\\s*(\\(|\\{)?\\s*((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
+      "comment": "Context",
+      "captures": {
+        "1": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "3": {
+          "name": "entity.name.assumption.rocq"
+        }
+      }
+    },
+    {
+      "match": "(\\b(?:Program|Local)\\s+)?\\b(Definition|Fixpoint|CoFixpoint|Function|Example|Let(?:\\s+Fixpoint|\\s+CoFixpoint)?|Instance|Equations|Equations?)\\s+((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
+      "comment": "Definitions",
+      "captures": {
+        "1": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "2": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "3": {
+          "name": "entity.name.function.rocq"
+        }
+      }
+    },
+    {
+      "match": "\\b((Show\\s+)?Obligation\\s+Tactic|Obligations\\s+of|Obligation|Next\\s+Obligation(\\s+of)?|Solve\\s+Obligations(\\s+of)?|Solve\\s+All\\s+Obligations|Admit\\s+Obligations(\\s+of)?|Instance)\\b",
+      "comment": "Obligations",
+      "captures": {
+        "1": {
+          "name": "keyword.vernacular.rocq"
+        }
+      }
+    },
+    {
+      "match": "\\b(CoInductive|Inductive|Variant|Record|Structure|Class)\\s+(>\\s*)?((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
+      "comment": "Type declarations",
+      "captures": {
+        "1": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "3": {
+          "name": "entity.name.type.decl.rocq"
+        }
+      }
+    },
+    {
+      "match": "\\b(Ltac2?)\\s+((\\p{L}|[_\\u00A0])(\\p{L}|[0-9_\\u00A0'])*)",
+      "comment": "Ltac declarations",
+      "captures": {
+        "1": {
+          "name": "keyword.vernacular.rocq"
+        },
+        "2": {
+          "name": "entity.name.function.ltac.rocq"
+        }
+      }
+    },
+    {
+      "match": "\\b(From|Require|Import|Export|Local|Global|Include)\\b",
+      "comment": "Vernacular import keywords",
+      "name": "keyword.vernacular.rocq"
+    },
+    {
+      "match": "\\b((Open|Close|Delimit|Undelimit|Bind)\\s+Scope)\\b",
+      "comment": "Vernacular scope keywords",
+      "name": "keyword.vernacular.rocq"
+    },
+    {
+      "match": "\\b(Section|Module|End|Variable|Variables|Parameter|Parameters|Axiom|Notation|Reserved|Scope|Definition|Let|Fixpoint|Function|CoFixpoint|Morphism|Relation|Implicit|Arguments|Set|Unset|Contextual|Strict|Prenex|Implicits|Inductive|Variant|CoInductive|Record|Structure|Canonical|Coercion|Theorem|Lemma|Corollary|Proposition|Fact|Remark|Example|Proof|Goal|Save|Qed|Defined|Hint|Resolve|Rewrite|View|Search|Show|Locate|Print|Printing|All|Graph|Projections|inside|outside|About|Check|Global|Instance|Existing|Universe|Polymorphic|Monomorphic|Context|Program|Eval|Compute|Obligation|Obligations|Solve|From|Hint(\\s+Mode)?|Create\\s+HintDb|Constructors|Ltac2|Implicit(\\s+Types)?|Remove\\s+Printing|((Tactic|Reserved)\\s+)?Notation|Infix|Module(\\s+Type)?|Print(\\s+All)?|Coercions|Generalizable(\\s+(All|Variable))?|Existing(\\s+(Class|Instance))?|Canonical|Collection|Typeclasses\\s+(Opaque|Transparent))\\b",
+      "comment": "Vernacular keywords",
+      "name": "keyword.vernacular.rocq"
+    },
+    {
+      "match": "\\b(Proof|Abort(\\s+All)?|Undo(\\s+To)?|Restart|Focus|Unfocus|Unfocused|Show\\s+Proof|Show\\s+Existentials|Unshelve)\\b",
+      "comment": "Proof keywords",
+      "name": "keyword.vernacular.rocq"
+    },
+    {
+      "match": "\\b(Quit|Drop|Time|Redirect|Timeout|Fail)\\b",
+      "comment": "Vernacular debug keywords",
+      "name": "keyword.debug.rocq"
+    },
+    {
+      "match": "\\b(admit|Admitted)\\b",
+      "comment": "Admits are bad",
+      "name": "invalid.illegal.admit.rocq"
+    },
+    {
+      "match": "\\b(forall|exists|exists2|fun|fix|cofix|struct|match|end|in|return|let|if|is|then|else|for|of|nosimpl|with|as|lazymatch|multimatch|match!|lazy_match!|multi_match!|where|and)\\b|λ|Π",
+      "comment": "Gallina keywords",
+      "name": "keyword.gallina.rocq"
+    },
+    {
+      "match": "\\b(Type|Prop|Set|SProp)\\b|∀|∃",
+      "comment": "Sort keywords",
+      "name": "keyword.sort.rocq"
+    },
+    {
+      "match": "\\b(do|last|first|try|idtac|repeat|rew|progress|fresh|now|tryif|at|once|only)\\b",
+      "comment": "Tactical keywords",
+      "name": "keyword.tactical.rocq"
+    },
+    {
+      "match": "\\b(by|done|exact|reflexivity|tauto|romega|omega|assumption|solve|contradiction|discriminate|congruence)\\b",
+      "comment": "Terminator keywords",
+      "name": "keyword.terminator.rocq"
+    },
+    {
+      "match": "\\b(pose|set|move|case|elim|apply|clear|hnf|intro|intros|generalize|rename|pattern|after|destruct|induction|using|refine|inversion|injection|rewrite|congr|unlock|compute|ring|field|replace|fold|unfold|change|cutrewrite|simpl|have|suff|wlog|suffices|without|loss|nat_norm|cut|trivial|revert|bool_congr|nat_congr|transitivity|auto|split|left|right|autorewrite|setoid_rewrite|intuition|eauto|eapply|econstructor|etransitivity|constructor|erewrite|red|cbv|lazy|vm_compute|native_compute|subst|fourier|nstaz|lra|program_simpl|under|eexists|eassumption|assert|esplit|specialize|symmetry|firstorder|exist|eelim|clearbody|contradict|dependent|remember|easy|f_equal|exfalso|abstract|cycle|swap|revgoals|shelve|into|with|eqn)\\b",
+      "comment": "SSR and Ltac tactics",
+      "name": "keyword.tactic.rocq"
+    },
+    {
+      "match": "!=|#|&|&&|\\(|\\)|\\*|\\+|,|-|-\\.|->|\\.|\\.\\.|:|:>|::|:=|;|;;|<|<-|<->|=|>|>\\]|>\\}|\\?|\\?\\?|\\[|\\[<|\\[>|\\[\\||\\]|_|`|\\{|\\{<|\\||\\|]|\\}|~|=>|/\\\\|\\\\/|\\{\\||\\|\\}|≠|∨|∧|↔|¬|→|≤|≥",
+      "comment": "Operators and punctuation",
+      "name": "keyword.operator.rocq"
+    },
+    {
+      "match": "\\b(false|true)\\b|\\(\\)|\\[\\]",
+      "comment": "Builtin pseudo-literals",
+      "name": "constant.language.builtin.rocq"
+    },
+    {
+      "match": "\\b(unit|nat|bool|string|ascii|list|option|sum|prod|comparison|Empty_set)\\b",
+      "comment": "Primitive types",
+      "name": "constant.language.primitive.rocq"
+    },
+    {
+      "match": "\\b(True|False|tt|Some|None|nil|cons|pair|inl|inr|O|S|Eq|Lt|Gt|id|ex|all|unique)\\b",
       "comment": "Gallina builtin constructors",
-      "name": "constant.language.constructor.gallina"
+      "name": "constant.language.constructor.rocq"
+    },
+    {
+      "match": "\\b([A-Z][\\w']*)",
+      "comment": "Uppercase identifiers",
+      "name": "entity.name.type.rocq"
+    },
+    {
+      "match": "[~?][a-z][\\w']*:",
+      "comment": "Intro patterns",
+      "name": "entity.name.intro.rocq"
+    },
+    {
+      "match": "\\b(0[xX][\\da-fA-F][\\da-fA-F_]*)\\b",
+      "comment": "Hex numbers",
+      "name": "constant.numeric.rocq"
+    },
+    {
+      "match": "\\b(0[oO][0-7][0-7_]*)\\b",
+      "comment": "Octal numbers",
+      "name": "constant.numeric.rocq"
+    },
+    {
+      "match": "\\b(0[bB][01][01_]*)\\b",
+      "comment": "Binary numbers",
+      "name": "constant.numeric.rocq"
+    },
+    {
+      "match": "\\b(-?\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+\\-]?\\d[\\d_]*)?)\\b",
+      "comment": "Decimal and float numbers",
+      "name": "constant.numeric.rocq"
+    },
+    {
+      "match": "'(?:\\\\[\\\\\"'ntbr ]|\\\\[0-9]{3}|\\\\x[0-9a-fA-F]{2}|.)'",
+      "comment": "Character literals",
+      "name": "string.quoted.single.rocq"
     },
     {
       "match": "\\b_\\b",
