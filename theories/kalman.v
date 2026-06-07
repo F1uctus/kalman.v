@@ -41,17 +41,32 @@ Section KalmanFilter.
   Variable v : nat -> 'cV[ℂ]_p. (* Шум измерения *)
 
   (*
-    Шаг предсказания (распространение оценки и ковариации).
+    Шаг построения новой оценки состояния.
 
-    - ([kailath2000], § 9.3, Lemma 9.3.3 "Time Updates").
+    $hat(x)_(k+1|k) = F hat(x)_(k|k) + G u_k$.
+
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
   *)
   Definition predict_state (x_prev : 'cV[ℂ]_n) (u : 'cV[ℂ]_m) : 'cV[ℂ]_n :=
     F *m x_prev + G *m u.
 
+  (*
+    Ковариация предсказания.
+
+    $P_(k+1|k) := F P_(k|k) F† + G Q G†$.
+
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
+  *)
   Definition predict_cov (P_prev : 'M[ℂ]_n) : 'M[ℂ]_n :=
     F *m P_prev *m F^t* + G *m Q *m G^t*.
 
-  (* Предсказанная ковариация эрмитова. *)
+  (*
+    Эрмитовость предсказанной ковариации.
+
+    Если предыдущая ковариация $P$ эрмитова, то и $"predict_cov" P$ эрмитова.
+
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
+  *)
   Lemma predict_cov_sym (P : 'M[ℂ]_n) :
     P = P^t* -> predict_cov P = (predict_cov P)^t*.
   Proof.
@@ -64,7 +79,13 @@ Section KalmanFilter.
     done.
   Qed.
 
-  (* Предсказанная ковариация сохраняет неотрицательную определённость. *)
+  (*
+    Сохранение неотрицательной определённости шагом предсказания.
+
+    Если $P succ.eq 0$, то $"predict_cov" P succ.eq 0$.
+
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
+  *)
   Lemma predict_cov_psd (P : 'M[ℂ]_n) :
     psd P -> psd (predict_cov P).
   Proof.
@@ -76,30 +97,46 @@ Section KalmanFilter.
     exact: hsum.
   Qed.
 
-  (* Инновационная ковариация. *)
+  (*
+    Инновационная ковариация.
+
+    $S_k = H P_(k|k-1) H† + R$.
+
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
+  *)
   Definition innov_cov (P_pred : 'M[ℂ]_n) : 'M[ℂ]_p :=
     H *m P_pred *m H^t* + R.
 
   (*
-    Коэффициент усиления Калмана. Это фильтрующее усиление `K = P H† R_e⁻¹`
-    (без множителя `F`), вводимое в шаге измерения; ср. предсказательное
-    усиление `K_p = F P H† R_e⁻¹` из Theorem 9.2.1.
+    Усиление Калмана.
 
-    - ([kailath2000], § 9.3, Lemma 9.3.2 "Measurement Updates").
+    $K_k = P_(k|k-1) H† S_k^(-1)$. Это фильтрующее усиление $K = P H† R_e^(-1)$
+    (без множителя $F$), вводимое в шаге измерения; ср. предсказательное
+    усиление $K_p = F P H† R_e^(-1)$ из теоремы 9.2.1.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
   Definition kalman_gain (P_pred : 'M[ℂ]_n) : 'M[ℂ]_(n, p) :=
     P_pred *m H^t* *m invmx (innov_cov P_pred).
 
-  (* Обновление состояния. *)
+  (*
+    Обновление состояния.
+
+    $hat(x)_(k|k) = hat(x)_(k|k-1) + K_k (y_k - H hat(x)_(k|k-1))$.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
+  *)
   Definition update_state (P_pred : 'M[ℂ]_n)
       (x_pred : 'cV[ℂ]_n) (y : 'cV[ℂ]_p) : 'cV[ℂ]_n :=
     let K := kalman_gain P_pred in
     x_pred + K *m (y - H *m x_pred).
 
   (*
-    Обновление ковариации (стандартная форма).
+    Обновление ковариации.
 
-    - ([kailath2000], § 9.3, Lemma 9.3.2 "Measurement Updates").
+    $P_(k|k) = (E_n - K_k H) P_(k|k-1)$.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
   Definition update_cov (P_pred : 'M[ℂ]_n) : 'M[ℂ]_n :=
     let K := kalman_gain P_pred in
@@ -129,9 +166,7 @@ Section KalmanFilter.
   Definition err u y Ps k := x_true u k - x_hat u y Ps k.
 
   (*
-    ============================================================================
-    Несмещённость
-    ============================================================================
+    Несмещённость.
 
     Абстрактный оператор математического ожидания. Алгебраические аксиомы и
     производные тождества (Exp_zero/Exp_opp/Exp_sub) вынесены в `expectation.v`;
@@ -166,8 +201,12 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Рекурсия для ошибки оценивания. Уравнение измерения предполагает, что
-    наблюдение есть линейная комбинация истинного состояния и шума.
+    Рекурсия для ошибки оценивания.
+
+    Для измерения $y_j = H x_j + v_j$ ошибка удовлетворяет
+    $tilde(x)_(k+1) = F tilde(x)_k + G w_(k+1) - K_k (H F tilde(x)_k + H G w_(k+1) + v_(k+1))$.
+
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
   Lemma err_recursion u y Ps k :
     (forall j, y j = H *m x_true u j + v j) ->
@@ -202,6 +241,14 @@ Section KalmanFilter.
     by rewrite abelian_swap_cancel [in RHS]mulmxBr.
   Qed.
 
+  (*
+    Зануление математического ожидания инновации.
+
+    Если $EE tilde(x)_k = 0$, то и
+    $EE(H F tilde(x)_k + H G w_(k+1) + v_(k+1)) = 0$.
+
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
+  *)
   Lemma Exp_predict_innov_zero u y Ps k :
     𝔼 (err u y Ps k) = 0 ->
     𝔼 (H *m F *m err u y Ps k + H *m G *m w k.+1 + v k.+1) = 0.
@@ -214,9 +261,12 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Несмещённость: E[ошибка] = 0 на каждом шаге.
+    Несмещённость оценки фильтра Калмана.
 
-    - ([kailath2000], § 9.2).
+    При нулевом начальном среднем ошибки $EE tilde(x)_k = 0$ выполнено для всех
+    $k$.
+
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
   Theorem unbiased u y Ps :
     (forall j, y j = H *m x_true u j + v j) ->
@@ -231,14 +281,12 @@ Section KalmanFilter.
   Qed.
 
   (*
-    ============================================================================
-    Sec. 1.4. The Innovations Process
-    ============================================================================
+    Положительная определённость инновационной ковариации.
 
-    Положительная определённость инновационной ковариации `R_e = R + H P H†`
-    (=> существование S⁻¹).
+    Если $P_(k|k-1) succ.eq 0$, то $"innov_cov" P_(k|k-1) succ 0$, откуда существует
+    $S^(-1)$.
 
-    - ([kailath2000], § 9.5 "An important special assumption: R_i > 0").
+    - @kailath2000[§ 9.5 "An Important Special Assumption: R"].
   *)
   Lemma innov_cov_pd (P_pred : 'M[ℂ]_n) :
     psd P_pred -> pd (innov_cov P_pred).
@@ -262,11 +310,12 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Обратимость инновационной ковариации `S = R + H P H†`: при `R > 0` она
-    положительно определена, что делает корректным шаг обновления и усиление
-    Калмана.
+    Обратимость инновационной ковариации.
 
-    - ([kailath2000], § 9.5).
+    При $P_(k|k-1) succ.eq 0$ матрица $S_k$ обратима, что делает корректным шаг
+    обновления и усиление Калмана.
+
+    - @kailath2000[§ 9.5.3 "Existence"].
   *)
   Lemma innov_cov_inv (P_pred : 'M[ℂ]_n) :
     psd P_pred -> innov_cov P_pred \in unitmx.
@@ -277,16 +326,25 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Форма Джозефа (алгебраически эквивалентна).
+    Форма Джозефа.
 
-    - ([kailath2000], § 9.3, Lemma 9.3.2 "Measurement Updates").
+    $P_(k|k) = (E_n - K_k H) P_(k|k-1) (E_n - K_k H)† + K_k R K_k†$.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
   Definition joseph_form (P_pred : 'M[ℂ]_n) : 'M[ℂ]_n :=
     let K := kalman_gain P_pred in
     let ImKH := 1%:M - K *m H in
     ImKH *m P_pred *m ImKH^t* + K *m R *m K^t*.
 
-  (* Форма Джозефа совпадает со стандартным обновлением при усилении Калмана. *)
+  (*
+    Эквивалентность формы Джозефа стандартной.
+
+    При оптимальном усилении Калмана форма Джозефа совпадает со стандартным
+    обновлением.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
+  *)
   Lemma joseph_formE (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
     joseph_form P_pred = update_cov P_pred.
@@ -308,7 +366,13 @@ Section KalmanFilter.
     by rewrite subrK mulmx1.
   Qed.
 
-  (* Сохранение неотрицательной определённости через обновление. *)
+  (*
+    Сохранение неотрицательной определённости шагом обновления.
+
+    Если $P_(k|k-1) succ.eq 0$, то форма Джозефа неотрицательно определена.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
+  *)
   Lemma update_cov_psd (P_pred : 'M[ℂ]_n) :
     psd P_pred -> psd (joseph_form P_pred).
   Proof.
@@ -321,7 +385,13 @@ Section KalmanFilter.
     - exact: psd_lcongr K (pd_psd R_pd).
   Qed.
 
-  (* Эрмитовость обновлённой ковариации. *)
+  (*
+    Эрмитовость апостериорной ковариации.
+
+    Если $P_(k|k-1) succ.eq 0$, то форма Джозефа эрмитова.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
+  *)
   Lemma update_cov_sym (P_pred : 'M[ℂ]_n) :
     psd P_pred -> joseph_form P_pred = (joseph_form P_pred)^t*.
   Proof.
@@ -329,7 +399,13 @@ Section KalmanFilter.
     exact: (update_cov_psd psdP).1.
   Qed.
 
-  (* Монотонность ковариации: след не возрастает. *)
+  (*
+    Монотонное убывание следа.
+
+    $"Tr" P_(k|k) <= "Tr" P_(k|k-1)$.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
+  *)
   Lemma update_cov_trace_le (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
     \tr (update_cov P_pred) <= \tr P_pred.
@@ -354,19 +430,20 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Информационная форма обновления. При положительно определённой предсказанной
-    ковариации применение тождества Вудбери (леммы об обращении матриц) даёт
-    `(update_cov P)⁻¹ = P⁻¹ + H† R⁻¹ H`.
+    Тождество информационной формы.
 
-    - ([kailath2000], § 9.5, Theorem 9.5.1 "Standard and Information Forms").
+    При $P_(k|k-1) succ 0$ выполнено
+    $"update_cov" P_(k|k-1) dot ((P_(k|k-1))^(-1) + H† R^(-1) H) = E_n$.
+
+    - @kailath2000[§ 9.5, Theorem 9.5.1 "Standard and Information Forms"].
   *)
   Lemma update_cov_information_form (P_pred : 'M[ℂ]_n) :
     pd P_pred ->
     update_cov P_pred *m (invmx P_pred + H^t* *m invmx R *m H) = 1%:M.
   (*
     Доказательство чисто алгебраическое: используется уже выведенная связь
-    `K * R = (E - K * H) * P * H†` и обратимости `P`, `R`, `S`. Это даёт основу
-    для строгой убывающей версии итерации Риккати без обращения к спектральной
+    $K R = (E - K H) P H†$ и обратимость $P$, $R$, $S$. Это даёт основу для
+    строго убывающей версии итерации Риккати без обращения к спектральной
     теореме.
   *)
   Proof.
@@ -389,7 +466,13 @@ Section KalmanFilter.
     by rewrite subrK.
   Qed.
 
-  (* Следствие: при pd P_pred шаг обновления обратим. *)
+  (*
+    Обратимость апостериорной ковариации.
+
+    При $P_(k|k-1) succ 0$ шаг обновления невырожден.
+
+    - @kailath2000[§ 9.5.3 "Existence"].
+  *)
   Corollary update_cov_unit (P_pred : 'M[ℂ]_n) :
     pd P_pred -> update_cov P_pred \in unitmx.
   Proof.
@@ -398,10 +481,11 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Явная формула обратной матрицы апостериорной ковариации
-    (информационная форма Калмана).
+    Явная информационная форма.
 
-    - ([kailath2000], § 9.5, Theorem 9.5.1 "Standard and Information Forms").
+    $(P_(k|k))^(-1) = (P_(k|k-1))^(-1) + H† R^(-1) H$.
+
+    - @kailath2000[§ 9.5, Theorem 9.5.1 "Standard and Information Forms"].
   *)
   Lemma update_cov_inverse (P_pred : 'M[ℂ]_n) :
     pd P_pred ->
@@ -414,10 +498,11 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Из информационной формы: шаг обновления сохраняет положительную
-    определённость. `invmx (update_cov P) = invmx P + H† R⁻¹ H`.
+    Сохранение положительной определённости шагом обновления.
 
-    - ([kailath2000], § 9.5, Lemma 9.5.1 "A Sufficient Condition for Existence of Pᵢ⁻¹").
+    При $P_(k|k-1) succ 0$ имеем $P_(k|k) succ 0$.
+
+    - @kailath2000[§ 9.5.3 "Existence"].
   *)
   Lemma update_cov_pd (P_pred : 'M[ℂ]_n) :
     pd P_pred -> pd (update_cov P_pred).
@@ -437,12 +522,12 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Порядок Лёвнера: апостериорная ковариация мажорируется априорной. Это
-    содержательная (структурная) монотонность шага обновления, из которой
-    следует уже доказанная trace-монотонность. Алгебраически:
-    `P - update_cov P = K H P = (H P)† S⁻¹ (H P)`.
+    Лёвнерова доминированность шага обновления.
 
-    - ([kailath2000], § 9.3, Lemma 9.3.2 "Measurement Updates").
+    Если $P_(k|k-1) succ.eq 0$, то $P_(k|k-1) - P_(k|k) succ.eq 0$, причём явная формула
+    разности равна $(H P_(k|k-1))† S_k^(-1) (H P_(k|k-1))$.
+
+    - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
   Lemma update_cov_le (P_pred : 'M[ℂ]_n) :
     psd P_pred -> psd (P_pred - update_cov P_pred).
@@ -462,22 +547,25 @@ Section KalmanFilter.
   Qed.
 
   (*
-    ============================================================================
-    Оптимальность коэффициента усиления Калмана
-    ============================================================================
+    Альтернативный шаг обновления.
 
-    Для любого альтернативного усиления K' след апостериорной ковариации не
-    меньше, чем при усилении Калмана.
+    Для $K' in CC^(n times p)$ положим
+    $"alt_update_cov" (K', P) := (E_n - K' H) P (E_n - K' H)† + K' R K'†$.
+
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
   Definition alt_update_cov (K' : 'M[ℂ]_(n, p)) (P_pred : 'M[ℂ]_n) : 'M[ℂ]_n :=
     let ImKH := 1%:M - K' *m H in
     ImKH *m P_pred *m ImKH^t* + K' *m R *m K'^t*.
 
   (*
-    Тождество выделения полного квадрата:
-    `alt_update_cov K' = update_cov + (K' - K) S (K' - K)†`, где
-    - `K` - коэффициент усиления Калмана;
-    - `S` - инновационная ковариация (`innov_cov P_pred`).
+    Тождество выделения полного квадрата.
+
+    При $P succ.eq 0$ выполнено
+    $"alt_update_cov"(K', P) = "update_cov" P + (K' - K) S (K' - K)†$, где $K$
+    обозначает оптимальное усиление Калмана, а $S$ инновационную ковариацию.
+
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
   Lemma alt_update_cov_diff (P_pred : 'M[ℂ]_n) (K' : 'M[ℂ]_(n, p)) :
     psd P_pred ->
@@ -561,10 +649,13 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Оптимальность коэффициента усиления Калмана: минимум следа апостериорной
-    ковариации среди всех усилений.
+    Оптимальность усиления Калмана по следу.
 
-    - ([kailath2000], § 9.2, Theorem 9.2.1 "The Innovations Recursions").
+    Среди всех усилений выбор Калмана минимизирует след апостериорной
+    ковариации: $"Tr"("update_cov" P) <= "Tr"("alt_update_cov"(K', P))$ для
+    любого $K'$.
+
+    - @kailath2000[§ 9.2, Theorem 9.2.1 "The Innovations Recursions"].
   *)
   Theorem kalman_gain_optimal (P_pred : 'M[ℂ]_n) (K' : 'M[ℂ]_(n, p)) :
     psd P_pred ->
@@ -579,8 +670,11 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Характеристика через производную: `dif tr(P+) / dif K = 0` при усилении
-    Калмана.
+    Стационарное условие.
+
+    $K_k S_k = P_(k|k-1) H†$.
+
+    - @kailath2000[§ 3.3.1 "Orthogonality Condition"].
   *)
   Theorem kalman_gain_normal_eq (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
@@ -592,34 +686,45 @@ Section KalmanFilter.
   Qed.
 
   (*
-    ============================================================================
-    Наблюдаемость и управляемость
-    ============================================================================
+    Блок наблюдаемости.
 
-    Наблюдаемость: пара `(H, F)` наблюдаема, когда составная матрица
-    `[H; H F; H F^2; ...; H F^(n-1)]` имеет полный столбцовый ранг. Вместо
-    явного построения блочной матрицы формулируем условие на ранг через ядро
-    отображения.
+    Для $i in {0, dots, n-1}$ полагают $"obsv_block"(i) := H F^i$.
 
-    - ([kailath2000], App. C, § C.4).
+    - @kailath2000[App. C, § C.4 "Observability"].
   *)
 
   Definition obsv_block (i : nat) : 'M[ℂ]_(p, n) :=
     H *m (F ^+ i).
 
+  (*
+    Наблюдаемость пары $(H, F)$.
+
+    Пара наблюдаема, если объединённое ядро всех блоков наблюдаемости
+    тривиально.
+
+    - @kailath2000[App. C, § C.4 "Observability"].
+  *)
   Definition observable : Prop :=
     forall (x : 'cV[ℂ]_n), (forall i : 'I_n, obsv_block i *m x = 0) -> x = 0.
 
   (*
-    Управляемость: пара `(F, G)` управляема, когда составная матрица
-    `[G, F G, F^2 G, ..., F^(n-1) G]` имеет полный строковый ранг.
+    Блок управляемости.
 
-    - ([kailath2000], App. C, § C.3).
+    Для $i in {0, dots, n-1}$ полагают $"ctrl_block"(i) := F^i G$.
+
+    - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
   *)
 
   Definition ctrl_block (i : nat) : 'M[ℂ]_(n, m) :=
     (F ^+ i) *m G.
 
+  (*
+    Управляемость пары $(F, G)$.
+
+    Пара управляема, если строковое ядро всех блоков управляемости тривиально.
+
+    - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
+  *)
   Definition controllable : Prop :=
     forall (y : 'rV[ℂ]_n), (forall i : 'I_n, y *m ctrl_block i = 0) -> y = 0.
 
@@ -636,9 +741,7 @@ Section KalmanFilter.
   Qed.
 
   (*
-    ============================================================================
-    Сходимость / неподвижная точка Риккати
-    ============================================================================
+    Сходимость / неподвижная точка Риккати.
 
     Сходимость траектории Риккати к стационарной точке `Pss` и сходимость
     матрицы усиления Калмана доказаны в `Section DARE`.
@@ -649,8 +752,8 @@ Section KalmanFilter.
     См. `dare.dare_stabilizing_sol_frob`, `dare.kalman_gain_frob_cvgn`,
     `dare.riccati_frob_cvgn`.
 
-    - ([kailath2000], § 9.2, Theorem 9.2.1);
-    - ([kailath2000], § 14.5).
+    - @kailath2000[§ 9.2, Theorem 9.2.1];
+    - @kailath2000[§ 14.5].
   *)
   Definition riccati_step (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
     update_cov (predict_cov P).
@@ -672,7 +775,11 @@ Section KalmanFilter.
     над любыми посл-тями измерений.
   *)
 
-  (* Один шаг фильтра. *)
+  (*
+    Состояние фильтра есть пара: оценка состояния и ковариация ошибки.
+
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
+  *)
   Record kf_state := KFState {
     kf_x : 'cV[ℂ]_n;
     kf_P : 'M[ℂ]_n;
@@ -689,14 +796,19 @@ Section KalmanFilter.
     Полный цикл фильтра. Ковариация `kf_P (kf_step st u y)` не зависит от данных
     `u`/`y` и равна `riccati_step (kf_P st)` (см. `dare.kf_cov_step`); отсюда
     сходимость фильтра - `dare.kalman_filter_frob_cvgn`.
+
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
   *)
   Definition kf_step (st : kf_state) (u : 'cV[ℂ]_m) (y : 'cV[ℂ]_p) :
       kf_state :=
     kf_update (kf_predict st u) y.
 
   (*
-    Инвариантность неотрицательной определённости относительно полного цикла
-    предсказание–обновление.
+    Инвариант неотрицательной определённости одного шага.
+
+    Полный шаг сохраняет неотрицательную определённость ковариации.
+
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
   *)
   Lemma kf_step_psd (st : kf_state) (u : 'cV[ℂ]_m) (y : 'cV[ℂ]_p) :
     psd (kf_P st) -> psd (kf_P (kf_step st u y)).

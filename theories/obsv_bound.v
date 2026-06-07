@@ -2,9 +2,9 @@
   Грамианы наблюдаемости и управляемости.
 
   В этом файле:
-  - `obsv_gram k := ∑_(j<k) (F^j)† H† invR H F^j`
+  - $"obsv_gram" k := sum_(j < k) (F^j)† H† "invR" H F^j$
     (грамиан наблюдаемости с весом `invR`).
-  - `ctrl_gram k := ∑_(j<k) F^j G Q G† (F^j)†`
+  - $"ctrl_gram" k := sum_(j < k) F^j G Q G† (F^j)†$
     (грамиан управляемости по состоянию).
 
   Основные результаты:
@@ -14,22 +14,23 @@
     определён.
   - `ctrl_gram_pd_of_controllable` - при управляемости + `pd Q` `ctrl_gram n`
     положительно определён.
-  - `riccati_iter_le_ctrl_gram` - верхняя оценка iter k riccati_step 0 <=
-    ctrl_gram k (доказывается через `K=0`: применяя `update_cov_le` и
+  - `riccati_iter_le_ctrl_gram` - верхняя оценка
+    $"iter" k "riccati_step" 0 prec.eq "ctrl_gram" k$
+    (доказывается через $K = 0$: применяя `update_cov_le` и
     `predict_cov_mono` индуктивно, плюс тождество сдвига `ctrl_gram_shift`:
-    ctrl_gram (k+1) = G Q G† + F (ctrl_gram k) F† .
+    $"ctrl_gram" (k+1) = G Q G† + F ("ctrl_gram" k) F†$).
 
   Замечание. Верхняя оценка через информационную форму
-  `iter k riccati_step 0 <= invmx (obsv_gram n)` при `k >= n`
-  - ([kailath2000], § 14.5).
+  $"iter" k "riccati_step" 0 prec.eq "invmx" ("obsv_gram" n)$ при $k >= n$
+  - @kailath2000[§ 14.5].
 
-  Форма `P_k⁻¹ >= obsv_gram k` здесь не доказана: она требует тождества Вудбери
-  / явного выражения `invmx (predict_cov P)` через `invmx P` и `invmx Q`.
+  Форма $P_k^(-1) succeq "obsv_gram" k$ здесь не доказана: она требует тождества Вудбери
+  / явного выражения $"invmx" ("predict_cov" P)$ через $"invmx" P$ и $"invmx" Q$.
   Затравочная оценка при K=0 выше даёт ослабленную (зависящую от `F`) оценку,
   достаточную для построения предельного `Pss` при дополнительной гипотезе
   устойчивости.
 
-  ([kailath2000], App. C, § C.3; App. C, § C.4)
+  @kailath2000[App. C, § C.3; App. C, § C.4]
 *)
 
 Set Warnings "-notation-overridden,-coercions,-default".
@@ -64,7 +65,9 @@ Section ObsvBound.
   (*
     Грамиан наблюдаемости.
 
-    ([kailath2000], App. C, § C.4)
+    $cal(O)_k := sum_(j<k) (F^j)† H† R^(-1) H F^j$.
+
+    - @kailath2000[App. C, § C.4 "Observability"].
   *)
   Definition obsv_gram (k : nat) : 'M[ℂ]_n :=
     \sum_(j < k) (F^+j)^t* *m H^t* *m invmx R *m H *m (F^+j).
@@ -114,9 +117,11 @@ Section ObsvBound.
   Qed.
 
   (*
-    Основной результат: при наблюдаемости `obsv_gram n` положительно определён.
+    Положительная определённость грамиана наблюдаемости.
 
-    ([kailath2000], App. C, § C.4)
+    Если пара $(H, F)$ наблюдаема, то $cal(O)_n succ 0$.
+
+    - @kailath2000[App. C, § C.4 "Observability"].
   *)
   Lemma obsv_gram_pd_of_observable :
     observable F H -> pd (obsv_gram n).
@@ -153,7 +158,9 @@ Section ObsvBound.
   (*
     Грамиан управляемости.
 
-    ([kailath2000], App. C, § C.3)
+    $cal(C)_k := sum_(j<k) F^j G Q G† (F^j)†$.
+
+    - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
   *)
   Definition ctrl_gram (k : nat) : 'M[ℂ]_n :=
     \sum_(j < k) F^+j *m G *m Q *m G^t* *m (F^+j)^t*.
@@ -203,10 +210,11 @@ Section ObsvBound.
   Qed.
 
   (*
-    Положительная определённость грамиана управляемости при управляемости [F, G]
-    и положительной определённости `Q`.
+    Положительная определённость грамиана управляемости.
 
-    ([kailath2000], App. C, § C.3)
+    Если пара $(F, G)$ управляема и $Q succ 0$, то $cal(C)_n succ 0$.
+
+    - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
   *)
   Lemma ctrl_gram_pd_of_controllable :
     controllable F G -> pd Q -> pd (ctrl_gram n).
@@ -248,12 +256,15 @@ Section ObsvBound.
   Qed.
 
   (*
-    Тождество сдвига для грамиана управляемости.
-    `ctrl_gram (k+1) = G Q G† + F (ctrl_gram k) F†`.
+    Сдвиг грамиана управляемости.
+
+    $cal(C)_(k+1) = G Q G† + F cal(C)_k F†$.
+
+    - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
   *)
   Lemma ctrl_gram_shift k :
     ctrl_gram k.+1 = G *m Q *m G^t* + F *m ctrl_gram k *m F^t*.
-  (* Доказывается индукцией по k (избегая работы с `lift ord0 i`). *)
+  (* Индукция по $k$ из определения грамиана управляемости. *)
   Proof.
     elim: k => [|k IH].
       rewrite ctrl_gram_recr ctrl_gram0 add0r.
@@ -273,17 +284,14 @@ Section ObsvBound.
   Lemma ctrl_gram_tr_bound (Fc : frob_sq F < 1) (k : nat) :
     \tr (ctrl_gram k) <= \tr (G *m Q *m G^t*) / (1 - frob_sq F).
   (*
-    При сжатии по норме Фробениуса `frob_sq F < 1`:
-    `tr(ctrl_gram k) <= tr(G Q Gconj) / (1 - frob_sq F)` равномерно по `k`.
+    При сжатии по норме Фробениуса $"frob_sq" F < 1$:
+    $"tr"("ctrl_gram" k) <= "tr"(G Q G†) / (1 - "frob_sq" F)$ равномерно по $k$.
     Доказывается индукцией: из тождества сдвига
-    `ctrl_gram (k+1) = G Q Gconj + F (ctrl_gram k) Fconj` и линейности следа
+    $"ctrl_gram" (k+1) = G Q G† + F ("ctrl_gram" k) F†$ и линейности следа
     получаем рекуррентность
-    ```
-    t_(k+1) = tr T + tr(F (ctrl_gram k) Fconj)
-           <= tr T + frob_sq F * t_k (tr_conj_frob_le)
-    ```
-    с инвариантом (неподвижной точкой) `B = tr T / (1 - frob_sq F)`, т.к.
-    `tr T + frob_sq F * B = B`.
+    $t_(k+1) = "tr" T + "tr"(F ("ctrl_gram" k) F†) <= "tr" T + "frob_sq" F dot t_k$
+    с инвариантом (неподвижной точкой) $B = "tr" T / (1 - "frob_sq" F)$, т.к.
+    $"tr" T + "frob_sq" F dot B = B$.
   *)
   Proof.
     have trT_ge0 : 0 <= \tr (G *m Q *m G^t*).
@@ -308,18 +316,20 @@ Section ObsvBound.
     - by apply: psd_tr_ge0; exact: ctrl_gram_psd k.
   Qed.
 
-  (* Верхняя оценка итерации Риккати через `K=0`. *)
+  (*
+    Верхняя оценка стратегии K = 0.
+
+    $"iter" k thin "riccati_step" thin 0 prec.eq cal(C)_k$.
+
+    - @kailath2000[§ 14.5, Theorem 14.5.1 "Sufficiency"].
+  *)
   Lemma riccati_iter_le_ctrl_gram (k : nat) :
     psd_le (iter k (riccati_step F G H Q R) 0) (ctrl_gram k).
   (*
-    Идея: для оптимальной (калмановской) оценки `update_cov P_pred <= P_pred`
-    (это `update_cov_le`). Следовательно, по тождеству сдвига:
-    ```
-    riccati_step P <= predict_cov P
-                   <= predict_cov (ctrl_gram k) (IH)
-                    = G Q G† + F (ctrl_gram k) F†
-                    = ctrl_gram (k+1)
-    ```.
+    Для оптимального усиления Калмана $"update_cov" P prec.eq P$
+    (лемма $"update_cov_le"$). По тождеству сдвига грамиана и предположению
+    индукции
+    $"riccati_step" P prec.eq "predict_cov" P prec.eq "predict_cov"("ctrl_gram" k) = G Q G† + F ("ctrl_gram" k) F† = "ctrl_gram"(k+1)$.
   *)
   Proof.
     elim: k => [|k IH].

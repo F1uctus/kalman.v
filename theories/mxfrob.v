@@ -1,12 +1,12 @@
 (*
   Норма Фробениуса для матриц над алгебраически замкнутым полем.
-  ```
-  ‖M‖ꜰ² = tr (M† ⋅ M)
-         = ∑_(i,j) (M_ij)† * M_ij
-         = ∑_(i,j) |M_ij|²
-  ```
+  $
+    norm(M)_F^2 = "tr" (M† dot M) \
+               = sum_(i,j) (M_(i j))† dot M_(i j) \
+               = sum_(i,j) |M_(i j)|^2
+  $
   Нужна для:
-  - Метрики на матрицах (через `‖A - B‖ꜰ²`);
+  - Метрики на матрицах (через $norm(A - B)_F^2$);
   - Монотонной сходимости неотрицательно определённых последовательностей;
   - Утверждений о сходимости коэффициента усиления Калмана.
 *)
@@ -38,7 +38,7 @@ Section Frob.
 
   Definition frob_sq r c (M : 'M[ℂ]_(r, c)) : ℂ := \tr (M^t* *m M).
 
-  (* Раскрытие определения: `‖M‖ꜰ² = ∑_(i,j) (M_ij)† * M_ij`. *)
+  (* Раскрытие определения: $norm(M)_F^2 = sum_(i,j) (M_(i j))† dot M_(i j)$. *)
   Lemma frob_sqE r c (M : 'M[ℂ]_(r, c)) :
     frob_sq M = \sum_j \sum_i (M i j)^* * M i j.
   Proof.
@@ -143,7 +143,7 @@ Section Frob.
 
   (*
     Квадрат нормы Фробениуса есть след неотрицательно определённой матрицы
-    `M† M`; в частности, неотрицательность даёт >= 0.
+    $M† M$; в частности, неотрицательность даёт >= 0.
   *)
   Lemma psd_frob r c (M : 'M[ℂ]_(r, c)) :
     psd (M^t* *m M).
@@ -158,8 +158,8 @@ Section Frob.
   Qed.
 
   (*
-    Неотрицательно определённая разность `A - B` имеет неотрицательный след; в
-    частности, `tr A - tr B >= 0` при `B <= A` согласно порядку Лёвнера.
+    Неотрицательно определённая разность $A - B$ имеет неотрицательный след; в
+    частности, $"tr" A - "tr" B >= 0$ при $B <= A$ согласно порядку Лёвнера.
   *)
   Lemma psd_le_trace n (A B : 'M[ℂ]_n) :
     psd (B - A) -> \tr A <= \tr B.
@@ -169,7 +169,7 @@ Section Frob.
     rewrite linearB /= subr_ge0; by [].
   Qed.
 
-  (* `M M† <= frob_sq (M E)` (через след: `tr(M M†) = frob_sq M`). *)
+  (* $M M† <= "frob_sq"(M E)$ (через след: $"tr"(M M†) = "frob_sq" M$). *)
   Lemma MM_le_frob_id n (Mx : 'M[ℂ]_n) :
     psd_le (Mx *m Mx^t*) (frob_sq Mx *: 1%:M).
   Proof.
@@ -266,17 +266,17 @@ Section Frob.
 
   (*
     Мажоранта Фробениуса следом для неотрицательно определённых матриц:
-    `psd M => frob_sq M <= (tr M)²`.
+    $"psd" M => "frob_sq" M <= ("tr" M)^2$.
   *)
   Lemma frob_sq_le_tr_sq n (M : 'M[ℂ]_n) :
     psd M -> frob_sq M <= (\tr M) ^+ 2.
   (*
-    Через спектральное разложение `M = U diag(l) U†, l_i >= 0`:
-    `frob_sq M = tr(M† M) = tr M² = ∑_i l_i²`, `tr M = ∑_i l_i`, и для
-    неотрицательных `l_i`: `∑ l_i² <= (∑ l_i)²` (перекрёстные `>= 0`).
+    Через спектральное разложение $M = U "diag"(l) U†, space l_i >= 0$:
+    $"frob_sq" M = "tr"(M† M) = "tr" M^2 = sum_i l_i^2$, $"tr" M = sum_i l_i$,
+    и для неотрицательных $l_i$: $sum l_i^2 <= (sum l_i)^2$ (перекрёстные $>= 0$).
 
-    Нужно, чтобы из `tr(U_k - L_k) -> 0` и `0 <= X_k - L_k <= U_k - L_k`
-    (неотрицательно определены) вывести `frob_sq -> 0`.
+    Нужно, чтобы из $"tr"(U_k - L_k) -> 0$ и $0 <= X_k - L_k <= U_k - L_k$
+    (неотрицательно определены) вывести $"frob_sq" -> 0$.
   *)
   Proof.
     move=> pM.
@@ -308,7 +308,7 @@ Section Frob.
     exact: mulr_ge0.
   Qed.
 
-  (* Для эрмитовой матрицы: `frob_sq D = tr(D²)` (так как `D† = D`). *)
+  (* Для эрмитовой матрицы: $"frob_sq" D = "tr"(D^2)$ (так как $D† = D$). *)
   Lemma frob_sq_herm n (D : 'M[ℂ]_n) :
     D \is hermsymmx -> frob_sq D = \tr (D *m D).
   Proof.
@@ -317,7 +317,7 @@ Section Frob.
     by rewrite /frob_sq hD.
   Qed.
 
-  (* Эрмитовость произведения `F D F†` при эрмитовой `D`. *)
+  (* Эрмитовость произведения $F D F†$ при эрмитовой $D$. *)
   Lemma herm_conj n m (Fm : 'M[ℂ]_(n, m)) (D : 'M[ℂ]_m) :
     D \is hermsymmx -> (Fm *m D *m Fm^t*) \is hermsymmx.
   Proof.
@@ -328,9 +328,9 @@ Section Frob.
   Qed.
 
   (*
-    Неотрицательная определённость `D⋅Fm†⋅Fm⋅D` при эрмитовой `D` - частный
+    Неотрицательная определённость $D dot F_m† dot F_m dot D$ при эрмитовой $D$ - частный
     случай `psd_congr` для неотрицательно определённой матрицы
-    `Fm†⋅Fm = (psd_frob)`.
+    $F_m† dot F_m$ (через `psd_frob`).
   *)
   Lemma psd_conj_herm_FtF n m (Fm : 'M[ℂ]_(n, m)) (D : 'M[ℂ]_m) :
     D \is hermsymmx -> psd (D *m Fm^t* *m Fm *m D).
@@ -345,18 +345,18 @@ Section Frob.
 
   (*
     Контракция предсказывающего шага в норме Фробениуса:
-    `D \is hermsymmx => frob_sq (Fm D Fm†) <= (frob_sq Fm)² * frob_sq D`.
+    $D "эрмитова" => "frob_sq"(F_m D F_m†) <= ("frob_sq" F_m)^2 dot "frob_sq" D$.
   *)
   Lemma predict_diff_frob_bound n m (Fm : 'M[ℂ]_(n, m)) (D : 'M[ℂ]_m) :
     D \is hermsymmx ->
     frob_sq (Fm *m D *m Fm^t*) <= (frob_sq Fm) ^+ 2 * frob_sq D.
   (*
-    Схема: `Fm D Fm†` эрмитова (т.к. `D` эрмитова), значит
-    `frob_sq (Fm D Fm†) = tr((Fm D Fm†)²)`. Применяем `tr_conj_frob_le`
-    (`psd (D Fm† Fm D)`) и `tr_conj_frob_le` (`psd (Fm† Fm)`) - каждое даёт
-    коэффициент `frob_sq Fm`. Итого
-    `(frob_sq Fm)² * tr(D²) = (frob_sq Fm)² * frob_sq D`
-    (`D` эрмитова => `frob_sq D = tr D²`).
+    Схема: $F_m D F_m†$ эрмитова (т.к. $D$ эрмитова), значит
+    $"frob_sq"(F_m D F_m†) = "tr"((F_m D F_m†)^2)$. Применяем `tr_conj_frob_le`
+    ($"psd"(D F_m† F_m D)$) и `tr_conj_frob_le` ($"psd"(F_m† F_m)$) - каждое даёт
+    коэффициент $"frob_sq" F_m$. Итого
+    $("frob_sq" F_m)^2 dot "tr"(D^2) = ("frob_sq" F_m)^2 dot "frob_sq" D$
+    ($D$ эрмитова $=> "frob_sq" D = "tr" D^2$).
   *)
   Proof.
     move=> Dherm.
@@ -367,7 +367,7 @@ Section Frob.
               = Fm *m (D *m Fm^t* *m Fm *m D) *m Fm^t*.
       by rewrite !mulmxA.
     rewrite step1.
-    (* Шаг 2: `tr_conj_frob_le` с неотрицательно определённой `D F† F D`. *)
+    (* Шаг 2: `tr_conj_frob_le` с неотрицательно определённой $D F† F D$. *)
     have psd_DFtFD : psd (D *m Fm^t* *m Fm *m D) := psd_conj_herm_FtF Fm Dherm.
     apply: (le_trans (tr_conj_frob_le Fm psd_DFtFD)).
     (* Цель: frob_sq Fm * tr(D F† F D) <= (frob_sq Fm)² * frob_sq D. *)
@@ -376,9 +376,9 @@ Section Frob.
     - by apply: psd_tr_ge0; exact: psd_DFtFD.
     - exact: lexx.
     (*
-      Цель: `tr(D F† F D) <= frob_sq Fm * frob_sq D`. `D F† F D = D (F† F) D`, и
-      `D = D†` (Эрмитовость); применяем `tr_conj_frob_le` ещё раз с `Fm := D`,
-      `M := F† Fm`.
+      Цель: $"tr"(D F† F D) <= "frob_sq" F_m dot "frob_sq" D$. $D F† F D = D (F† F) D$, и
+      $D = D†$ (Эрмитовость); применяем `tr_conj_frob_le` ещё раз с $F_m := D$,
+      $M := F† F_m$.
     *)
     - have hD : D = D^t* by exact: hermsym_eq.
       have rewriteDFtFD : D *m Fm^t* *m Fm *m D = D *m (Fm^t* *m Fm) *m D^t*.

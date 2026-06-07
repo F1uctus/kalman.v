@@ -111,11 +111,11 @@ End FrobeniusBridge.
 (*
   Обратное направление: frob_sq (Pf k - L) -> 0 => Pf @ ∞ --> L.
 
-  Достаточно показать поэлементную сходимость P_k i j -> L i j
-  (через `mxcvgn_to_cvgn`). Из `|M i j|² <= frob_sq M` (`frob_sq_entry_ge` выше)
-  и `frob_sq -> 0` (вместе с `0 <= |Pf k i j - L i j|² <= frob_sq (Pf k - L)`)
-  получаем `|Pf k i j - L i j|² -> 0`, откуда `|·| -> 0` и `(Pf k - L) i j -> 0`
-  поэлементно - что и даёт `Pf k i j -> L i j`.
+  Достаточно показать поэлементную сходимость $P^f_k i j -> L_(i j)$
+  (через `mxcvgn_to_cvgn`). Из $|M_(i j)|^2 <= "frob_sq" M$ (`frob_sq_entry_ge` выше)
+  и $"frob_sq" -> 0$ (вместе с $0 <= |P^f_k i j - L_(i j)|^2 <= "frob_sq"(P^f_k - L)$)
+  получаем $|P^f_k i j - L_(i j)|^2 -> 0$, откуда $|dot| -> 0$ и $(P^f_k - L)_(i j) -> 0$
+  поэлементно - что и даёт $P^f_k i j -> L_(i j)$.
 *)
 Section FrobToMxCvg.
 
@@ -152,13 +152,13 @@ Section FrobToMxCvg.
     all: by end_near.
   Qed.
 
-  (* Поэлементная сходимость `(Pf k - L) i j -> 0` из `frob_sq -> 0`. *)
+  (* Поэлементная сходимость $(P^f_k - L)_(i j) -> 0$ из $"frob_sq" -> 0$. *)
   Lemma frob_sq_to_entry_cvg0 Pf L (i : 'I_r) (j : 'I_c) :
     (fun k => frob_sq (Pf k - L)) @ \oo --> (0 : ℂ) ->
     (fun k => (Pf k - L) i j) @ \oo --> (0 : ℂ).
   Proof.
     move=> Hfrob.
-    (* Шаг 1: `|·|² <= frob_sq`, и frob_sq -> 0 => `|·|² -> 0`. *)
+    (* Шаг 1: $|dot|^2 <= "frob_sq"$, и frob_sq -> 0 => $|dot|^2 -> 0$. *)
     have Habs_sq_cvg :
         (fun k => `|(Pf k - L) i j| ^+ 2) @ \oo --> (0 : ℂ).
       apply: (cvgC_le0_squeeze (t := fun k => frob_sq (Pf k - L))).
@@ -166,8 +166,8 @@ Section FrobToMxCvg.
       - by move=> k; exact: frob_sq_entry_ge.
       - exact: Hfrob.
     (*
-      Шаг 2: `|·|² -> 0` => `|·| -> 0`. Доказательство: для любого ε > 0
-      достаточно подойти к `|·|² < ε²`.
+      Шаг 2: $|dot|^2 -> 0$ => $|dot| -> 0$. Доказательство: для любого ε > 0
+      достаточно подойти к $|dot|^2 < epsilon^2$.
     *)
     have Habs_sq_o :
         ((fun k => `|(Pf k - L) i j| ^+ 2) : nat -> ℂ^o) @ \oo --> (0 : ℂ^o)
@@ -188,15 +188,15 @@ Section FrobToMxCvg.
       have nneg : 0 <= `|(Pf k - L) i j| by exact: normr_ge0.
       have eps_ge0 : 0 <= eps by exact: ltW eps_pos.
       (*
-        `|·|² < eps²` and 0 <= |·|, 0 <= eps => `|·| < eps`. Через mono-форму
-        `ltr_pXn2r`: (x² < y²) = (x < y) на Num.nneg.
+        $|dot|^2 < "eps"^2$ и $0 <= |dot|$, $0 <= "eps"$ => $|dot| < "eps"$. Через mono-форму
+        `ltr_pXn2r`: $(x^2 < y^2) = (x < y)$ на `Num.nneg`.
       *)
       have abs_in : `|(Pf k - L) i j| \is Num.nneg by rewrite nnegrE.
       have eps_in : eps \is Num.nneg by rewrite nnegrE.
       by rewrite -(ltr_pXn2r (n:=2) _ abs_in eps_in).
     have Habs_cvg : (fun k => `|(Pf k - L) i j|) @ \oo --> (0 : ℂ)
       by exact: Habs_o.
-    (* Шаг 3: `|·| -> 0` => `· -> 0`. *)
+    (* Шаг 3: $|dot| -> 0$ => $dot -> 0$. *)
     have Hentry_o :
         ((fun k => (Pf k - L) i j) : nat -> ℂ^o) @ \oo --> (0 : ℂ^o).
       apply/cvgrPdistC_lt=> eps eps_pos.
@@ -219,7 +219,7 @@ Section FrobToMxCvg.
     apply/mxcvgn_to_cvgn=> i j.
     have Hdiff : (fun k => (Pf k - L) i j) @ \oo --> (0 : ℂ)
       := frob_sq_to_entry_cvg0 i j Hfrob.
-    (* `Pf k i j = (Pf k - L) i j + L i j` - добавляем константу `L i j`. *)
+    (* $P^f_k i j = (P^f_k - L)_(i j) + L_(i j)$ - добавляем константу $L_(i j)$. *)
     have Heq_decomp : (fun k => Pf k i j) = (fun k => (Pf k - L) i j + L i j).
       apply/funext=> k.
       by rewrite !mxE subrK.
@@ -395,7 +395,7 @@ Section Continuity.
 
   (*
     Непрерывность скалярного сопряжения над `numClosedFieldType`. Используем
-    `|x^* - y^*| = |(x - y)^*| = |x - y|`; формально достаточно факта об
+    $|x^* - y^*| = |(x - y)^*| = |x - y|$; формально достаточно факта об
     изометрии.
   *)
   Lemma conjC_cont_o :
@@ -432,9 +432,8 @@ Section Continuity.
 End Continuity.
 
 (*
-  ================================================================== Сходимость
-  комплексной геометрической прогрессии при аксиоме Архимеда.
-  ==================================================================
+  Сходимость комплексной геометрической прогрессии при аксиоме Архимеда.
+
   Геометрическое затухание r^k -> 0 при 0 <= r < 1. Доказывается напрямую через
   бином Бернулли + натуральный мажорант (через `truncn`).
 *)
