@@ -1,11 +1,11 @@
-#import "@preview/unify:0.7.1": *
+#import "@preview/unify:0.8.1": *
 #import "@preview/codly:1.3.0": *
 #import "@preview/tablex:0.0.9": *
-#import "@preview/physica:0.9.5": *
+#import "@preview/physica:0.9.8": *
 #import "@preview/mannot:0.3.3": *
 #import "@preview/great-theorems:0.1.2": *
 #import "@preview/rich-counters:0.2.2": *
-#import "@preview/glossarium:0.5.6": *
+#import "@preview/glossarium:0.5.10": *
 #import "common/glossary.typ": *
 #import "common/acronyms.typ": *
 #import "common/symbols.typ": *
@@ -33,7 +33,11 @@
 #let total_fig = context [#counter(figure).final().at(0)]
 #let total_table = context [#counter(figure.where(kind: table)).final().at(0)]
 #let total_bib = context (
-  query(selector(ref)).filter(it => it.element == none).map(it => it.target).dedup().len()
+  query(selector(ref))
+    .filter(it => it.element == none)
+    .map(it => it.target)
+    .dedup()
+    .len()
 )
 
 // Это входная точка - общий шаблон
@@ -45,7 +49,9 @@
   city: "Город",
   year: datetime.today().year(),
   organization: [МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ РОССИЙСКОЙ ФЕДЕРАЦИИ],
-  in-organization: [Федеральное государственное автономное образовательное учреждение высшего образования "Длинное название образовательного учреждения "АББРЕВИАТУРА"],
+  in-organization: [Федеральное государственное автономное образовательное
+    учреждение высшего образования "Длинное название образовательного учреждения
+    "АББРЕВИАТУРА"],
   faculty: "Название института или факультета",
   department: "Название кафедры",
   specialty-number: "XX.XX.XX",
@@ -136,7 +142,9 @@
   }
   set math.equation(
     numbering: num => (
-      "(" + (counter(heading.where(level: 1)).get() + (num,)).map(str).join(".") + ")"
+      "("
+        + (counter(heading.where(level: 1)).get() + (num,)).map(str).join(".")
+        + ")"
     ),
     supplement: [Уравнение],
   )
@@ -310,7 +318,11 @@
   }
 }
 
-#let make-uncounted-mathblock(head-label, titlix: t => emph[(#t):], ..block-args) = {
+#let make-uncounted-mathblock(
+  head-label,
+  titlix: t => emph[(#t):],
+  ..block-args,
+) = {
   let env = mathblock(
     blocktitle: head-label,
     titlix: _ => [],
@@ -385,8 +397,14 @@
   counter(heading).update(0)
 
   // Number headings using letters.
-  show heading.where(level: 1): set heading(numbering: "Приложение A. ", supplement: [Приложение])
-  show heading.where(level: 2): set heading(numbering: "A.1 ", supplement: [Приложение])
+  show heading.where(level: 1): set heading(
+    numbering: "Приложение A. ",
+    supplement: [Приложение],
+  )
+  show heading.where(level: 2): set heading(
+    numbering: "A.1 ",
+    supplement: [Приложение],
+  )
 
   // Set the numbering of the figures.
   set figure(numbering: x => context {
