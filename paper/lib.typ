@@ -6,6 +6,7 @@
 #import "@preview/great-theorems:0.1.2": *
 #import "@preview/rich-counters:0.2.2": *
 #import "@preview/glossarium:0.5.10": *
+#import "common/preamble.typ": *
 #import "common/glossary.typ": *
 #import "common/acronyms.typ": *
 #import "common/symbols.typ": *
@@ -407,19 +408,44 @@
 )
 
 #let rocq-theorem(source, name, ..rest) = rocq-doc(
-  source, name, env: theorem, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+  source,
+  name,
+  env: theorem,
+  sketch-env: proofsketch,
+  scope: rocq-eval-scope,
+  ..rest,
 )
 #let rocq-lemma(source, name, ..rest) = rocq-doc(
-  source, name, env: lemma, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+  source,
+  name,
+  env: lemma,
+  sketch-env: proofsketch,
+  scope: rocq-eval-scope,
+  ..rest,
 )
 #let rocq-statement-block(source, name, ..rest) = rocq-doc(
-  source, name, env: statement, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+  source,
+  name,
+  env: statement,
+  sketch-env: proofsketch,
+  scope: rocq-eval-scope,
+  ..rest,
 )
 #let rocq-corollary(source, name, ..rest) = rocq-doc(
-  source, name, env: corollary, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+  source,
+  name,
+  env: corollary,
+  sketch-env: proofsketch,
+  scope: rocq-eval-scope,
+  ..rest,
 )
 #let rocq-definition(source, name, ..rest) = rocq-doc(
-  source, name, env: definition, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+  source,
+  name,
+  env: definition,
+  sketch-env: proofsketch,
+  scope: rocq-eval-scope,
+  ..rest,
 )
 
 // Set up the styling of the appendix.

@@ -1,4 +1,6 @@
 #show "†": math.attach("", tr: sym.ast)
+#show math.frac: f => $(#f.num) slash (#f.denom)$
+
 #let eps = math.epsilon
 #let ss = "ss"
 #let pss = "pss"
@@ -8,3 +10,4 @@
 #let kalman = "kalman"
 #let frob = "frob"
 #let sq = "2"
+#let atinf = math.attach(math.arrow.r, t: math.infinity)
