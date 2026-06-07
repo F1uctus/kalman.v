@@ -1,5 +1,13 @@
 {
   "recommendations": [
-    "emeraldwalk.runonsave"
+    "emeraldwalk.runonsave",
+    "f1uctus.scope-math",
+    "f1uctus.scope-search",
+    "gares.elpi-lang",
+    "github.vscode-github-actions",
+    "myriad-dreamin.tinymist",
+    "rocq-prover.vsrocq",
+    "streetsidesoftware.code-spell-checker-russian",
+    "tomoki1207.pdf"
   ]
 }
