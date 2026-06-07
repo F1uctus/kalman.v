@@ -4,3 +4,11 @@
 **/*.md
 !README.md
 **/*.png
+
+# Local-only Typst prototypes (not used by thesis.typ)
+packages/local/preview/
+packages/local/djvu/0.1.0/
+typst.toml
+typst.lock
+loewner-order.typ
+complex-cnvg.typ

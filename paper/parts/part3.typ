@@ -1,127 +1,204 @@
 #import "../lib.typ": *
-#import "@preview/cetz:0.3.2"
+#import "../viz/kalman-run.typ": kalman-run-figure
+#import "../viz/orthogonality.typ": orthogonality-figure
 
 #part_count.step()
 
-#cetz.canvas({
-  import cetz.draw: *
+= Свойства одного шага фильтра Калмана <sec:single-step>
 
-  // --- STYLING CONFIGURATIONS ---
-  let default-rect(name, pos, label, fill-color) = {
-    rect(
-      (pos.at(0) - 1.25, pos.at(1) - 0.25), 
-      (pos.at(0) + 1.25, pos.at(1) + 0.25), 
-      fill: fill-color, 
-      stroke: 1pt + black, 
-      name: name
-    )
-    content(name, text(font: "Courier", size: 9pt, weight: "bold", fill: if fill-color == rgb("008080") { white } else { black }, label))
-  }
+Эта глава образует ядро формальной части работы. По каждому шагу алгоритма,
+введённому в @sec:goals и формализованному в главе предыдущего раздела, мы
+доказываем структурные свойства, без которых работа фильтра была бы либо
+неопределённой (например, обращение вырожденной матрицы), либо лишённой
+оптимальности. Изложение порядка опирается на @kailath2000[§1.2--1.4] с
+дополнительными ссылками на §9.3 и §9.5 в местах, где речь идёт об
+информационной форме и форме Джозефа.
 
-  let arrow-style = (mark: (end: ">"), stroke: 1pt + black)
+== Сохранение структуры шагом предсказания <sec:predict-cov>
 
-  // --- DRAWING NODES ---
-  
-  // Top Level
-  content((6.0, 4.0), text(font: "Courier", size: 10pt, weight: "bold", [Type]), name: "Type")
-  
-  // Level 1
-  default-rect("predType", (1.5, 2.5), [predType T], white)
-  default-rect("eqType", (6.0, 2.5), [eqType], rgb("D3D3D3"))
-  
-  // Level 2
-  default-rect("choiceType", (6.0, 1.3), [choiceType], rgb("FF9999"))
-  
-  // Level 3
-  default-rect("zmodType", (3.5, 0.5), [zmodType], rgb("008080"))
-  
-  // Level 4
-  default-rect("lmodType", (-1.0, -0.5), [lmodType R], rgb("008080"))
-  default-rect("ringType", (3.5, -0.5), [ringType], rgb("008080"))
-  
-  // Level 5
-  default-rect("lalgType", (-1.0, -1.5), [lalgType R], rgb("008080"))
-  default-rect("unitRingType", (2.0, -1.5), [unitRingType], rgb("008080"))
-  default-rect("comRingType", (5.0, -1.5), [comRingType], rgb("008080"))
-  
-  // Level 6
-  default-rect("algType", (-1.0, -2.5), [algType R], rgb("008080"))
-  default-rect("comUnitRingType", (3.5, -2.5), [comUnitRingType], rgb("008080"))
-  
-  // Level 7
-  default-rect("unitAlgType", (-1.0, -3.7), [unitAlgType R], rgb("008080"))
-  default-rect("idomainType", (3.5, -3.7), [idomainType], rgb("008080"))
-  
-  // Level 8-11 (Right-hand long chain)
-  default-rect("fieldType", (3.5, -4.9), [fieldType], rgb("008080"))
-  default-rect("decFieldType", (3.5, -6.1), [decFieldType], rgb("008080"))
-  default-rect("closedFieldType", (3.5, -7.3), [closedFieldType], rgb("008080"))
+Без эрмитовости и положительной полуопределённости предсказанной ковариации
+$P_(k+1|k)$ дальнейшие шаги фильтра не имеют смысла: вычисление инновационной
+ковариации $S_k$, её обращение и оптимальность усиления Калмана все опираются на
+то, что $P_(k+1|k)$ остаётся корректной ковариационной матрицей (эрмитовой и
+неотрицательно определённой). Эти два свойства являются _инвариантом цикла_
+предсказание–обновление и доказываются по индукции.
 
-  // Isolated Orange/Yellow Groups (Left Bottom & Mid Bottom)
-  default-rect("monoidLaw", (-4.5, -4.5), [Monoid.law idx], rgb("FFCC00"))
-  default-rect("monoidComLaw", (-4.5, -5.7), [Monoid.com_law idx], rgb("FFCC00"))
-  default-rect("monoidAddLaw", (-4.5, -6.9), [Monoid.add_law idx mop], rgb("FFCC00"))
-  
-  default-rect("monoidMulLaw", (0.0, -6.2), [Monoid.mul_law abz], rgb("FFCC00"))
+#rocq-lemma("kalman.v", "predict_cov_sym", proof: true)
 
-  // --- DRAWING CONNECTIONS (ARROWS) ---
-  
-  // From Type
-  line("Type.south", "predType.north", ..arrow-style)
-  line("Type.south", "eqType.north", ..arrow-style)
-  
-  // Main Tree Links
-  line("eqType.south", "choiceType.north", ..arrow-style)
-  line("choiceType.south", "zmodType.north", ..arrow-style)
-  
-  line("zmodType.south", "lmodType.north", ..arrow-style)
-  line("zmodType.south", "ringType.north", ..arrow-style)
-  
-  line("lmodType.south", "lalgType.north", ..arrow-style)
-  
-  line("ringType.south", "lalgType.north", ..arrow-style)
-  line("ringType.south", "unitRingType.north", ..arrow-style)
-  line("ringType.south", "comRingType.north", ..arrow-style)
-  
-  line("lalgType.south", "algType.north", ..arrow-style)
-  line("algType.south", "unitAlgType.north", ..arrow-style)
-  
-  line("unitRingType.south", "unitAlgType.north", ..arrow-style)
-  line("unitRingType.south", "comUnitRingType.north", ..arrow-style)
-  line("comRingType.south", "comUnitRingType.north", ..arrow-style)
-  
-  // Linear vertical chain on right
-  line("comUnitRingType.south", "idomainType.north", ..arrow-style)
-  line("idomainType.south", "fieldType.north", ..arrow-style)
-  line("fieldType.south", "decFieldType.north", ..arrow-style)
-  line("decFieldType.south", "closedFieldType.north", ..arrow-style)
+#rocq-lemma("kalman.v", "predict_cov_psd", proof: true)
 
-  // Monoid Chain Links
-  line("monoidLaw.south", "monoidComLaw.north", ..arrow-style)
-  line("monoidComLaw.south", "monoidAddLaw.north", ..arrow-style)
-})
+Это слагаемые предсказания (шаг времени) ковариационной рекурсии (1.2.12);
+полное разделение на шаги предсказания и обновления дано в
+@kalman.predict_state; положительная полуопределённость непосредственно
+выводится из аддитивности и конгруэнтности конуса неотрицательно определённых
+матриц (см. @sec:loewner).
 
-= Обзор литературы и исторический контекст <sec:literature>
+== Инновационная ковариация и обратимость <sec:innov-cov>
 
-== Welch и Bishop --- дискретный фильтр Калмана (UNC TR 95-041, 2006) <sec:welch-bishop>
+Определение усиления Калмана $K_k = P_(k|k-1) H^* S_k^(-1)$ содержит _обращение_
+инновационной ковариации $S_k$. Если $S_k$ необратима, то усиление просто не
+определено как математический объект, и говорить о следующем шаге фильтра
+бессмысленно. Положительная определённость $R$, принятая в @intro, оказывается
+достаточным условием: она передаётся инновационной ковариации через сложение
+неотрицательно определённых матриц.
 
-_Источник:_ `docs/An Introduction to the Kalman Filter.pdf`.
+#rocq-lemma("kalman.v", "innov_cov_pd", proof: true)
 
-+ Оценка состояния $x in RR^n$ дискретного процесса
-+  $x_k = A x_(k-1) + B u_(k-1) + w_(k-1)$ с наблюдениями $z_k = H x_k + v_k$;
-+  шумы $w ~ cal(N)(0,Q)$, $v ~ cal(N)(0,R)$.
-+ Априорная и апостериорная оценки, инновация $(z_k - H hat(x)_k^-)$, усиление
-+  $K_k = P_k^- H^top (H P_k^- H^top + R)^(-1)$.
-+ Цикл предсказание--коррекция; форма $P_k = (E_n - K_k H) P_k^-$.
-+ Расширенный фильтр Калмана (EKF): линеаризация якобианами.
+#rocq-corollary("kalman.v", "innov_cov_inv", proof: true)
 
-== Kalman (1960) --- линейная оценка, пространство состояний, рекурсия Риккати <sec:kalman-1960>
+Этот результат соответствует @kalman.innov_cov_inv\; он обеспечивает
+корректность всего шага обновления.
 
-_Источник:_ `docs/Kalman1960.pdf`.
+== Форма Джозефа <sec:joseph>
 
-+ Переход от формализма Винера--Хопфа к моделям в пространстве состояний.
-+ Оптимальная оценка как условное среднее; для гауссовых процессов совпадает
-+  с линейной MMSE-оценкой.
-+ Ортогональные проекции: оценка как проекция на пространство наблюдений.
-+ Теорема 3: рекурсия для ковариации ошибки (дискретное уравнение типа Риккати).
-+ Теорема 4: двойственность фильтрации и регулирования.
+Стандартная форма обновления ковариации $P_(k|k) = (E_n - K_k H) P_(k|k-1)$ численно
+неустойчива при $K_k$, отличающемся от оптимального усиления Калмана (например,
+из-за ошибок округления плавающей арифметики). Форма Джозефа
+$(E_n - K_k H) P_(k|k-1) (E_n - K_k H)^* + K_k R K_k^*$ симметрична по построению,
+поэтому в промышленных реализациях фильтра обычно используют именно её. Schmidt
+предложил эту модификацию в @kalman.joseph_form.
+
+#rocq-definition("kalman.v", "joseph_form")
+
+#rocq-lemma("kalman.v", "joseph_formE", proof: true)
+
+Из формы Джозефа немедленно следуют неотрицательная определённость и эрмитовость
+$P_(k|k)$, причём без вспомогательных аргументов про инверсию $S_k$.
+
+#rocq-lemma("kalman.v", "update_cov_psd", proof: true)
+
+#rocq-lemma("kalman.v", "update_cov_sym", proof: true)
+
+== Информационная форма <sec:info-form>
+
+Тождество $(P_(k|k))^(-1) = (P_(k|k-1))^(-1) + H^* R^(-1) H$, известное как
+_информационная форма Калмана_ (@kalman.update_cov_information_form), даёт
+представление шага обновления как _сложения информации_: апостериорная
+информация есть сумма априорной и информации, привнесённой наблюдением. Эта
+форма критически важна по трём причинам: (a) в численном расчёте при большом
+количестве каналов наблюдения $p$ складывать $p times p$ матрицы вместо
+обращения предпочтительнее; (b) она позволяет корректно включить бесконечно
+неопределённое начальное состояние ($P_0^(-1) = 0$); (c) она автоматически
+устанавливает положительную определённость апостериорной ковариации, без
+апелляции к спектральной теории.
+
+#rocq-lemma(
+  "kalman.v",
+  "update_cov_information_form",
+  sketch: true,
+  proof: true,
+)
+
+#rocq-corollary("kalman.v", "update_cov_unit", proof: true)
+
+#rocq-corollary("kalman.v", "update_cov_inverse", proof: true)
+
+#rocq-corollary("kalman.v", "update_cov_pd", proof: true)
+
+== Монотонное убывание ковариации ошибки <sec:update-mono>
+
+Интуитивно: новая информация уменьшает неопределённость. Формально:
+апостериорная ковариация ошибки не превосходит априорную в порядке Лёвнера,
+$P_(k|k) prec.eq P_(k|k-1)$. Это структурная монотонность шага обновления; из неё
+немедленно вытекает скалярная монотонность следа, означающая, что полная
+дисперсия ошибки и каждый её диагональный элемент не возрастают после
+поступления нового наблюдения (@kalman.update_cov_le).
+
+#rocq-lemma("kalman.v", "update_cov_le", proof: true)
+
+#rocq-lemma("kalman.v", "update_cov_trace_le", proof: true)
+
+== Оптимальность усиления Калмана <sec:optimality>
+
+Это центральная теорема фильтра Калмана, оправдывающая само название
+оптимального фильтра @kalman.kalman_gain_optimal. Среди всех линейных обновлений
+$hat(x)_(k|k) = hat(x)_(k|k-1) + K' (y_k - H hat(x)_(k|k-1))$ с произвольной матрицей
+усиления $K'$ выбор $K' = K_k$, определённый по формуле
+$K_k = P_(k|k-1) H^* S_k^(-1)$, минимизирует апостериорную ковариацию ошибки в
+смысле порядка Лёвнера (и потому минимизирует её след). Доказательство опирается
+на тождество _выделения полного квадрата_ для матриц.
+
+Сначала формализуем альтернативный шаг обновления с произвольным усилением и его
+явное отклонение от оптимального.
+
+#rocq-definition("kalman.v", "alt_update_cov")
+
+#rocq-lemma("kalman.v", "alt_update_cov_diff", proof: true)
+
+#rocq-theorem("kalman.v", "kalman_gain_optimal", proof: true)
+
+#rocq-theorem("kalman.v", "kalman_gain_normal_eq", proof: true)
+
+Стационарное условие есть уравнение, обращающее в нуль производную
+$d"Tr"(P_(k|k))/d K$, и одновременно основной шаг доказательства теоремы
+оптимальности: член $(K' - K) S (K' - K)^*$ обращается в нуль при $K' = K$, а в
+общем случае неотрицательно определён, что и даёт не строгое неравенство по
+следу.
+
+#figure(
+  orthogonality-figure(),
+  kind: image,
+  caption: [
+    Принцип ортогональности. В пространстве случайных величин со скалярным
+    произведением $chevron.l X, Y chevron.r = EE[X Y^*]$ оптимальная оценка
+    $hat(x) = K y$ есть ортогональная проекция состояния $x$ на линейную
+    оболочку измерений $cal(Y)$, а ошибка $x - hat(x)$ ей перпендикулярна
+    (стационарное условие $K S = P_(k|k-1) H^*$). При отказе от измерения ($K' = 0$,
+    оценка $hat(x)' = 0$) ошибка равна полному отклонению состояния от прогноза,
+    и след её ковариации $"Tr" P_(k|k-1)$ превосходит след $"Tr" P_(k|k)$ оценки Калмана
+    (численные значения на рисунке). Среди всех усилений $K'$ выбор Калмана
+    минимизирует след апостериорной ковариации @kalman.kalman_gain_optimal;
+    прямоугольный треугольник выражает выделение полного квадрата: квадрат
+    гипотенузы (след $P_(k|k-1)$) есть сумма квадратов катетов (след $P_(k|k)$ и вклад
+    измерения). Величины вычислены извлечённым алгоритмом (@sec:extraction).
+  ],
+) <fig:orthogonality>
+
+== Несмещённость оценки <sec:unbiased>
+
+Оптимальное усиление имеет смысл лишь когда оценка не имеет систематического
+сдвига; нулевое математическое ожидание ошибки есть формальная гарантия
+согласованности модели (см. обсуждение выбора начального условия, ведущее к
+уравнению (1.2.8) у Kailath'а). Доказательство ведётся индукцией по шагу $k$,
+опираясь на линейные аксиомы оператора $EE$ (см. @sec:exp-algebra) и
+предположение о нулевом среднем шумов $w$ и $v$.
+
+#rocq-lemma("kalman.v", "err_recursion", proof: true)
+
+#rocq-lemma("kalman.v", "Exp_predict_innov_zero", proof: true)
+
+#rocq-theorem("kalman.v", "unbiased", proof: true)
+
+== Полный цикл как шаг фильтра <sec:kf-step>
+
+Все доказанные выше свойства сводятся в одну запись: полный цикл
+предсказание–обновление как единый шаг фильтра. Эта обёртка важна по двум
+причинам: (a) она удобна для дальнейшего рассуждения о траектории фильтра (см.
+главу @sec:dare); (b) при извлечении исполняемого алгоритма (глава
+@sec:extraction) именно её body становится исполняемой функцией.
+
+#rocq-definition("kalman.v", "kf_state", title: none)
+
+#rocq-snippet("kalman.v", "Definition kf_predict ")
+#rocq-snippet("kalman.v", "Definition kf_update ")
+#rocq-snippet("kalman.v", "Definition kf_step ")
+
+#rocq-theorem("kalman.v", "kf_step_psd", proof: true)
+
+Этот инвариант, применяемый по индукции, и есть формальное утверждение о том,
+что фильтр корректен по построению: на любом интервале работы фильтра ковариация
+ошибки сохраняет структурные свойства.
+
+#figure(
+  kalman-run-figure(),
+  kind: image,
+  caption: [
+    Прогон извлечённого фильтра `kf_step` на синтетических данных (модель
+    постоянной скорости, $n = 2$, $p = 1$). _(а)_ оценка $hat(x)_1$ отслеживает
+    истинное положение $x_1$ по зашумлённым измерениям $y_k$. _(б)_ ошибка
+    оценки остаётся в коридоре $plus.minus 2 sigma_k$, где
+    $sigma_k = sqrt((P_k)_(1 1))$ убывает по мере сходимости ковариации к
+    стационарному режиму DARE (@sec:dare-frob). Данные получены извлечённым из
+    доказательств алгоритмом (@sec:extraction).
+  ],
+) <fig:kalman-run>

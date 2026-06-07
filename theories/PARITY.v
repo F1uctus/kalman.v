@@ -1,9 +1,10 @@
 
 
-Set Warnings "-notation-overridden,-coercions,-default".
 
-From Kalman Require Import kalman obsv_bound lyapunov gramian_infty.
-From Kalman Require Import spec_rad detectability lyap_inv riccati_unique dare.
+
+
+From Kalman Require Import kalman obsv_bound lyapunov gramian_infty spec_rad
+  detectability lyap_inv riccati_unique dare.
 
 Definition kailath_parity_refs :=
   ( kalman.riccati_step,

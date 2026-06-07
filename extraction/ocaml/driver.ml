@@ -1,5 +1,4 @@
 
-
 module R = Riccati
 
 let q0 = Q.zero
@@ -14,6 +13,12 @@ type mat = Q.t list list
 
 let cinv1 s = List.map (List.map qinv) s
 let cinv2 s = R.cinv2 q0 qopp qadd qmul qinv s
+
+let ident n : mat =
+  List.init n (fun i -> List.init n (fun j -> if i = j then q1 else q0))
+
+let qsub a b = qadd a (qopp b)
+let msub (p : mat) (q : mat) : mat = List.map2 (List.map2 qsub) p q
 
 let step ~m ~n ~p ~cinv sF sG sH sQ sR sP =
   R.riccati_step_seqmx q0 q1 qopp qadd qmul conj m n p sF sG sH sQ sR cinv sP
@@ -32,8 +37,19 @@ let obsv_gram ~n ~p sF sH sW k =
 let ctrl_gram ~n ~m sF sG sQ k =
   R.ctrl_gram_seqmx q0 q1 qadd qmul conj n m sF sG sQ k
 
+let lyap_partial ~n sF sW k = ctrl_gram ~n ~m:n sF (ident n) sW k
+
 let closed_loop ~m ~n ~p ~cinv sF sG sH sQ sR sP =
   R.closed_loop_seqmx q0 qopp qadd qmul conj m n p sF sG sH sQ sR cinv sP
+
+let innov_cov ~n ~p sH sR sP =
+  R.innov_cov_seqmx q0 qadd qmul conj n p sH sR sP
+
+let update_cov ~n ~p ~cinv sH sR sP =
+  R.update_cov_seqmx q0 q1 qopp qadd qmul conj n p sH sR cinv sP
+
+let alt_update_cov ~n ~p sH sR sKp sP =
+  R.alt_update_cov_seqmx q0 q1 qopp qadd qmul conj n p sH sR sKp sP
 
 let rec iter k f x = if k <= 0 then x else iter (k - 1) f (f x)
 
@@ -50,6 +66,11 @@ let ellipse2 p =
   let l1, l2 = eig2 p in
   let a = p.(0).(0) and b = p.(0).(1) in
   (sqrt (max 0. l1), sqrt (max 0. l2), atan2 (l1 -. a) b)
+
+let qform_ellipse2 p =
+  let l1, l2 = eig2 p in
+  let a = p.(0).(0) and b = p.(0).(1) in
+  (1. /. sqrt l1, 1. /. sqrt l2, atan2 (l1 -. a) b)
 
 let eig2_general m =
   let a = m.(0).(0) and b = m.(0).(1) and c = m.(1).(0) and d = m.(1).(1) in
@@ -99,6 +120,12 @@ let jellipse (a, b, ang) =
 let qof_int = Q.of_int
 let qfrac a b = Q.make (Z.of_int a) (Z.of_int b)
 
+let psd_exact g =
+  let a = qget g 0 0 and b = qget g 0 1 and c = qget g 1 0 and d = qget g 1 1 in
+  let det = qadd (qmul a d) (qopp (qmul b c)) in
+  Q.sign a >= 0 && Q.sign d >= 0 && Q.sign det >= 0
+
+
 let sys_F = [ [ q1; q1 ]; [ q0; q1 ] ]
 let sys_G = [ [ qfrac 1 2 ]; [ q1 ] ]
 let sys_H = [ [ q1; q0 ] ]
@@ -146,10 +173,6 @@ let gen_dare ~kmax ~kss path =
   done;
   jobj
     [
-      ( "description",
-        `String
-            "DARE/Riccati convergence from the extracted seqmx core \
-             (theories/seqmx/riccati_seqmx.v) over zarith Q.t." );
       ("system", jsystem);
       ("Pss", jmat pss);
       ("Pss_ellipse", jellipse (ellipse2 pss));
@@ -159,8 +182,9 @@ let gen_dare ~kmax ~kss path =
     ]
   |> Yojson.Basic.to_file path
 
+
 let gram_F = [ [ qfrac 4 5; qfrac 3 10 ]; [ q0; qfrac 1 2 ] ]
-let gram_W = cinv1 [ [ q1 ] ] 
+let gram_W = cinv1 [ [ q1 ] ] (* weight = invmx R, R = I *)
 let gram_Q = [ [ q1 ] ]
 
 let gram_frame g k =
@@ -205,18 +229,12 @@ let gen_gramian ~n ~kmax path =
   in
   jobj
     [
-      ( "description",
-        `String
-            "Observability/controllability gramians O_k, C_k become PD exactly \
-             at k=n for observable/controllable pairs (extracted from \
-             theories/seqmx/experiments_seqmx.v: obsv_gram_seqmx / \
-             ctrl_gram_seqmx, cite obsv_bound.obsv_gram_pd_of_observable / \
-             ctrl_gram_pd_of_controllable)." );
       ("n", jint n);
       ("kmax", jint kmax);
       ("cases", `List cases);
     ]
   |> Yojson.Basic.to_file path
+
 
 let gen_schur ~kmax ~kss path =
   let pss_q = iter kss dare_step sys_P0 in
@@ -231,12 +249,6 @@ let gen_schur ~kmax ~kss path =
   in
   jobj
     [
-      ( "description",
-        `String
-            "Closed loop A_cl = F - F Kf H (predicted-cov form, extracted from \
-             theories/seqmx/experiments_seqmx.v closed_loop_seqmx): spectral \
-             radius < 1 and ||A_cl^k||_F -> 0 (cite dare.v \
-             riccati_closed_loop_identity, spec_rad.v)." );
       ("A_cl", jmat acl);
       ("spectral_radius", jfloat (spectral_radius acl));
       ( "eigenvalues",
@@ -248,6 +260,7 @@ let gen_schur ~kmax ~kss path =
       ("power_norms", `List pows);
     ]
   |> Yojson.Basic.to_file path
+
 
 let rng = ref 123456789
 let nextf () =
@@ -302,19 +315,191 @@ let gen_kalman_run ~kmax path =
   done;
   jobj
     [
-      ( "description",
-        `String
-            "Synthetic Kalman run: the +/-sigma covariance band is the exact \
-             extracted Riccati covariance (theories/seqmx/riccati_seqmx.v); the \
-             trajectory and measurements use a seeded PRNG and the extracted \
-             Kalman gain." );
       ("system", jsystem);
       ("steps", `List (List.rev !steps));
     ]
   |> Yojson.Basic.to_file path
 
+
+let dl_F = [| [| 1.2; 0. |]; [| 0.; 0.5 |] |]
+let dl_H = [| [| 1.; 0. |] |] (* output 1x2 *)
+let dl_G = [| [| 0. |]; [| 1. |] |] (* input 2x1 *)
+
+let tr_f m =
+  let r = Array.length m and c = Array.length m.(0) in
+  Array.init c (fun i -> Array.init r (fun j -> m.(j).(i)))
+
+let mv_f m v =
+  Array.init (Array.length m) (fun i ->
+      let s = ref 0. in
+      for j = 0 to Array.length v - 1 do
+        s := !s +. (m.(i).(j) *. v.(j))
+      done;
+      !s)
+
+let vm_f v m =
+  Array.init (Array.length m.(0)) (fun j ->
+      let s = ref 0. in
+      for i = 0 to Array.length v - 1 do
+        s := !s +. (v.(i) *. m.(i).(j))
+      done;
+      !s)
+
+let vnorm_f v = sqrt (Array.fold_left (fun a x -> a +. (x *. x)) 0. v)
+
+let reig2 m lam =
+  let a = m.(0).(0) and b = m.(0).(1) and c = m.(1).(0) and d = m.(1).(1) in
+  let v1 = [| b; lam -. a |] in
+  let v = if vnorm_f v1 > 1e-9 then v1 else [| d -. lam; -.c |] in
+  let n = vnorm_f v in
+  Array.map (fun x -> x /. n) v
+
+let leig2 m lam = reig2 (tr_f m) lam
+
+let dl_mode m hout gin (re, im) =
+  let v = reig2 m re and w = leig2 m re in
+  let seen = vnorm_f (mv_f hout v) > 1e-7 in
+  let reached = vnorm_f (vm_f w gin) > 1e-7 in
+  jobj
+    [
+      ("re", jfloat re);
+      ("im", jfloat im);
+      ("abs", jfloat (Float.hypot re im));
+      ("unstable", `Bool (Float.hypot re im >= 1.0));
+      ("detectable", `Bool seen);
+      ("stabilizable", `Bool reached);
+    ]
+
+let gen_duality path =
+  let e1, e2 = eig2_general dl_F in
+  let modes m hout gin = `List [ dl_mode m hout gin e1; dl_mode m hout gin e2 ] in
+  let ft = tr_f dl_F and ht = tr_f dl_H and gt = tr_f dl_G in
+  jobj
+    [
+      ("system", jobj [ ("F", jmat dl_F); ("H", jmat dl_H); ("G", jmat dl_G) ]);
+      ("primal", modes dl_F dl_H dl_G);
+      ("dual", modes ft gt ht);
+    ]
+  |> Yojson.Basic.to_file path
+
+
+let qscale c (s : mat) : mat = List.map (List.map (qmul c)) s
+
+let gen_orthogonality ~kss path =
+  let pss = iter kss dare_step sys_P0 in
+  let p_pred = predict_cov ~m:1 ~n:2 sys_F sys_G sys_Q pss in
+  let k = kalman_gain ~n:2 ~p:1 ~cinv:cinv1 sys_H sys_R p_pred in
+  let s = innov_cov ~n:2 ~p:1 sys_H sys_R p_pred in
+  let p_opt = update_cov ~n:2 ~p:1 ~cinv:cinv1 sys_H sys_R p_pred in
+  let tr_opt = trace2 (mf p_opt) in
+  let alt label kp =
+    let p_alt = alt_update_cov ~n:2 ~p:1 sys_H sys_R kp p_pred in
+    let tr = trace2 (mf p_alt) in
+    assert (tr_opt <= tr +. 1e-9);
+    jobj [ ("label", `String label); ("K", jmat (mf kp)); ("trace", jfloat tr) ]
+  in
+  let zero_gain = [ [ q0 ]; [ q0 ] ] in
+  let alts =
+    [
+      alt "K' = 0" zero_gain;
+      alt "K' = 3K" (qscale (qof_int 3) k);
+    ]
+  in
+  jobj
+    [
+      ("system", jsystem);
+      ("P_pred", jmat (mf p_pred));
+      ("S", jmat (mf s));
+      ("K", jmat (mf k));
+      ("trace_opt", jfloat tr_opt);
+      ("alternatives", `List alts);
+    ]
+  |> Yojson.Basic.to_file path
+
+
+let lyap_A = gram_F
+let lyap_W = ident 2
+
+let lyap_step k = lyap_partial ~n:2 lyap_A lyap_W k
+
+let lyap_iter_row n_ p pss =
+  let l1, l2 = eig2 p in
+  let fd = frob_dist p pss in
+  jobj
+    [
+      ("N", jint n_);
+      ("P", jmat p);
+      ("frob_dist", jfloat fd);
+      ("log10_frob_dist", jfloat (if fd > 0. then log10 fd else -.infinity));
+      ("trace", jfloat (trace2 p));
+      ("eig", `List [ jfloat l1; jfloat l2 ]);
+      ("ellipse", jellipse (ellipse2 p));
+    ]
+
+let gen_lyapunov ~kmax ~kss path =
+  let pss_q = lyap_step kss in
+  let pss = mf pss_q in
+  let rows = ref [] in
+  let prev_fd = ref infinity in
+  let prev_q = ref (lyap_step 0) in
+  for n_ = 0 to kmax do
+    let cur_q = if n_ = 0 then !prev_q else lyap_step n_ in
+    let cur = mf cur_q in
+    let nxt_q = lyap_step (n_ + 1) in
+    assert (psd_exact (msub nxt_q cur_q));
+    let fd = frob_dist cur pss in
+    assert (fd <= !prev_fd +. 1e-12);
+    prev_fd := fd;
+    prev_q := nxt_q;
+    rows := lyap_iter_row n_ cur pss :: !rows
+  done;
+  jobj
+    [
+      ("A", jmat (mf lyap_A));
+      ("W", jmat (mf lyap_W));
+      ("lyap_sol", jmat pss);
+      ("lyap_sol_ellipse", jellipse (ellipse2 pss));
+      ("fixed_point_residual", jfloat (frob_dist (mf (lyap_step (kss + 1))) pss));
+      ("num_iterations", jint (kmax + 1));
+      ("iterations", `List (List.rev !rows));
+    ]
+  |> Yojson.Basic.to_file path
+
+
+let spec_A = [ [ qfrac 5 2; qfrac 3 2 ]; [ qfrac 3 2; qfrac 5 2 ] ] (* eig 4, 1 *)
+let spec_B = [ [ qfrac 13 2; qfrac 5 2 ]; [ qfrac 5 2; qfrac 13 2 ] ] (* eig 9, 4 *)
+
+let spec_mat_obj g =
+  let gf = mf g in
+  let l1, l2 = eig2 gf in
+  jobj
+    [
+      ("mat", jmat gf);
+      ("eig", `List [ jfloat l1; jfloat l2 ]);
+      ("qform_ellipse", jellipse (qform_ellipse2 gf));
+    ]
+
+let gen_spectral path =
+  let a_inv = cinv2 spec_A and b_inv = cinv2 spec_B in
+  assert (pd_exact spec_A);
+  assert (pd_exact spec_B);
+  assert (psd_exact (msub spec_B spec_A));
+  assert (psd_exact (msub a_inv b_inv));
+  jobj
+    [
+      ( "antitone",
+        jobj
+          [
+            ("A", spec_mat_obj spec_A);
+            ("B", spec_mat_obj spec_B);
+            ("A_inv", spec_mat_obj a_inv);
+            ("B_inv", spec_mat_obj b_inv);
+          ] );
+    ]
+  |> Yojson.Basic.to_file path
+
+
 let () =
-  
   let f = [ [ qof_int 2 ] ] and one = [ [ q1 ] ] in
   let p2 = iter 2 (step ~m:1 ~n:1 ~p:1 ~cinv:cinv1 f one one one one) [ [ q1 ] ] in
   (match p2 with
@@ -324,4 +509,8 @@ let () =
   gen_dare ~kmax:36 ~kss:200 (Filename.concat dir "dare_convergence.json");
   gen_gramian ~n:2 ~kmax:5 (Filename.concat dir "gramian.json");
   gen_schur ~kmax:30 ~kss:200 (Filename.concat dir "schur_stability.json");
-  gen_kalman_run ~kmax:39 (Filename.concat dir "kalman_run.json")
+  gen_kalman_run ~kmax:39 (Filename.concat dir "kalman_run.json");
+  gen_duality (Filename.concat dir "duality_spectral.json");
+  gen_orthogonality ~kss:200 (Filename.concat dir "orthogonality.json");
+  gen_lyapunov ~kmax:36 ~kss:200 (Filename.concat dir "lyapunov.json");
+  gen_spectral (Filename.concat dir "spectral.json")

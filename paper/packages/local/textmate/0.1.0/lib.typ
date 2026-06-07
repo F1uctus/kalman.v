@@ -73,13 +73,7 @@
   }
 }
 
-#let map-primary-scope(scope) = {
-  if scope.starts-with("keyword.") {
-    "keyword"
-  } else {
-    scope
-  }
-}
+#let map-primary-scope(scope) = scope
 
 #let render-captures(captures, indent) = {
   let lines = ()

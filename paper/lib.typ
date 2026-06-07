@@ -11,6 +11,8 @@
 #import "common/symbols.typ": *
 #import "common/fonts.typ": tnr-font
 #import "common/rocq.typ": *
+#import "common/rocq-cite.typ": *
+#import "common/rocq-doc.typ": *
 
 #let to-str(content) = {
   if content.has("text") {
@@ -120,6 +122,11 @@
   set ref(supplement: it => {
     if it.func() == figure {}
   })
+
+  show ref: it => {
+    let t = str(it.target)
+    if rocq-target(t) { rocq-cite-render(t) } else { it }
+  }
 
   // Настройка блоков кода
   show: codly-init.with()
@@ -389,6 +396,30 @@
 #let eq-no-num = math.equation.with(
   block: true,
   numbering: none,
+)
+
+#let rocq-eval-scope = (
+  Rocq: Rocq,
+  conv-at-inf: conv-at-inf,
+  hl-r: hl-r,
+  hl-g: hl-g,
+  half: half,
+)
+
+#let rocq-theorem(source, name, ..rest) = rocq-doc(
+  source, name, env: theorem, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+)
+#let rocq-lemma(source, name, ..rest) = rocq-doc(
+  source, name, env: lemma, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+)
+#let rocq-statement-block(source, name, ..rest) = rocq-doc(
+  source, name, env: statement, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+)
+#let rocq-corollary(source, name, ..rest) = rocq-doc(
+  source, name, env: corollary, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
+)
+#let rocq-definition(source, name, ..rest) = rocq-doc(
+  source, name, env: definition, sketch-env: proofsketch, scope: rocq-eval-scope, ..rest,
 )
 
 // Set up the styling of the appendix.

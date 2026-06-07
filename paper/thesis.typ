@@ -37,6 +37,10 @@
 
 #include "./parts/part3.typ"
 
+#include "./parts/part4.typ"
+
+#include "./parts/part5.typ"
+
 // Выключить нумерацию выходных данных
 #show heading: set heading(numbering: none)
 
