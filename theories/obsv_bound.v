@@ -15,17 +15,19 @@
   - `ctrl_gram_pd_of_controllable` - при управляемости + `pd Q` `ctrl_gram n`
     положительно определён.
   - `riccati_iter_le_ctrl_gram` - верхняя оценка
-    $"iter" k "riccati_step" 0 prec.eq "ctrl_gram" k$
-    (доказывается через $K = 0$: применяя `update_cov_le` и `predict_cov_mono` индуктивно, плюс тождество сдвига `ctrl_gram_shift`: $"ctrl_gram" (k+1) = G Q G† + F ("ctrl_gram" k) F†$).
+    $"iter" k "riccati_step" 0 prec.eq "ctrl_gram" k$. Доказывается через
+    $K = 0$: применяя `update_cov_le` и `predict_cov_mono` индуктивно, плюс
+    тождество сдвига `ctrl_gram_shift`:
+    $"ctrl_gram" (k+1) = G Q G† + F ("ctrl_gram" k) F†$.
 
   Замечание. Верхняя оценка через информационную форму
   $"iter" k "riccati_step" 0 prec.eq "invmx" ("obsv_gram" n)$ при $k >= n$
   - @kailath2000[§ 14.5].
 
-  Форма $P_k^(-1) succeq "obsv_gram" k$ здесь не доказана: она требует тождества
-  Вудбери / явного выражения $"invmx" ("predict_cov" P)$ через $"invmx" P$ и
-  $"invmx" Q$. Затравочная оценка при K=0 выше даёт ослабленную
-  (зависящую от `F`) оценку, достаточную для построения предельного `Pss` при
+  Форма $P_k^(-1) eq.succ "obsv_gram" k$ здесь не доказана: она требует
+  тождества Вудбери / явного выражения $"invmx" ("predict_cov" P)$ через
+  $"invmx" P$ и $"invmx" Q$. Затравочная оценка при K=0 выше даёт ослабленную
+  (зависящую от $F$) оценку, достаточную для построения предельного $P_ss$ при
   дополнительной гипотезе устойчивости.
 
   @kailath2000[App. C, § C.3; App. C, § C.4]

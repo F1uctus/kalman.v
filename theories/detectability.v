@@ -86,7 +86,7 @@ Section Detectability.
     forall (lam : ℂ) (v : 'cV[ℂ]_n),
       v != 0 -> F *m v = lam *: v -> 1 <= `|lam| -> H *m v != 0.
 
-  (* Степень F на собственном векторе: F^i ⋅ v = lam^i * v. *)
+  (* Степень F на собственном векторе: $F^i v = λ^i v$. *)
   Lemma F_pow_eigvec i (lam : ℂ) (v : 'cV[ℂ]_n) :
     F *m v = lam *: v -> F^+i *m v = lam^+i *: v.
   Proof.
@@ -167,7 +167,7 @@ Section Stabilizability.
       w != 0 -> w *m F = lam *: w -> 1 <= `|lam| -> w *m G != 0.
 
   (*
-    Управляемость на единичной окружности (левый PBH на |λ| = 1).
+    Управляемость на единичной окружности (левый PBH на $|λ| = 1$).
 
     - @kailath2000[App. C, § C.3].
   *)
