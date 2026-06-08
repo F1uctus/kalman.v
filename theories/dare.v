@@ -200,7 +200,7 @@ Section DARE.
                         (pd_psd (innov_cov_pd H R_pd psdPred)).
     have heq : alt_update_cov H R K0 (predict_cov F G Q Sigma)
              = Mc *m Sigma *m Mc^t* + Wc.
-      rewrite /alt_update_cov /predict_cov /=.
+      rewrite !alt_update_covE !predict_covE /=.
       set ImKH := 1%:M - K0 *m H.
       have hsplit : forall Xa Xb : 'M[ℂ]_n,
           ImKH *m (Xa + Xb) *m ImKH^t*
@@ -211,7 +211,7 @@ Section DARE.
               = Mc *m Sigma *m Mc^t*.
         by rewrite trmxC_mul !mulmxA.
       by rewrite h1 addrA.
-    rewrite /riccati_step heq in hle; exact: hle.
+    rewrite riccati_stepE; rewrite heq in hle; exact: hle.
   Qed.
 
   (*
@@ -390,7 +390,7 @@ Section DARE.
         have h2 : F *m (K *m R *m K^t*) *m F^t*
                 = cl_gain *m R *m cl_gain^t*.
           by rewrite /cl_gain trmxC_mul !mulmxA.
-        rewrite /predict_cov /alt_update_cov hsplit h1 h2 /cl_weight.
+        rewrite !predict_covE !alt_update_covE hsplit h1 h2 /cl_weight.
         by rewrite -addrA [cl_gain *m R *m cl_gain^t* + _]addrC.
       by rewrite heq in key.
     Qed.
@@ -407,7 +407,7 @@ Section DARE.
 
     Lemma Spred_recr k :
       Spred k.+1 = predict_cov F G Q (update_cov H R (Spred k)).
-    Proof. by rewrite /Spred iterS /riccati_step. Qed.
+    Proof. by rewrite /Spred iterS !riccati_stepE. Qed.
 
     (*
       Spred k <= lyap_partial M W (k+1) - индукция через выделение полного
@@ -419,7 +419,7 @@ Section DARE.
       elim: k => [|k IH].
       - rewrite (lyap_partial_shift cl_loop cl_weight 0) lyap_partial0.
         rewrite mulmx0 mul0mx addr0.
-        rewrite /Spred /= /predict_cov mulmx0 mul0mx add0r /cl_weight.
+        rewrite /Spred /= !predict_covE mulmx0 mul0mx add0r /cl_weight.
         rewrite -[X in psd_le X _]addr0.
         apply: psd_le_add2l.
         apply/psd_le0_psd.
@@ -444,7 +444,7 @@ Section DARE.
     Proof.
       case: k => [|k].
       - rewrite lyap_partial0 /=; apply: psd_le_refl; exact: psd0.
-      - rewrite iterS /riccati_step.
+      - rewrite iterS !riccati_stepE.
         apply: (psd_le_trans (B := Spred k)).
         + exact: (update_cov_le H R_pd (Spred_psd k)).
         + exact: Spred_le k.
@@ -499,7 +499,7 @@ Section DARE.
     (fun k => predict_cov F G Q (Pf k)) @ \oo --> predict_cov F G Q L.
   Proof.
     move=> HP.
-    rewrite /predict_cov; under eq_cvg=> k do rewrite /predict_cov.
+    rewrite predict_covE; under eq_cvg=> k do rewrite predict_covE.
     apply: cvgn_addmx; last exact: cvg_cst.
     apply: cvgn_mulmx; last exact: cvg_cst.
     apply: cvgn_mulmx (cvg_cst _) HP.
@@ -510,7 +510,7 @@ Section DARE.
     (fun k => innov_cov H R (Pf k)) @ \oo --> innov_cov H R L.
   Proof.
     move=> HP.
-    rewrite /innov_cov; under eq_cvg=> k do rewrite /innov_cov.
+    rewrite innov_covE; under eq_cvg=> k do rewrite innov_covE.
     apply: cvgn_addmx; last exact: cvg_cst.
     apply: cvgn_mulmx; last exact: cvg_cst.
     apply: cvgn_mulmx (cvg_cst _) HP.
@@ -521,7 +521,7 @@ Section DARE.
     (fun k => kalman_gain H R (Pf k)) @ \oo --> kalman_gain H R L.
   Proof.
     move=> HP Sunit.
-    rewrite /kalman_gain; under eq_cvg=> k do rewrite /kalman_gain.
+    rewrite kalman_gainE; under eq_cvg=> k do rewrite kalman_gainE.
     apply: cvgn_mulmx.
     - apply: cvgn_mulmx HP _; exact: cvg_cst.
     - exact: riccati_cont.cvgn_invmx (cvgn_innov_cov_k HP) Sunit.
@@ -532,7 +532,7 @@ Section DARE.
     (fun k => update_cov H R (Pf k)) @ \oo --> update_cov H R L.
   Proof.
     move=> HP Sunit.
-    rewrite /update_cov; under eq_cvg=> k do rewrite /update_cov.
+    rewrite update_covE; under eq_cvg=> k do rewrite update_covE.
     apply: cvgn_mulmx; last exact: HP.
     apply: cvgn_submx; first exact: cvg_cst.
     apply: cvgn_mulmx; last exact: cvg_cst.
@@ -545,7 +545,7 @@ Section DARE.
       riccati_step F G H Q R L.
   Proof.
     move=> HP Sunit.
-    rewrite /riccati_step; under eq_cvg=> k do rewrite /riccati_step.
+    rewrite riccati_stepE; under eq_cvg=> k do rewrite riccati_stepE.
     apply: cvgn_update_cov_k Sunit.
     exact: cvgn_predict_cov_k.
   Qed.
@@ -560,7 +560,7 @@ Section DARE.
 
   Theorem Pss_fix : Pss = riccati_step F G H Q R Pss.
   Proof.
-    (* Шаг 1: invertibility of innov_cov ∘ predict_cov at Pss *)
+    (* Обратимость innov_cov ∘ predict_cov в точке $P_ss$. *)
     have predPss_psd : psd (predict_cov F G Q Pss) := predict_cov_psd F G Q_psd Pss_psd.
     have Sunit : innov_cov H R (predict_cov F G Q Pss) \in unitmx
       := innov_cov_inv H R_pd predPss_psd.
@@ -574,9 +574,9 @@ Section DARE.
       by apply/funext=> k.
     rewrite eqf in HriccCvg.
     (*
-      Шаг 4: `(fun k => Pseq k.+1) @ ∞ --> Pss` - сдвиг сходящейся
-      последовательности. Используем `cvg_comp` с `addn 1 @ ∞ --> ∞` и
-      переписываем `addn 1 = (fun k => k.+1)` через `add1n`.
+      `(fun k => Pseq k.+1) @ ∞ --> Pss` - сдвиг сходящейся последовательности.
+      Используем `cvg_comp` с `addn 1 @ ∞ --> ∞` и переписываем
+      `addn 1 = (fun k => k.+1)` через `add1n`.
     *)
     have HshiftCvg : (fun k : nat => Pseq k.+1) @ \oo --> Pss.
       have Hsh : addn 1 @ \oo --> (\oo : set_system nat) := cvg_addnl 1.
@@ -585,19 +585,8 @@ Section DARE.
       have eq_shift : Pseq \o addn 1 = (fun k => Pseq k.+1).
         by apply/funext=> k.
       by rewrite -eq_shift.
-    (* Шаг 5: единственность предела в матричной топологии *)
-    have HausM : hausdorff_space ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ).
-      exact: norm_hausdorff.
-    have HshiftCvg_n :
-        ((fun k => Pseq k.+1) : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-          @ \oo --> (Pss : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ)).
-      exact: HshiftCvg.
-    have HriccCvg_n :
-        ((fun k => Pseq k.+1) : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-          @ \oo --> (riccati_step F G H Q R Pss
-                      : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ)).
-      exact: HriccCvg.
-    exact: (cvg_unique HausM HshiftCvg_n HriccCvg_n).
+    (* Единственность предела в матричной топологии *)
+    exact: (mx_cvgn_unique HshiftCvg HriccCvg).
   Qed.
 
   (*
@@ -641,8 +630,7 @@ Section DARE.
   (* $P_ss = (E - "Kf" H) P_pss = "update_cov" P_pss$ (неподвижная точка). *)
   Lemma Pss_eq_update : Pss = update_cov H R P_pss.
   Proof.
-    have := Pss_fix.
-    by rewrite /riccati_step.
+    exact: Pss_fix.
   Qed.
 
   (* Свёртка усиления: F (E - Kf H) = Fp. *)
@@ -658,7 +646,7 @@ Section DARE.
   Lemma predict_cov_closed_loop :
     predict_cov F G Q Pss = Fp *m P_pss *m F^t* + G *m Q *m G^t*.
   Proof.
-    by rewrite {1}/predict_cov {1}Pss_eq_update /update_cov mulmxA F_update_factor.
+    by rewrite {1}predict_covE {1}Pss_eq_update update_covE mulmxA F_update_factor.
   Qed.
 
   (* Важное перекрёстное тождество: $F_p P_pss H† = K_p R$. *)
@@ -667,7 +655,7 @@ Section DARE.
     rewrite mulmxBl mulmxBl.
     rewrite -[F *m P_pss *m H^t*]mulmxA -(kalman_gain_normal_eq H R_pd P_pss_psd).
     rewrite mulmxA.
-    rewrite /innov_cov mulmxDr !mulmxA.
+    rewrite innov_covE mulmxDr !mulmxA.
     by rewrite addrAC subrr add0r.
   Qed.
 
@@ -708,10 +696,10 @@ Section DARE.
     Предсказанная установившаяся ковариация
     $P_pss = F_p P_pss F_p† + (K_p R K_p† + G Q G†)$ есть неподвижная точка
     уравнения Ляпунова замкнутого контура; её положительную определённость даёт
-    управляемость исходной пары $(F, G Q G†)$
-    (коррекция по выходу управляемость не сохраняет, но перенос условия PBH на ядре даёт результат).
-    Затем $P_ss = "update_cov" H R P_pss$ сохраняет положительную
-    определённость.
+    управляемость исходной пары $(F, G Q G†)$. Коррекция по выходу управляемость
+    в общем случае не сохраняет; требуемое свойство получается переносом условия
+    PBH на ядро замкнутого контура. Затем $P_ss = "update_cov" H R P_pss$
+    сохраняет положительную определённость.
   *)
   Proof.
     have Ppd : pd P_pss.
@@ -960,20 +948,7 @@ Section DARE.
         = (fun k => iter k.+1 (riccati_step F G H Q R) (Xinf + a *: Yinf)).
         by apply/funext.
       by rewrite -eq_shift.
-    have HausM : hausdorff_space ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ)
-      by exact: norm_hausdorff.
-    have HshiftCvg_n :
-        ((fun k => iter k.+1 (riccati_step F G H Q R) (Xinf + a *: Yinf))
-          : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-          @ \oo --> (L : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-      := HshiftCvg.
-    have HriccCvg_n :
-        ((fun k => iter k.+1 (riccati_step F G H Q R) (Xinf + a *: Yinf))
-          : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-          @ \oo --> (riccati_step F G H Q R L
-                      : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-      := HriccCvg.
-    exact: (cvg_unique HausM HshiftCvg_n HriccCvg_n).
+    exact: (mx_cvgn_unique HshiftCvg HriccCvg).
   Qed.
 
   (*
@@ -1179,19 +1154,7 @@ Section DARE.
         (fun k => iter k (riccati_step F G H Q R) Pi) @ \oo --> Pss
       := riccati_iter_cvgn (pd_psd HPi_pd).
     (* Хаусдорфова единственность предела в матричной топологии. *)
-    have HausM : hausdorff_space ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ).
-      exact: norm_hausdorff.
-    have HconstCvg_n :
-        ((fun k => iter k (riccati_step F G H Q R) Pi)
-          : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-          @ \oo --> (Pi : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-      := HconstCvg.
-    have HarbCvg_n :
-        ((fun k => iter k (riccati_step F G H Q R) Pi)
-          : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-          @ \oo --> (Pss : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-      := HarbCvg.
-    exact: (cvg_unique HausM HconstCvg_n HarbCvg_n).
+    exact: (mx_cvgn_unique HconstCvg HarbCvg).
   Qed.
 
   (*

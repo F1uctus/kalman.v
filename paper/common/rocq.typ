@@ -29,6 +29,14 @@
   block: true,
 )
 
+#let rocq-raw-inline(code) = raw(
+  code,
+  lang: "rocq",
+  syntaxes: bytes(rocq-syntax),
+  theme: "/paper/assets/rocq.tmTheme",
+  block: false,
+)
+
 #let rocq-codly(body, source, ..args) = {
   codly.local(
     languages: (rocq: rocq-codly-lang(source)),
@@ -139,8 +147,17 @@
 
 
 #let rocq-decl-kinds = (
-  "Theorem", "Lemma", "Corollary", "Definition", "Notation", "Record",
-  "Variable", "Hypothesis", "Fixpoint", "Inductive", "Axiom",
+  "Theorem",
+  "Lemma",
+  "Corollary",
+  "Definition",
+  "Notation",
+  "Record",
+  "Variable",
+  "Hypothesis",
+  "Fixpoint",
+  "Inductive",
+  "Axiom",
 )
 
 #let rocq-locate(lines, name) = {
@@ -177,7 +194,9 @@
 #let rocq-comment-above(lines, idx) = {
   let c-end = idx
   while c-end > 0 and lines.at(c-end - 1).trim() == "" { c-end -= 1 }
-  if c-end == 0 or not lines.at(c-end - 1).trim().ends-with("*)") { return none }
+  if c-end == 0 or not lines.at(c-end - 1).trim().ends-with("*)") {
+    return none
+  }
   if lines.at(c-end - 1).trim().starts-with("(*") {
     return (start: c-end - 1, end: c-end)
   }
@@ -205,7 +224,10 @@
   let cur = ()
   for l in ls {
     if l.trim() == "" {
-      if cur.len() > 0 { paras.push(cur); cur = () }
+      if cur.len() > 0 {
+        paras.push(cur)
+        cur = ()
+      }
     } else {
       cur.push(l)
     }
@@ -233,7 +255,9 @@
   (title: title, description: description)
 }
 
-#let rocq-sketch-prefix = regex("(?i)^\\s*схема(\\s+доказательства)?\\s*[:.]?\\s*")
+#let rocq-sketch-prefix = regex(
+  "(?i)^\\s*схема(\\s+доказательства)?\\s*[:.]?\\s*",
+)
 
 #let rocq-proof-sketch(lines, idx, kind) = {
   let stmt = rocq-statement-range(lines, idx, kind)

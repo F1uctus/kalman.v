@@ -62,7 +62,7 @@ Section RiccatiMonotone.
     rewrite /psd_le.
     have eq : predict_cov F G Q P2 - predict_cov F G Q P1 =
               F *m (P2 - P1) *m F^t*.
-      rewrite /predict_cov opprD addrACA subrr addr0.
+      rewrite !predict_covE opprD addrACA subrr addr0.
       by rewrite mulmxBr mulmxBl.
     rewrite eq.
     exact: psd_lcongr hLe.
@@ -114,7 +114,7 @@ Section RiccatiMonotone.
       и `psd_le_add2l` (сдвиг на константу).
     *)
     have step3 : psd_le (alt_update_cov H R K2 P1) (alt_update_cov H R K2 P2).
-      rewrite /alt_update_cov.
+      rewrite !alt_update_covE.
       rewrite [(1%:M - K2 *m H) *m P1 *m _ + _]addrC.
       rewrite [(1%:M - K2 *m H) *m P2 *m _ + _]addrC.
       apply: psd_le_add2l.
@@ -138,7 +138,7 @@ Section RiccatiMonotone.
     psd_le (riccati_step F G H Q R P1) (riccati_step F G H Q R P2).
   Proof.
     move=> psd1 psd2 hLe.
-    rewrite /riccati_step.
+    rewrite !riccati_stepE.
     have hP1 : psd (predict_cov F G Q P1) := predict_cov_psd F G Q_psd psd1.
     have hP2 : psd (predict_cov F G Q P2) := predict_cov_psd F G Q_psd psd2.
     have hLe' : psd_le (predict_cov F G Q P1) (predict_cov F G Q P2)
@@ -163,7 +163,7 @@ Section RiccatiMonotone.
   *)
   Proof.
     move=> psdP.
-    rewrite /riccati_step.
+    rewrite !riccati_stepE.
     have hPred : psd (predict_cov F G Q P) := predict_cov_psd F G Q_psd psdP.
     rewrite -(joseph_formE H R_pd hPred).
     apply: (update_cov_psd H R_pd hPred).

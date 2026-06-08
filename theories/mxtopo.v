@@ -430,6 +430,32 @@ Section Continuity.
     by rewrite !mxE; exact: Hconv.
   Qed.
 
+  (*
+    Единственность матричного предела.
+
+    Пространство матриц с данной топологией является хаусдорфовым, поэтому
+    последовательность матриц имеет не более одного предела. Обёртка
+    `pseudoMetricNormedZmodType` для `'M[ℂ]_(r, c)` нужна для применения
+    `cvg_unique` и указана здесь, чтобы вызывающая сторона передавала сходимости
+    без указания типа.
+  *)
+  Lemma mx_cvgn_unique r c (M : nat -> 'M[ℂ]_(r, c)) (L L' : 'M[ℂ]_(r, c)) :
+    M @ \oo --> L -> M @ \oo --> L' -> L = L'.
+  Proof.
+    move=> HL HL'.
+    have HausM : hausdorff_space ('M[ℂ]_(r, c) : pseudoMetricNormedZmodType ℂ).
+      exact: norm_hausdorff.
+    have HL_n :
+        (M : nat -> ('M[ℂ]_(r, c) : pseudoMetricNormedZmodType ℂ))
+          @ \oo --> (L : ('M[ℂ]_(r, c) : pseudoMetricNormedZmodType ℂ)).
+      exact: HL.
+    have HL'_n :
+        (M : nat -> ('M[ℂ]_(r, c) : pseudoMetricNormedZmodType ℂ))
+          @ \oo --> (L' : ('M[ℂ]_(r, c) : pseudoMetricNormedZmodType ℂ)).
+      exact: HL'.
+    exact: (cvg_unique HausM HL_n HL'_n).
+  Qed.
+
 End Continuity.
 
 (*

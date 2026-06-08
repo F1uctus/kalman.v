@@ -77,7 +77,12 @@
     )
   }
   for (i, p) in pts.enumerate() {
-    cetz.draw.circle(p, radius: 0.045, fill: traj-color(i / (n - 1)), stroke: none)
+    cetz.draw.circle(
+      p,
+      radius: 0.045,
+      fill: traj-color(i / (n - 1)),
+      stroke: none,
+    )
   }
 
   cetz.draw.circle(P(q), radius: 0.09, fill: red, stroke: none)
@@ -104,7 +109,11 @@
   let r-ss = trace-of(data.Pss) / 2 * s
 
   for f in (0.4, 0.68) {
-    cetz.draw.circle((0, 0), radius: r-ss * f, stroke: gray.lighten(55%) + 0.5pt)
+    cetz.draw.circle(
+      (0, 0),
+      radius: r-ss * f,
+      stroke: gray.lighten(55%) + 0.5pt,
+    )
   }
   cetz.draw.circle((0, 0), radius: r-ss, stroke: gray.lighten(5%) + 1pt)
   cetz.draw.content(
@@ -140,7 +149,12 @@
     )
   }
   for (i, p) in pts.enumerate() {
-    cetz.draw.circle(p, radius: 0.05, fill: traj-color(i / (n - 1)), stroke: none)
+    cetz.draw.circle(
+      p,
+      radius: 0.05,
+      fill: traj-color(i / (n - 1)),
+      stroke: none,
+    )
   }
 
   let qp = proj2(data.Pss)
@@ -165,6 +179,6 @@
   stack(
     spacing: 0.6em,
     cone-crosssection(data),
-    align(center, text(size: 9pt)[(б) сечение поперёк оси следа]),
+    align(center, text(size: 9pt)[(б) сечение ортогонально оси следа]),
   ),
 )

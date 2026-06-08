@@ -159,6 +159,8 @@
 
   // Настройка рисунков (only images — theorem/proof figures use great-theorems kinds)
   show figure.where(kind: image): align.with(center)
+  // Отступ между рисунком и подписью
+  show figure.where(kind: image): set figure(gap: 1.2em)
   set figure(supplement: [Рисунок])
   set figure.caption(separator: [ -- ])
   set figure(numbering: num => (
@@ -400,8 +402,8 @@
 )
 
 #let rocq-eval-scope = (
+  ..markup-eval-scope,
   Rocq: Rocq,
-  conv-at-inf: conv-at-inf,
   hl-r: hl-r,
   hl-g: hl-g,
   half: half,
@@ -413,6 +415,7 @@
   env: theorem,
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
+  kind: "Теорема",
   ..rest,
 )
 #let rocq-lemma(source, name, ..rest) = rocq-doc(
@@ -421,6 +424,7 @@
   env: lemma,
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
+  kind: "Лемма",
   ..rest,
 )
 #let rocq-statement-block(source, name, ..rest) = rocq-doc(
@@ -429,6 +433,7 @@
   env: statement,
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
+  kind: "Утверждение",
   ..rest,
 )
 #let rocq-corollary(source, name, ..rest) = rocq-doc(
@@ -437,6 +442,8 @@
   env: corollary,
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
+  kind: "Следствие",
+  counted: false,
   ..rest,
 )
 #let rocq-definition(source, name, ..rest) = rocq-doc(
@@ -445,6 +452,7 @@
   env: definition,
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
+  kind: "Определение",
   ..rest,
 )
 

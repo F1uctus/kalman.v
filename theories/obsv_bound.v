@@ -46,7 +46,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import GRing.Theory Num.Theory Order.Theory.
+Import GRing.Theory Num.Theory Num.Def Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope sesquilinear_scope.
 
@@ -68,11 +68,11 @@ Section ObsvBound.
     - @kailath2000[App. C, § C.4 "Observability"].
   *)
   Definition obsv_gram (k : nat) : 'M[ℂ]_n :=
-    \sum_(j < k) (F^+j)^t* *m H^t* *m invmx R *m H *m (F^+j).
+    riccati_def.obsv_gram conjC F H (invmx R) k.
 
   Lemma obsv_gram0 : obsv_gram 0 = 0.
   Proof.
-    by rewrite /obsv_gram big_ord0.
+    by rewrite /obsv_gram riccati_def.obsv_gram0.
   Qed.
 
   Lemma obsv_gram_recr k :
@@ -80,7 +80,7 @@ Section ObsvBound.
       obsv_gram k +
       (F^+k)^t* *m H^t* *m invmx R *m H *m (F^+k).
   Proof.
-    by rewrite /obsv_gram big_ord_recr.
+    by rewrite /obsv_gram riccati_def.obsv_gram_recr.
   Qed.
 
   Lemma obsv_gram_term_psd (j : nat) :
@@ -161,18 +161,18 @@ Section ObsvBound.
     - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
   *)
   Definition ctrl_gram (k : nat) : 'M[ℂ]_n :=
-    \sum_(j < k) F^+j *m G *m Q *m G^t* *m (F^+j)^t*.
+    riccati_def.ctrl_gram conjC F G Q k.
 
   Lemma ctrl_gram0 : ctrl_gram 0 = 0.
   Proof.
-    by rewrite /ctrl_gram big_ord0.
+    by rewrite /ctrl_gram riccati_def.ctrl_gram0.
   Qed.
 
   Lemma ctrl_gram_recr k :
     ctrl_gram k.+1 =
       ctrl_gram k + F^+k *m G *m Q *m G^t* *m (F^+k)^t*.
   Proof.
-    by rewrite /ctrl_gram big_ord_recr.
+    by rewrite /ctrl_gram riccati_def.ctrl_gram_recr.
   Qed.
 
   Lemma ctrl_gram_term_psd (j : nat) :
@@ -226,7 +226,7 @@ Section ObsvBound.
       0 <= \tr ((G^t* *m (F^+j)^t* *m v)^t* *m Q *m (G^t* *m (F^+j)^t* *m v)).
       move=> j; apply: psd_tr_ge0.
       exact: psd_congr Q_psd.
-    (* по управляемости: ∃ j, G† (F^j)† v != 0 *)
+    (* по управляемости: $∃ j, G† (F^j)† v != 0$. *)
     have [j0 Hj0] : exists j : 'I_n, G^t* *m (F^+j)^t* *m v != 0.
       case: (boolP [forall j : 'I_n, G^t* *m (F^+j)^t* *m v == 0])
           => [/forallP Hall|HnotAll].
@@ -339,14 +339,14 @@ Section ObsvBound.
     have Ppred_psd : psd (predict_cov F G Q Pk) := predict_cov_psd F G Q_psd Pk_psd.
     (* Шаг 1: riccati_step Pk <= predict_cov Pk *)
     have step1 : psd_le (riccati_step F G H Q R Pk) (predict_cov F G Q Pk).
-      rewrite /psd_le /riccati_step.
+      rewrite /psd_le !riccati_stepE.
       apply: (update_cov_le H R_pd Ppred_psd).
     (* Шаг 2: predict_cov Pk <= predict_cov (ctrl_gram k) *)
     have step2 : psd_le (predict_cov F G Q Pk) (predict_cov F G Q (ctrl_gram k)).
       apply: (predict_cov_mono F G Q IH).
     (* Шаг 3: predict_cov (ctrl_gram k) = ctrl_gram k.+1 *)
     have step3 : predict_cov F G Q (ctrl_gram k) = ctrl_gram k.+1.
-      by rewrite /predict_cov ctrl_gram_shift addrC.
+      by rewrite !predict_covE ctrl_gram_shift addrC.
     rewrite -step3.
     exact: psd_le_trans step1 step2.
   Qed.

@@ -147,7 +147,8 @@ Section Duality.
     Q \in unitmx ->
     ctrl_gram F G Q k = obsv_gram (F^t*) (G^t*) (invmx Q) k.
   Proof.
-    move=> Qunit; rewrite /ctrl_gram /obsv_gram.
+    move=> Qunit.
+    rewrite /ctrl_gram /riccati_def.ctrl_gram /obsv_gram /riccati_def.obsv_gram.
     apply: eq_bigr => j _.
     by rewrite -!trmxCX !trmxCK invmxK.
   Qed.

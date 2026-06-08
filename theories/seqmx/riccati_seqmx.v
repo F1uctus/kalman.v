@@ -5,7 +5,7 @@ From mathcomp Require Import order rat.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From CoqEAL Require Import hrel param refinements seqmx binint binrat.
 From Bignums Require Import BigQ.
-From Kalman Require Import mxnotation kalman.
+From Kalman Require Import mxnotation riccati_def.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -24,34 +24,15 @@ Local Open Scope sesquilinear_scope.
 #[local] Instance ring_eq   (R : comUnitRingType) : eq_of R   := eqtype.eq_op.
 #[local] Instance ring_inv  (R : comUnitRingType) : inv_of R  := GRing.inv.
 
-Section GenericDefs.
-Variable R : comUnitRingType.
-Variable conj : R -> R.
-Variables (m n p : nat).
-Variables (F : 'M[R]_n) (G : 'M[R]_(n, m)) (H : 'M[R]_(p, n)).
-Variables (Q : 'M[R]_m) (Rm : 'M[R]_p).
+(*
+  Исполнимая программа над слоем операций CoqEAL.
 
-Definition gpredict_cov (P : 'M[R]_n) : 'M[R]_n :=
-  F *m P *m map_mx conj F^T + G *m Q *m map_mx conj G^T.
-
-Definition ginnov_cov (P : 'M[R]_n) : 'M[R]_p :=
-  H *m P *m map_mx conj H^T + Rm.
-
-Definition gkalman_gain (P : 'M[R]_n) : 'M[R]_(n, p) :=
-  P *m map_mx conj H^T *m invmx (ginnov_cov P).
-
-Definition gupdate_cov (P : 'M[R]_n) : 'M[R]_n :=
-  (1%:M - gkalman_gain P *m H) *m P.
-
-Definition galt_update_cov (Kp : 'M[R]_(n, p)) (P : 'M[R]_n) : 'M[R]_n :=
-  let ImKH := 1%:M - Kp *m H in
-  ImKH *m P *m map_mx conj ImKH^T + Kp *m Rm *m map_mx conj Kp^T.
-
-Definition griccati_step (P : 'M[R]_n) : 'M[R]_n :=
-  gupdate_cov (gpredict_cov P).
-End GenericDefs.
-
+  Программа параметризована типом `C` и операциями `zero_of`, ..., `eq_of`,
+  поэтому один и тот же терм исполняется на любом `C` с такими операциями
+  (`rat`, `bigQ`, ...).
+*)
 Section EffPrograms.
+
 Context (C : Type).
 Context `{!zero_of C, !one_of C, !opp_of C, !add_of C, !mul_of C, !eq_of C}.
 Variable conj : C -> C.
@@ -90,9 +71,11 @@ Definition alt_update_cov_seqmx (sKp sP : @seqmx C) : @seqmx C :=
 
 Definition riccati_step_seqmx (sP : @seqmx C) : @seqmx C :=
   update_cov_seqmx (predict_cov_seqmx sP).
+
 End EffPrograms.
 
 Section RefineRiccati.
+
 Variable R : comUnitRingType.
 
 Existing Instance Rseqmx_add.
@@ -138,6 +121,7 @@ Lemma refines_oppmx (a b : nat) (X : 'M[R]_(a, b)) (sX : @seqmx R)
 Proof. exact: refines_apply. Qed.
 
 Section System.
+
 Variables (m n p : nat).
 Variables (F : 'M[R]_n) (G : 'M[R]_(n, m)) (H : 'M[R]_(p, n)).
 Variables (Q : 'M[R]_m) (Rm : 'M[R]_p).
@@ -150,6 +134,7 @@ Hypothesis rQ : refines (Rseqmx (nat_Rxx m) (nat_Rxx m)) Q sQ.
 Hypothesis rRm : refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) Rm sRm.
 
 Variable cinv : @seqmx R -> @seqmx R.
+
 Hypothesis cinv_correct : forall (S : 'M[R]_p) (sS : @seqmx R),
   refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) S sS ->
   refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) (invmx S) (cinv sS).
@@ -157,9 +142,9 @@ Hypothesis cinv_correct : forall (S : 'M[R]_p) (sS : @seqmx R),
 Lemma predict_cov_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-    (gpredict_cov conj F G Q P) (predict_cov_seqmx conj m n sF sG sQ sP).
+        (predict_cov conj F G Q P) (predict_cov_seqmx conj m n sF sG sQ sP).
 Proof.
-  rewrite /gpredict_cov /predict_cov_seqmx.
+      rewrite /predict_cov /predict_cov_seqmx.
   have rX := refines_mulmx (refines_mulmx rF rP) (refines_ctr_seqmx rF).
   have rY := refines_mulmx (refines_mulmx rG rQ) (refines_ctr_seqmx rG).
   exact: refines_apply.
@@ -168,9 +153,9 @@ Qed.
 Lemma innov_cov_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx p) (nat_Rxx p))
-    (ginnov_cov conj H Rm P) (innov_cov_seqmx conj n p sH sRm sP).
+        (innov_cov conj H Rm P) (innov_cov_seqmx conj n p sH sRm sP).
 Proof.
-  rewrite /ginnov_cov /innov_cov_seqmx.
+      rewrite /innov_cov /innov_cov_seqmx.
   have rX := refines_mulmx (refines_mulmx rH rP) (refines_ctr_seqmx rH).
   exact: refines_apply.
 Qed.
@@ -178,10 +163,10 @@ Qed.
 Lemma kalman_gain_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx p))
-    (gkalman_gain conj H Rm P)
+        (kalman_gain conj H Rm P)
     (kalman_gain_seqmx conj n p sH sRm cinv sP).
 Proof.
-  rewrite /gkalman_gain /kalman_gain_seqmx.
+      rewrite /kalman_gain /kalman_gain_seqmx.
   have rinv := cinv_correct (innov_cov_seqmx_correct rP).
   exact: (refines_mulmx (refines_mulmx rP (refines_ctr_seqmx rH)) rinv).
 Qed.
@@ -189,10 +174,10 @@ Qed.
 Lemma update_cov_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-    (gupdate_cov conj H Rm P)
+        (update_cov conj H Rm P)
     (update_cov_seqmx conj n p sH sRm cinv sP).
 Proof.
-  rewrite /gupdate_cov /update_cov_seqmx.
+      rewrite /update_cov /update_cov_seqmx.
   have rK := kalman_gain_seqmx_correct rP.
   have rKH := refines_mulmx rK rH.
   have r1 := Rseqmx_1 R (nat_Rxx n).
@@ -205,10 +190,10 @@ Lemma alt_update_cov_seqmx_correct (Kp : 'M[R]_(n, p)) (sKp : @seqmx R)
     (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-    (galt_update_cov conj H Rm Kp P)
+        (alt_update_cov conj H Rm Kp P)
     (alt_update_cov_seqmx conj n p sH sRm sKp sP).
 Proof.
-  rewrite /galt_update_cov /alt_update_cov_seqmx.
+      rewrite /alt_update_cov /alt_update_cov_seqmx.
   have rKpH := refines_mulmx rKp rH.
   have r1 := Rseqmx_1 R (nat_Rxx n).
   have rImKH := refines_addmx r1 (refines_oppmx rKpH).
@@ -220,17 +205,17 @@ Qed.
 Lemma riccati_step_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-    (griccati_step conj F G H Q Rm P)
+        (riccati_step conj F G H Q Rm P)
     (riccati_step_seqmx conj m n p sF sG sH sQ sRm cinv sP).
 Proof.
-  rewrite /griccati_step /riccati_step_seqmx.
+      rewrite /riccati_step /riccati_step_seqmx.
   exact: (update_cov_seqmx_correct (predict_cov_seqmx_correct rP)).
 Qed.
 
 Lemma riccati_iter_seqmx_correct (k : nat) (P0 : 'M[R]_n) (sP0 : @seqmx R)
     (rP0 : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P0 sP0) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-    (iter k (griccati_step conj F G H Q Rm) P0)
+        (iter k (riccati_step conj F G H Q Rm) P0)
     (iter k (riccati_step_seqmx conj m n p sF sG sH sQ sRm cinv) sP0).
 Proof.
   elim: k => [|k IHk] /=; first exact: rP0.
@@ -350,14 +335,6 @@ Section BridgeC.
   Variables (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m)) (H : 'M[ℂ]_(p, n)).
   Variables (Q : 'M[ℂ]_m) (Rm : 'M[ℂ]_p).
 
-  Lemma gpredict_cov_bridge (P : 'M[ℂ]_n) :
-    gpredict_cov conjC F G Q P = predict_cov F G Q P.
-  Proof. by []. Qed.
-
-  Lemma griccati_step_bridge (P : 'M[ℂ]_n) :
-    griccati_step conjC F G H Q Rm P = riccati_step F G H Q Rm P.
-  Proof. by []. Qed.
-
   Variables (sF sG sH sQ sRm : @seqmx ℂ).
   
   Hypothesis rF : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) F sF.
@@ -375,10 +352,9 @@ Section BridgeC.
   Corollary kalman_riccati_step_seqmx_correct (P : 'M[ℂ]_n) (sP : @seqmx ℂ)
       (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
     refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-      (riccati_step F G H Q Rm P)
+      (riccati_step conjC F G H Q Rm P)
       (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv sP).
   Proof.
-    rewrite -griccati_step_bridge.
     apply: riccati_step_seqmx_correct; assumption.
   Qed.
 
@@ -430,7 +406,7 @@ Section ConcreteRat.
 
   Lemma ex_iter_correct (k : nat) :
     refines (Rseqmx (nat_Rxx 1) (nat_Rxx 1))
-      (iter k (griccati_step idfun exF exG exH exQ exR) exP0)
+      (iter k (riccati_step idfun exF exG exH exQ exR) exP0)
       (iter k ex_step sxP0).
   Proof.
     apply: (@riccati_iter_seqmx_correct rat idfun 1 1 1
@@ -516,9 +492,9 @@ Section System.
   Lemma predict_cov_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n n)
-      (gpredict_cov conj F G Q P) (predict_cov_seqmx conjC m n sF sG sQ sP).
+      (predict_cov conj F G Q P) (predict_cov_seqmx conjC m n sF sG sQ sP).
   Proof.
-    rewrite /gpredict_cov /predict_cov_seqmx.
+    rewrite /predict_cov /predict_cov_seqmx.
     have rX := refinesC_mulmx (refinesC_mulmx rF rP) (refinesC_ctr rF).
     have rY := refinesC_mulmx (refinesC_mulmx rG rQ) (refinesC_ctr rG).
     exact: refines_apply.
@@ -527,9 +503,9 @@ Section System.
   Lemma innov_cov_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC p p)
-      (ginnov_cov conj H Rm P) (innov_cov_seqmx conjC n p sH sRm sP).
+      (innov_cov conj H Rm P) (innov_cov_seqmx conjC n p sH sRm sP).
   Proof.
-    rewrite /ginnov_cov /innov_cov_seqmx.
+    rewrite /innov_cov /innov_cov_seqmx.
     have rX := refinesC_mulmx (refinesC_mulmx rH rP) (refinesC_ctr rH).
     exact: refines_apply.
   Qed.
@@ -537,10 +513,10 @@ Section System.
   Lemma kalman_gain_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n p)
-      (gkalman_gain conj H Rm P)
+      (kalman_gain conj H Rm P)
       (kalman_gain_seqmx conjC n p sH sRm cinv sP).
   Proof.
-    rewrite /gkalman_gain /kalman_gain_seqmx.
+    rewrite /kalman_gain /kalman_gain_seqmx.
     have rinv := cinv_correct (innov_cov_seqmxC rP).
     exact: (refinesC_mulmx (refinesC_mulmx rP (refinesC_ctr rH)) rinv).
   Qed.
@@ -548,10 +524,10 @@ Section System.
   Lemma update_cov_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n n)
-      (gupdate_cov conj H Rm P)
+      (update_cov conj H Rm P)
       (update_cov_seqmx conjC n p sH sRm cinv sP).
   Proof.
-    rewrite /gupdate_cov /update_cov_seqmx.
+    rewrite /update_cov /update_cov_seqmx.
     have rK := kalman_gain_seqmxC rP.
     have rKH := refinesC_mulmx rK rH.
     have r1 : refines (RC n n) 1%:M (seqmx1 n) by tc.
@@ -562,17 +538,17 @@ Section System.
   Lemma riccati_step_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n n)
-      (griccati_step conj F G H Q Rm P)
+      (riccati_step conj F G H Q Rm P)
       (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv sP).
   Proof.
-    rewrite /griccati_step /riccati_step_seqmx.
+    rewrite /riccati_step /riccati_step_seqmx.
     exact: (update_cov_seqmxC (predict_cov_seqmxC rP)).
   Qed.
 
   Lemma riccati_iter_seqmxC (k : nat) (P0 : 'M[rat]_n) (sP0 : @seqmx bigQ)
       (rP0 : refines (RC n n) P0 sP0) :
     refines (RC n n)
-      (iter k (griccati_step conj F G H Q Rm) P0)
+      (iter k (riccati_step conj F G H Q Rm) P0)
       (iter k (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv) sP0).
   Proof.
     elim: k => [|k IHk] /=; first exact: rP0.
@@ -625,7 +601,7 @@ Section ConcreteBigQRefine.
 
   Lemma bx_iter_correct (k : nat) :
     refines RC11
-      (iter k (griccati_step idfun exF exG exH exQ exR) exP0)
+      (iter k (riccati_step idfun exF exG exH exQ exR) exP0)
       (iter k bx_step bx1).
   Proof.
     apply: (@riccati_iter_seqmxC idfun idfun refines_idfunQ 1 1 1

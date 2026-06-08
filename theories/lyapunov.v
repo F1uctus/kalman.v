@@ -512,19 +512,8 @@ Section LyapunovSolutionExistence.
     have Hrhs : (fun k => Q + A *m P k *m A^t*) @ \oo -->
                 Q + A *m lyap_sol *m A^t*
       := cvgn_lyap_step lyap_sol_cvgn.
-    have HausM : hausdorff_space ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ).
-      exact: norm_hausdorff.
-    have Hshift_n :
-        (fun k => Q + A *m P k *m A^t*)
-          @ \oo --> (lyap_sol : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-      by exact: Hshift.
-    have Hrhs_n :
-        (fun k => Q + A *m P k *m A^t*)
-          @ \oo --> ((Q + A *m lyap_sol *m A^t*)
-                      : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ))
-      by exact: Hrhs.
     have eqLim : lyap_sol = Q + A *m lyap_sol *m A^t*
-      := cvg_unique HausM Hshift_n Hrhs_n.
+      := mx_cvgn_unique Hshift Hrhs.
     by rewrite [LHS]eqLim addrC.
   Qed.
 

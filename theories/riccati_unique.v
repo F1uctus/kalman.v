@@ -69,7 +69,7 @@ Section RiccatiUnique.
     move=> Mpsd.
     have gsp := kalman_gain_normal_eq H R_pd Mpsd.
     have e : Kf M *m H *m M *m H^t* + Kf M *m R = M *m H^t*.
-      by move: gsp; rewrite /innov_cov mulmxDr !mulmxA.
+      by move: gsp; rewrite innov_covE mulmxDr !mulmxA.
     have key : (1%:M - Kf M *m H) *m M *m H^t* = Kf M *m R.
       rewrite !mulmxBl !mul1mx -e.
       by rewrite addrAC subrr add0r.
@@ -112,7 +112,7 @@ Section RiccatiUnique.
       + F *m Kf M *m R *m (F *m Kf M)^t* + G *m Q *m G^t*.
   Proof.
     move=> Mpsd.
-    rewrite /predict_cov -(joseph_formE H R_pd Mpsd) /joseph_form.
+    rewrite !predict_covE -(joseph_formE H R_pd Mpsd) /joseph_form.
     rewrite mulmxDr mulmxDl; congr (_ + _ + _).
     - by rewrite -F_ImKfH trmxC_mul !mulmxA.
     - by rewrite trmxC_mul !mulmxA.
@@ -257,14 +257,14 @@ Section RiccatiUnique.
   Proof.
     move=> q1 q2 f1 f2.
     have L1u : L1 = update_cov H R (predict_cov F G Q L1)
-      by rewrite {1}f1 /riccati_step.
+      by rewrite {1}f1 riccati_stepE.
     have L2u : L2 = update_cov H R (predict_cov F G Q L2)
-      by rewrite {1}f2 /riccati_step.
+      by rewrite {1}f2 riccati_stepE.
     have M1psd : psd (predict_cov F G Q L1).
-      rewrite /predict_cov; apply: psd_add; last exact: psd_lcongr G Q_psd.
+      rewrite !predict_covE; apply: psd_add; last exact: psd_lcongr G Q_psd.
       exact: psd_lcongr F q1.
     have M2psd : psd (predict_cov F G Q L2).
-      rewrite /predict_cov; apply: psd_add; last exact: psd_lcongr G Q_psd.
+      rewrite !predict_covE; apply: psd_add; last exact: psd_lcongr G Q_psd.
       exact: psd_lcongr F q2.
     have M1fix : predict_cov F G Q L1
               = predict_cov F G Q (update_cov H R (predict_cov F G Q L1)).

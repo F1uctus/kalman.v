@@ -102,7 +102,7 @@ Section GramianInf.
   Lemma ctrl_gram_eq_partial k :
     ctrl_gram F G Q k = lyap_partial F (G *m Q *m G^t*) k.
   Proof.
-    rewrite /ctrl_gram /lyap_partial.
+    rewrite /ctrl_gram /riccati_def.ctrl_gram /lyap_partial.
     apply: eq_bigr=> j _.
     by rewrite trmxCX !mulmxA.
   Qed.
@@ -163,7 +163,7 @@ Section GramianInf.
   Lemma obsv_gram_id_eq_partial k :
     obsv_gram F H 1%:M k = lyap_partial (F^t*) (H^t* *m H) k.
   Proof.
-    rewrite /obsv_gram /lyap_partial.
+    rewrite /obsv_gram /riccati_def.obsv_gram /lyap_partial.
     apply: eq_bigr=> j _.
     rewrite invmx1 mulmx1 trmxCX.
     have ->: ((F^t*)^t*)^+j = F^+j by rewrite trmxCK.

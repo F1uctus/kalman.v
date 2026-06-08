@@ -1,8 +1,10 @@
 #import "rocq.typ": (
-  rocq-doc-comment, rocq-locate, rocq-proof-sketch, rocq-proofbody-range,
-  rocq-render-range, rocq-src, rocq-statement-range,
+  rocq-comment-text, rocq-doc-comment, rocq-locate, rocq-proof-sketch,
+  rocq-proofbody-range, rocq-render-range, rocq-src, rocq-statement-range,
 )
 #import "rocq-cite.typ": rocq-cite-list
+
+#let great-theorems-numberfunc = label("great-theorems:numberfunc")
 
 
 // Notation translation applied to comment prose before it is evaluated as Typst.
@@ -18,6 +20,50 @@
   mode: "markup",
   scope: scope,
 )
+
+// Segment a `Proof. ... Qed.` line range into runs of code and standalone
+// `(* ... *)` comment blocks (a block whose first non-space token on its opening
+// line is `(*`; trailing inline comments after code stay inside the code run).
+#let rocq-proof-segments(lines, start, end) = {
+  let segs = ()
+  let i = start
+  while i <= end {
+    let t = lines.at(i).trim()
+    if t.starts-with("(*") {
+      let j = i
+      while j <= end and not lines.at(j).trim().ends-with("*)") { j += 1 }
+      segs.push((kind: "comment", from: i, to: calc.min(j, end)))
+      i = calc.min(j, end) + 1
+    } else {
+      let j = i
+      while j <= end and not lines.at(j).trim().starts-with("(*") { j += 1 }
+      segs.push((kind: "code", from: i, to: j - 1))
+      i = j
+    }
+  }
+  segs
+}
+
+// Render a proof body with standalone comment blocks lifted to formatted prose
+// paragraphs interleaved between the code listings. Code runs keep continuous
+// line numbers (via the original line indices).
+#let rocq-render-proof(source, lines, start, end, scope) = {
+  for s in rocq-proof-segments(lines, start, end) {
+    if s.kind == "code" {
+      rocq-render-range(source, lines, s.from, s.to)
+    } else {
+      let txt = rocq-comment-text(lines, (start: s.from, end: s.to + 1)).join(
+        "\n",
+      )
+      block(
+        inset: (left: 1.2em),
+        above: 0.6em,
+        below: 0.6em,
+        rocq-eval(txt, scope),
+      )
+    }
+  }
+}
 
 // Render a complete Rocq declaration block from its `.v` source, pulling every
 // piece of prose from the file so the `.v` is the single source of truth. The
@@ -53,6 +99,8 @@
   sketch: false,
   proof: false,
   scope: (:),
+  kind: none,
+  counted: true,
 ) = {
   let lines = rocq-src(source).split("\n")
   let loc = rocq-locate(lines, name)
@@ -91,7 +139,23 @@
 
   let proofbody = if proof {
     let r = rocq-proofbody-range(lines, loc.idx)
-    if r != none { rocq-render-range(source, lines, r.start, r.end) }
+    if r != none { rocq-render-proof(source, lines, r.start, r.end, scope) }
+  }
+
+  // Cross-reference handle for `@module.name.code` / `.num`, placed inside the
+  // box. For a counted block, resolve this block's own number from the nearest
+  // preceding `great-theorems:numberfunc` (emitted at the block's head). `.code`
+  // links here; `.num` reads the resolved number from the metadata.
+  let handle = if env != none and kind != none {
+    context {
+      let num = if counted {
+        let nf = query(
+          selector(great-theorems-numberfunc).before(here()),
+        ).last()
+        if nf != none { (nf.value)(nf.location()) }
+      }
+      [#metadata((kind: kind, number: num)) #label(module + "." + name)]
+    }
   }
 
   // Without a sketch the proof body stays inside the box, right after the
@@ -101,6 +165,7 @@
     prose
     stmt
     if not has-sketch { proofbody }
+    handle
   }
   if env != none {
     // A title is a label, so drop a trailing full stop.

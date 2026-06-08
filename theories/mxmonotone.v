@@ -331,15 +331,7 @@ Section MxSeqMonotoneCvg.
     have HSLs : (fun k => (S k)^t*) = S.
       by apply/funext=> k; case: (S_psd k)=> H _; rewrite -H.
     rewrite HSLs in HSLt.
-    have HausM : hausdorff_space ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ).
-      exact: norm_hausdorff.
-    have HSL_n : (S : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ)) @ \oo
-                --> (mx_mono_lim : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ)).
-      exact: HSL.
-    have HSLt_n : (S : nat -> ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ)) @ \oo
-                  --> (mx_mono_lim^t* : ('M[ℂ]_n : pseudoMetricNormedZmodType ℂ)).
-      exact: HSLt.
-    by apply: (cvg_unique HausM HSL_n HSLt_n).
+    exact: (mx_cvgn_unique HSL HSLt).
   Qed.
 
   (* Предел монотонной посл-ти эрмитовых матриц неотрицательно определён. *)

@@ -757,15 +757,7 @@ Section SchurStablePowCvg.
     have Hconst : (fun k => A^+k *m D *m (B^+k)^t*) = (fun _ : nat => D).
       by apply/funext=> k; rewrite -powereq.
     rewrite Hconst in Hprod.
-    have Haus : hausdorff_space ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ).
-      exact: norm_hausdorff.
-    have Hprod_n :
-      ((fun _ : nat => D) : nat -> ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ))
-        @ \oo --> (0 : ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ)) := Hprod.
-    have HDD_n :
-      ((fun _ : nat => D) : nat -> ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ))
-        @ \oo --> (D : ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ)) := HDcst.
-    by have := cvg_unique Haus HDD_n Hprod_n => ->.
+    by have := mx_cvgn_unique HDcst Hprod => ->.
   Qed.
 
   (*
@@ -923,17 +915,8 @@ Section SchurLyapunov.
       rewrite eqf in Hshift.
       have Hrhs : (fun k => Q + A *m lyap_partial A Q k *m A^t*) @ \oo -->
                   Q + A *m lyap_sol A Q *m A^t* := cvgn_lyap_step Hcvg.
-      have HausM : hausdorff_space ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ)
-        by exact: norm_hausdorff.
-      have Hshift_n : (fun k => Q + A *m lyap_partial A Q k *m A^t*)
-          @ \oo --> (lyap_sol A Q : ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ))
-        by exact: Hshift.
-      have Hrhs_n : (fun k => Q + A *m lyap_partial A Q k *m A^t*)
-          @ \oo --> ((Q + A *m lyap_sol A Q *m A^t*)
-                      : ('M[ℂ]_n.+1 : pseudoMetricNormedZmodType ℂ))
-        by exact: Hrhs.
       have eqLim : lyap_sol A Q = Q + A *m lyap_sol A Q *m A^t*
-        := cvg_unique HausM Hshift_n Hrhs_n.
+        := mx_cvgn_unique Hshift Hrhs.
       by rewrite [LHS]eqLim addrC.
     Qed.
 

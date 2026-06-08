@@ -6,6 +6,7 @@ From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From Kalman Require Import mxnotation mxherm mxdefinite mxloewner spectral expectation.
+From Kalman Require Export riccati_def.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -13,6 +14,7 @@ Unset Printing Implicit Defensive.
 
 Import GRing.Theory.
 Import Num.Theory.
+Import Num.Def.
 Import Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope sesquilinear_scope.
@@ -55,8 +57,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
   *)
-  Definition predict_cov (P_prev : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    F *m P_prev *m F^t* + G *m Q *m G^t*.
+  Local Notation predict_cov := (riccati_def.predict_cov conjC F G Q).
 
   (*
     Эрмитовость предсказанной ковариации.
@@ -73,7 +74,7 @@ Section KalmanFilter.
       by rewrite trmxC_mul trmxC_mul !trmxCK -mulmxA -Psym.
     have hQ : (G *m Q *m G^t*)^t* = G *m Q *m G^t*.
       by rewrite trmxC_mul trmxC_mul !trmxCK -mulmxA -Q_psd.1.
-    rewrite /predict_cov trmxC_add hP hQ.
+    rewrite !predict_covE trmxC_add hP hQ.
     done.
   Qed.
 
@@ -91,7 +92,7 @@ Section KalmanFilter.
     have h1 := psd_lcongr F psdP.
     have h2 := psd_lcongr G Q_psd.
     have hsum : psd (F *m P *m F^t* + G *m Q *m G^t*) := psd_add h1 h2.
-    rewrite /predict_cov.
+    rewrite predict_covE.
     exact: hsum.
   Qed.
 
@@ -102,8 +103,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
-  Definition innov_cov (P_pred : 'M[ℂ]_n) : 'M[ℂ]_p :=
-    H *m P_pred *m H^t* + R.
+  Local Notation innov_cov := (riccati_def.innov_cov conjC H R).
 
   (*
     Усиление Калмана.
@@ -114,8 +114,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
-  Definition kalman_gain (P_pred : 'M[ℂ]_n) : 'M[ℂ]_(n, p) :=
-    P_pred *m H^t* *m invmx (innov_cov P_pred).
+  Local Notation kalman_gain := (riccati_def.kalman_gain conjC H R).
 
   (*
     Обновление состояния.
@@ -136,9 +135,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
-  Definition update_cov (P_pred : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    let K := kalman_gain P_pred in
-    (1%:M - K *m H) *m P_pred.
+  Local Notation update_cov := (riccati_def.update_cov conjC H R).
 
   (* Обновление истинного вектора состояния. *)
   Definition x_true (u : nat -> 'cV[ℂ]_m) : nat -> 'cV[ℂ]_n :=
@@ -289,7 +286,7 @@ Section KalmanFilter.
     move=> psdP.
     have hpsd := psd_lcongr H psdP.
     split.
-    - rewrite /innov_cov.
+    - rewrite !innov_covE.
       rewrite trmxC_add.
       f_equal.
       * exact hpsd.1.
@@ -297,7 +294,7 @@ Section KalmanFilter.
     - move=> z z0.
       have h1 : 0 <= \tr (z^t* *m (H *m P_pred *m H^t*) *m z) := hpsd.2 z.
       have h2 : 0 < \tr (z^t* *m R *m z) := R_pd.2 z z0.
-      rewrite /innov_cov.
+      rewrite !innov_covE.
       rewrite mulmxDr.
       rewrite mulmxDl.
       rewrite mxtraceD.
@@ -348,12 +345,12 @@ Section KalmanFilter.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
     set K := kalman_gain P_pred.
     have KS : K *m innov_cov P_pred = P_pred *m H^t*.
-      by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
     have hE : K *m H *m P_pred *m H^t* + K *m R = P_pred *m H^t*.
-      by move: KS; rewrite /innov_cov mulmxDr !mulmxA.
+      by move: KS; rewrite innov_covE mulmxDr !mulmxA.
     have KR : K *m R = (1%:M - K *m H) *m P_pred *m H^t*.
       by rewrite 2!mulmxBl !mul1mx -hE addrC addKr.
-    rewrite /joseph_form /update_cov -/K.
+    rewrite /joseph_form !update_covE -/K.
     rewrite [K *m R]KR.
     rewrite -[X in _ + X]mulmxA.
     rewrite -mulmxDr.
@@ -409,7 +406,7 @@ Section KalmanFilter.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
     set K := kalman_gain P_pred.
     have KS : K *m innov_cov P_pred = P_pred *m H^t*.
-      by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
     have Psym : P_pred = P_pred^t* := psdP.1.
     have Ssym : innov_cov P_pred = (innov_cov P_pred)^t*
       := (innov_cov_pd psdP).1.
@@ -418,7 +415,7 @@ Section KalmanFilter.
       by rewrite !trmxC_mul trmxCK -Ssym -Psym.
     have eq_KHP : K *m H *m P_pred = K *m innov_cov P_pred *m K^t*.
       by rewrite -[LHS]mulmxA -hHP mulmxA.
-    rewrite /update_cov -/K mulmxBl mul1mx linearB /=.
+    rewrite !update_covE -/K mulmxBl mul1mx linearB /=.
     rewrite lerBlDr lerDl eq_KHP.
     apply: psd_tr_ge0.
     exact: psd_lcongr K (pd_psd (innov_cov_pd psdP)).
@@ -449,12 +446,12 @@ Section KalmanFilter.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
     set K := kalman_gain P_pred.
     have KS : K *m innov_cov P_pred = P_pred *m H^t*.
-      by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
     have hE : K *m H *m P_pred *m H^t* + K *m R = P_pred *m H^t*.
-      by move: KS; rewrite /innov_cov mulmxDr !mulmxA.
+      by move: KS; rewrite innov_covE mulmxDr !mulmxA.
     have KR : K *m R = (1%:M - K *m H) *m P_pred *m H^t*.
       by rewrite 2!mulmxBl !mul1mx -hE addrC addKr.
-    rewrite /update_cov -/K mulmxDr.
+    rewrite !update_covE -/K mulmxDr.
     rewrite -[X in X + _]mulmxA mulmxV // mulmx1.
     rewrite mulmxA mulmxA -KR.
     rewrite -[K *m R *m invmx R]mulmxA mulmxV // mulmx1.
@@ -533,10 +530,10 @@ Section KalmanFilter.
     have hSinv_psd : psd (invmx (innov_cov P_pred)) := pd_psd (pd_inv hSpd).
     set K := kalman_gain P_pred.
     have eq1 : P_pred - update_cov P_pred = K *m H *m P_pred.
-      by rewrite /update_cov -/K mulmxBl mul1mx opprB addrC subrK.
+      by rewrite !update_covE -/K mulmxBl mul1mx opprB addrC subrK.
     have eq2 : K *m H *m P_pred =
               (H *m P_pred)^t* *m invmx (innov_cov P_pred) *m (H *m P_pred).
-      rewrite /K /kalman_gain trmxC_mul -psdP.1.
+      rewrite /K kalman_gainE trmxC_mul -psdP.1.
       by rewrite !mulmxA.
     by rewrite eq1 eq2; exact: psd_congr (H *m P_pred) hSinv_psd.
   Qed.
@@ -549,9 +546,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
-  Definition alt_update_cov (K' : 'M[ℂ]_(n, p)) (P_pred : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    let ImKH := 1%:M - K' *m H in
-    ImKH *m P_pred *m ImKH^t* + K' *m R *m K'^t*.
+  Local Notation alt_update_cov := (riccati_def.alt_update_cov conjC H R).
 
   (*
     Тождество выделения полного квадрата.
@@ -577,7 +572,7 @@ Section KalmanFilter.
     have Psym : P_pred = P_pred^t* := psdP.1.
     have Ssym : S = S^t* := (pd_psd (innov_cov_pd psdP)).1.
     have KS : K *m S = P_pred *m H^t*.
-      by rewrite /K /kalman_gain -mulmxA mulVmx // mulmx1.
+      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
     have HPeq : S *m K^t* = H *m P_pred.
       have := congr1 (fun M : 'M[ℂ]_(n, p) => M^t*) KS.
       by rewrite !trmxC_mul trmxCK -Psym -Ssym.
@@ -589,7 +584,7 @@ Section KalmanFilter.
       P_pred + K' *m innov_cov P_pred *m K'^t*
             - K' *m H *m P_pred
             - P_pred *m H^t* *m K'^t*.
-      rewrite /alt_update_cov /innov_cov.
+      rewrite alt_update_covE !innov_covE.
       rewrite trmxCB trmxC1 trmxC_mul.
       rewrite mulmxBl mul1mx mulmxBl !mulmxBr !mulmx1 opprB.
       rewrite mulmxDr mulmxDl.
@@ -601,7 +596,7 @@ Section KalmanFilter.
       by [].
     (* Раскрываем `update_cov` *)
     have upd_e : update_cov P_pred = P_pred - K *m H *m P_pred.
-      by rewrite /update_cov -/K mulmxBl mul1mx.
+      by rewrite !update_covE -/K mulmxBl mul1mx.
     (* Раскрываем $(dif K) S (dif K)†$ *)
     have dK_e : dK *m S *m dK^t* =
       K' *m S *m K'^t* - K' *m H *m P_pred
@@ -677,7 +672,7 @@ Section KalmanFilter.
   Proof.
     move=> psdP.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
-    by rewrite /kalman_gain -mulmxA mulVmx // mulmx1.
+    by rewrite kalman_gainE -mulmxA mulVmx // mulmx1.
   Qed.
 
   (*
@@ -750,11 +745,9 @@ Section KalmanFilter.
     - @kailath2000[§ 9.2, Theorem 9.2.1];
     - @kailath2000[§ 14.5].
   *)
-  Definition riccati_step (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    update_cov (predict_cov P).
+  Local Notation riccati_step := (riccati_def.riccati_step conjC F G H Q R).
 
-  Definition riccati_fixpoint (Pss : 'M[ℂ]_n) : Prop :=
-    Pss = riccati_step Pss.
+  Local Notation riccati_fixpoint := (riccati_def.riccati_fixpoint conjC F G H Q R).
 
   (*
     Теоремы, доказанные в `dare`:
@@ -816,3 +809,19 @@ Section KalmanFilter.
   Qed.
 
 End KalmanFilter.
+
+(*
+  Сокращения для комплексного случая (`conj := conjC`): операторы из
+  `riccati_def` при сопряжении `conjC` над `numClosedFieldType`. Через них
+  формулировки и леммы переносятся в файлы-потребители без изменения мест
+  применения (`predict_cov F G Q P`, `riccati_step F G H Q R P` и так далее).
+  Файлы вычислимого уточнения работают с обобщёнными определениями напрямую
+  (`riccati_def.predict_cov conj ...`), минуя эти сокращения.
+*)
+Notation predict_cov := (riccati_def.predict_cov conjC).
+Notation innov_cov := (riccati_def.innov_cov conjC).
+Notation kalman_gain := (riccati_def.kalman_gain conjC).
+Notation update_cov := (riccati_def.update_cov conjC).
+Notation alt_update_cov := (riccati_def.alt_update_cov conjC).
+Notation riccati_step := (riccati_def.riccati_step conjC).
+Notation riccati_fixpoint := (riccati_def.riccati_fixpoint conjC).

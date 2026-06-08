@@ -92,7 +92,7 @@ Section GenericDefs.
 
   Definition gclosed_loop (m n p : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
       (H : 'M[R]_(p, n)) (Q : 'M[R]_m) (Rm : 'M[R]_p) (P : 'M[R]_n) : 'M[R]_n :=
-    F - F *m gkalman_gain conj H Rm (gpredict_cov conj F G Q P) *m H.
+    F - F *m riccati_def.kalman_gain conj H Rm (riccati_def.predict_cov conj F G Q P) *m H.
 
 End GenericDefs.
 
@@ -195,21 +195,21 @@ Section Refine.
       (closed_loop_seqmx conj m n p sF sG sH sQ sRm cinv sP).
   Proof.
     rewrite /gclosed_loop /closed_loop_seqmx.
-    have rPpred : refines (RR n n) (gpredict_cov conj F G Q P)
+    have rPpred : refines (RR n n) (riccati_def.predict_cov conj F G Q P)
         (predict_cov_seqmx conj m n sF sG sQ sP).
-      rewrite /gpredict_cov /predict_cov_seqmx.
+      rewrite /riccati_def.predict_cov /predict_cov_seqmx.
       apply: radd; first exact: (rmul (rmul rF rP) (rctr rF)).
       exact: (rmul (rmul rG rQ) (rctr rG)).
     have rInnov : refines (RR p p)
-        (ginnov_cov conj H Rm (gpredict_cov conj F G Q P))
+        (riccati_def.innov_cov conj H Rm (riccati_def.predict_cov conj F G Q P))
         (innov_cov_seqmx conj n p sH sRm (predict_cov_seqmx conj m n sF sG sQ sP)).
-      rewrite /ginnov_cov /innov_cov_seqmx.
+      rewrite /riccati_def.innov_cov /innov_cov_seqmx.
       apply: radd => //; exact: (rmul (rmul rH rPpred) (rctr rH)).
     have rKf : refines (RR n p)
-        (gkalman_gain conj H Rm (gpredict_cov conj F G Q P))
+        (riccati_def.kalman_gain conj H Rm (riccati_def.predict_cov conj F G Q P))
         (kalman_gain_seqmx conj n p sH sRm cinv
           (predict_cov_seqmx conj m n sF sG sQ sP)).
-      rewrite /gkalman_gain /kalman_gain_seqmx.
+      rewrite /riccati_def.kalman_gain /kalman_gain_seqmx.
       exact: (rmul (rmul rPpred (rctr rH)) (cinv_correct _ _ rInnov)).
     exact: (radd rF (ropp (rmul (rmul rF rKf) rH))).
   Qed.
