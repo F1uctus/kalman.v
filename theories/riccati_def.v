@@ -34,13 +34,11 @@ Section GenericDefs.
   Variables (F : 'M[R]_n) (G : 'M[R]_(n, m)) (H : 'M[R]_(p, n)).
   Variables (Q : 'M[R]_m) (Rm : 'M[R]_p).
 
-  (*
-    Ковариация предсказания: $F P F† + G Q G†$, где $M† = "map_mx" "conj" M^T$.
-  *)
+  (* Ковариация предсказания: $F P F† + G Q G†$. *)
   Definition predict_cov (P : 'M[R]_n) : 'M[R]_n :=
     F *m P *m map_mx conj F^T + G *m Q *m map_mx conj G^T.
 
-  (* Инновационная ковариация: $H P H† + R$. *)
+  (* Инновационная ковариация: $R_(e,k) = H P H† + R$. *)
   Definition innov_cov (P : 'M[R]_n) : 'M[R]_p :=
     H *m P *m map_mx conj H^T + Rm.
 

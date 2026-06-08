@@ -462,7 +462,7 @@ Section Spectral.
     have BX_eq : B *m X = 1%:M.
       by rewrite -[B *m X]mul1mx -(mulVmx S_unit) -mulmxA SBX' mulVmx.
     have X_eq_invB : X = invmx B.
-      have B_unit : B \in unitmx := pd_invertible pdB.
+      have B_unit : B \in unitmx := pd_unit pdB.
       by rewrite -[X]mul1mx -(mulVmx B_unit) -mulmxA BX_eq mulmx1.
     have SVSV_eq : (S *m V) *m (S *m V)^t* = S *m S.
       rewrite trmxC_mul.
@@ -504,10 +504,10 @@ Section Spectral.
     psd_le A B -> psd_le B A -> A = B.
   (*
     Пусть $M := B - A$. По условию $M$ и $-M$ обе определены неотрицательно. По
-    спектральной теореме (см. @sec:spectral) $M = U D U†$, где $U$ унитарна, а
+    спектральной теореме (см. @sec:spectral) $M = U D U†$, где $U in U(n)$, а
     $D = "diag"(l_1, ..., l_n)$ вещественна. Эрмитова конгруэнция с матрицей
     $U†$ даёт $D = U† M U$ и $-D = U† (-M) U$, обе положительно полуопределены.
-    Из характеризации положительно полуопределённых диагональных матриц
+    Из характеризации неотрицательно определённых диагональных матриц
     ($"diag"(l_1, ..., l_n) succ.eq 0 <=> l_i >= 0$) получаем одновременно
     $l_i >= 0$ и $-l_i >= 0$, откуда $l_i = 0$ и $M = 0$.
   *)
@@ -552,7 +552,7 @@ Section Spectral.
   Lemma psd_le_trace_id n (A : 'M[ℂ]_n) :
     psd A -> psd_le A (\tr A *: 1%:M).
   (*
-    Пусть $A = U "diag"(λ_1,...,λ_n) U†$, где $U$ унитарна, $λ_i >= 0$. Тогда
+    Пусть $A = U "diag"(λ_1,...,λ_n) U†$, где $U in U(n)$, $λ_i >= 0$. Тогда
     $(tr A) E − A = U ((tr A) E − "diag"(λ_i)) U† = U "diag"(tr A − λ_i) U†$,
     причём $tr A − λ_i = Σ_(j!=i) λ_j >= 0$, поэтому разность неотрицательно
     определена, откуда и следует неравенство.

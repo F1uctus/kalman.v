@@ -9,3 +9,4 @@
 #let kalman = "kalman"
 #let frob = "frob"
 #let sq = "2"
+#let Herm = "Herm"

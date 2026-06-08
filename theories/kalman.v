@@ -99,7 +99,7 @@ Section KalmanFilter.
   (*
     Инновационная ковариация.
 
-    $S_k = H P_(k|k-1) H† + R$.
+    $R_(e,k) = H P_(k|k-1) H† + R$.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
@@ -108,9 +108,9 @@ Section KalmanFilter.
   (*
     Усиление Калмана.
 
-    $K_k = P_(k|k-1) H† S_k^(-1)$. Это фильтрующее усиление $K = P H† R_e^(-1)$
-    (без множителя $F$), вводимое в шаге измерения; ср. предсказательное
-    усиление $K_p = F P H† R_e^(-1)$ из теоремы 9.2.1.
+    $K_k = P_(k|k-1) H† R_(e,k)^(-1)$. Это фильтрующее усиление
+    $K = P H† R_e^(-1)$ (без множителя $F$), вводимое в шаге измерения; ср.
+    предсказательное усиление $K_p = F P H† R_e^(-1)$ из теоремы 9.2.1.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
@@ -304,8 +304,8 @@ Section KalmanFilter.
   (*
     Обратимость инновационной ковариации.
 
-    При $P_(k|k-1) succ.eq 0$ матрица $S_k$ обратима, что делает корректным шаг
-    обновления и усиление Калмана.
+    При $P_(k|k-1) succ.eq 0$ матрица $R_(e,k)$ обратима, что делает корректным
+    шаг обновления и усиление Калмана.
 
     - @kailath2000[§ 9.5.3 "Existence"].
   *)
@@ -314,7 +314,7 @@ Section KalmanFilter.
   Proof.
     move=> psdP.
     have hpd : pd (innov_cov P_pred) := innov_cov_pd psdP.
-    exact: pd_invertible hpd.
+    exact: pd_unit hpd.
   Qed.
 
   (*
@@ -441,8 +441,8 @@ Section KalmanFilter.
   Proof.
     move=> Ppd.
     have psdP : psd P_pred := pd_psd Ppd.
-    have Punit : P_pred \in unitmx := pd_invertible Ppd.
-    have Runit : R \in unitmx := pd_invertible R_pd.
+    have Punit : P_pred \in unitmx := pd_unit Ppd.
+    have Runit : R \in unitmx := pd_unit R_pd.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
     set K := kalman_gain P_pred.
     have KS : K *m innov_cov P_pred = P_pred *m H^t*.
@@ -514,10 +514,10 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Лёвнерова доминированность шага обновления.
+    Монотонность шага обновления в смысле порядка Лёвнера.
 
     Если $P_(k|k-1) succ.eq 0$, то $P_(k|k-1) - P_(k|k) succ.eq 0$, причём явная
-    формула разности равна $(H P_(k|k-1))† S_k^(-1) (H P_(k|k-1))$.
+    формула разности равна $(H P_(k|k-1))† R_(e,k)^(-1) (H P_(k|k-1))$.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
@@ -662,7 +662,7 @@ Section KalmanFilter.
   (*
     Стационарное условие.
 
-    $K_k S_k = P_(k|k-1) H†$.
+    $K_k R_(e,k) = P_(k|k-1) H†$.
 
     - @kailath2000[§ 3.3.1 "Orthogonality Condition"].
   *)

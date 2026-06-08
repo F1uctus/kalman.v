@@ -70,32 +70,8 @@ Section EffPrograms.
 
 End EffPrograms.
 
-Section GenericDefs.
 
-  Variable R : comUnitRingType.
-
-  Variable conj : R -> R.
-
-  Fixpoint gobsv_gram (n p : nat) (F : 'M[R]_n) (H : 'M[R]_(p, n))
-      (W : 'M[R]_p) (k : nat) : 'M[R]_n :=
-    if k is k'.+1 then
-      gobsv_gram F H W k' +
-      ((F ^+ k') ^t conj) *m (H ^t conj) *m W *m H *m (F ^+ k')
-    else 0.
-
-  Fixpoint gctrl_gram (n m : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
-      (Q : 'M[R]_m) (k : nat) : 'M[R]_n :=
-    if k is k'.+1 then
-      gctrl_gram F G Q k' +
-      (F ^+ k') *m G *m Q *m (G ^t conj) *m ((F ^+ k') ^t conj)
-    else 0.
-
-  Definition gclosed_loop (m n p : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
-      (H : 'M[R]_(p, n)) (Q : 'M[R]_m) (Rm : 'M[R]_p) (P : 'M[R]_n) : 'M[R]_n :=
-    F - F *m riccati_def.kalman_gain conj H Rm (riccati_def.predict_cov conj F G Q P) *m H.
-
-End GenericDefs.
-
+(* Корректность: подстановка C := R и теоремы refines *)
 Section Refine.
 
   Variable R : comUnitRingType.
@@ -155,32 +131,39 @@ Section Refine.
     exact: Rseqmx_0.
   Qed.
 
+  (* Грамиан наблюдаемости. *)
   Lemma obsv_gram_seqmx_correct (n p : nat) (F : 'M[R]_n) (H : 'M[R]_(p, n))
       (W : 'M[R]_p) (sF sH sW : @seqmx R)
       (rF : refines (RR n n) F sF) (rH : refines (RR p n) H sH)
       (rW : refines (RR p p) W sW) (k : nat) :
-    refines (RR n n) (gobsv_gram conj F H W k)
+    refines (RR n n) (riccati_def.obsv_gram conj F H W k)
       (obsv_gram_seqmx conj n p sF sH sW k).
   Proof.
-    elim: k => [|k IHk] /=; first exact: rzero.
+    elim: k => [|k IHk].
+    - rewrite riccati_def.obsv_gram0 /=; exact: rzero.
+    - rewrite riccati_def.obsv_gram_recr /=.
     have rFj := rmpow rF k.
     apply: radd => //.
     exact: (rmul (rmul (rmul (rmul (rctr rFj) (rctr rH)) rW) rH) rFj).
   Qed.
 
+  (* Грамиан управляемости. *)
   Lemma ctrl_gram_seqmx_correct (n m : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
       (Q : 'M[R]_m) (sF sG sQ : @seqmx R)
       (rF : refines (RR n n) F sF) (rG : refines (RR n m) G sG)
       (rQ : refines (RR m m) Q sQ) (k : nat) :
-    refines (RR n n) (gctrl_gram conj F G Q k)
+    refines (RR n n) (riccati_def.ctrl_gram conj F G Q k)
       (ctrl_gram_seqmx conj n m sF sG sQ k).
   Proof.
-    elim: k => [|k IHk] /=; first exact: rzero.
+    elim: k => [|k IHk].
+    - rewrite riccati_def.ctrl_gram0 /=; exact: rzero.
+    - rewrite riccati_def.ctrl_gram_recr /=.
     have rFj := rmpow rF k.
     apply: radd => //.
     exact: (rmul (rmul (rmul (rmul rFj rG) rQ) (rctr rG)) (rctr rFj)).
   Qed.
 
+  (* Матрица замкнутого контура. *)
   Lemma closed_loop_seqmx_correct (m n p : nat)
       (F : 'M[R]_n) (G : 'M[R]_(n, m)) (H : 'M[R]_(p, n))
       (Q : 'M[R]_m) (Rm : 'M[R]_p) (P : 'M[R]_n)
@@ -191,10 +174,10 @@ Section Refine.
       (cinv : @seqmx R -> @seqmx R)
       (cinv_correct : forall (S : 'M[R]_p) (sS : @seqmx R),
         refines (RR p p) S sS -> refines (RR p p) (invmx S) (cinv sS)) :
-    refines (RR n n) (gclosed_loop conj F G H Q Rm P)
+    refines (RR n n) (riccati_def.closed_loop conj F G H Q Rm P)
       (closed_loop_seqmx conj m n p sF sG sH sQ sRm cinv sP).
   Proof.
-    rewrite /gclosed_loop /closed_loop_seqmx.
+    rewrite /riccati_def.closed_loop /closed_loop_seqmx.
     have rPpred : refines (RR n n) (riccati_def.predict_cov conj F G Q P)
         (predict_cov_seqmx conj m n sF sG sQ sP).
       rewrite /riccati_def.predict_cov /predict_cov_seqmx.
@@ -220,25 +203,21 @@ Section BridgeC.
 
   Variable ℂ : numClosedFieldType.
 
+  (* Грамиан наблюдаемости уточнения совпадает с `obsv_bound.obsv_gram`. *)
   Lemma gobsv_gram_bridge (n p : nat) (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n))
       (R : 'M[ℂ]_p) (k : nat) :
-    gobsv_gram conjC F H (invmx R) k = obsv_gram F H R k.
-  Proof.
-    elim: k => [|k IHk] /=; first by rewrite obsv_gram0.
-    by rewrite obsv_gram_recr IHk.
-  Qed.
+    riccati_def.obsv_gram conjC F H (invmx R) k = obsv_gram F H R k.
+  Proof. by []. Qed.
 
+  (* Грамиан управляемости уточнения совпадает с `obsv_bound.ctrl_gram`. *)
   Lemma gctrl_gram_bridge (m n : nat) (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m))
       (Q : 'M[ℂ]_m) (k : nat) :
-    gctrl_gram conjC F G Q k = ctrl_gram F G Q k.
-  Proof.
-    elim: k => [|k IHk] /=; first by rewrite ctrl_gram0.
-    by rewrite ctrl_gram_recr IHk.
-  Qed.
+    riccati_def.ctrl_gram conjC F G Q k = ctrl_gram F G Q k.
+  Proof. by []. Qed.
 
   Lemma gclosed_loop_bridge (m n p : nat) (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m))
       (H : 'M[ℂ]_(p, n)) (Q : 'M[ℂ]_m) (R : 'M[ℂ]_p) (P : 'M[ℂ]_n) :
-    gclosed_loop conjC F G H Q R P =
+    riccati_def.closed_loop conjC F G H Q R P =
     F - F *m kalman_gain H R (predict_cov F G Q P) *m H.
   Proof.
     by [].

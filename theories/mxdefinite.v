@@ -129,7 +129,7 @@ Section MatrixDefiniteness.
   Qed.
 
   (* Положительно определённая матрица обратима. *)
-  Lemma pd_invertible A :
+  Lemma pd_unit A :
     pd A -> A \in unitmx.
   Proof.
     move=> [Asym pdA]; apply: contraT => Anu.
@@ -174,7 +174,7 @@ Section MatrixDefiniteness.
   Lemma pd_inv A :
     pd A -> pd (invmx A).
   Proof.
-    move=> pdA; have Aunit : A \in unitmx := pd_invertible pdA.
+    move=> pdA; have Aunit : A \in unitmx := pd_unit pdA.
     case: pdA => Asym pdAq; split.
       by rewrite trmx_inv map_invmx -Asym.
     move=> v vNZ.

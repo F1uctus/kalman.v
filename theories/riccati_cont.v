@@ -23,7 +23,7 @@ From mathcomp.fingroup Require Import perm.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp classical_sets.
 From mathcomp Require Import topology normedtype.
-From Kalman Require Import mxnotation mxdefinite mxloewner mxfrob mxtopo.
+From Kalman Require Import mxnotation mxdefinite mxloewner mxfrob mxtopo riccati_def.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -161,8 +161,7 @@ Section KalmanCont.
   Variables (Q : 'M[ℂ]_m) (R : 'M[ℂ]_p).
 
   (* $"predict_cov" P = F P F† + G Q G†$ - полином в $P$. *)
-  Definition predict_cov (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    F *m P *m F^t* + G *m Q *m G^t*.
+  Local Notation predict_cov := (riccati_def.predict_cov conjC F G Q).
 
   Lemma cvgn_predict_cov (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pseq @ \oo --> L -> (fun k => predict_cov (Pseq k)) @ \oo --> predict_cov L.
@@ -174,8 +173,7 @@ Section KalmanCont.
   Qed.
 
   (* $"innov_cov" P = H P H† + R$ - полином в $P$. *)
-  Definition innov_cov (P : 'M[ℂ]_n) : 'M[ℂ]_p :=
-    H *m P *m H^t* + R.
+  Local Notation innov_cov := (riccati_def.innov_cov conjC H R).
 
   Lemma cvgn_innov_cov (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pseq @ \oo --> L -> (fun k => innov_cov (Pseq k)) @ \oo --> innov_cov L.
@@ -190,30 +188,28 @@ Section KalmanCont.
     $"kalman_gain" P = P H† "invmx"("innov_cov" P)$. Непрерывен в точках, где
     `innov_cov L \in unitmx`.
   *)
-  Definition kalman_gain (P : 'M[ℂ]_n) : 'M[ℂ]_(n, p) :=
-    P *m H^t* *m invmx (innov_cov P).
+  Local Notation kalman_gain := (riccati_def.kalman_gain conjC H R).
 
   Lemma cvgn_kalman_gain (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pseq @ \oo --> L -> innov_cov L \in unitmx ->
     (fun k => kalman_gain (Pseq k)) @ \oo --> kalman_gain L.
   Proof.
     move=> HP Sunit.
-    rewrite /kalman_gain; under eq_cvg=> k do rewrite /kalman_gain.
+    rewrite kalman_gainE; under eq_cvg=> k do rewrite kalman_gainE.
     apply: cvgn_mulmx.
     - apply: cvgn_mulmx HP _; exact: cvg_cst.
     - exact: cvgn_invmx (cvgn_innov_cov HP) Sunit.
   Qed.
 
   (* $"update_cov" P = (E - "kalman_gain" P H) P$. *)
-  Definition update_cov (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    (1%:M - kalman_gain P *m H) *m P.
+  Local Notation update_cov := (riccati_def.update_cov conjC H R).
 
   Lemma cvgn_update_cov (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pseq @ \oo --> L -> innov_cov L \in unitmx ->
     (fun k => update_cov (Pseq k)) @ \oo --> update_cov L.
   Proof.
     move=> HP Sunit.
-    rewrite /update_cov; under eq_cvg=> k do rewrite /update_cov.
+    rewrite update_covE; under eq_cvg=> k do rewrite update_covE.
     apply: cvgn_mulmx; last exact: HP.
     apply: cvgn_submx; first exact: cvg_cst.
     apply: cvgn_mulmx; last exact: cvg_cst.
@@ -221,8 +217,7 @@ Section KalmanCont.
   Qed.
 
   (* $"riccati_step" P = "update_cov"("predict_cov" P)$. *)
-  Definition riccati_step (P : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    update_cov (predict_cov P).
+  Local Notation riccati_step := (riccati_def.riccati_step conjC F G H Q R).
 
   Lemma cvgn_riccati_step (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pseq @ \oo --> L -> innov_cov (predict_cov L) \in unitmx ->
