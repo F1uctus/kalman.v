@@ -1,20 +1,19 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
-#import "ellipse.typ": add-ellipse
 #import "plotdata.typ": load, points, lyapunov-path
 
 #let lyap-data = load(lyapunov-path)
 
 #let panel-convergence(data) = cetz.canvas(length: 1cm, {
   cetz.draw.set-style(axes: (
-    stroke: (dash: "dotted", paint: gray),
+    stroke: (paint: gray, thickness: 0.5pt),
     tick: (stroke: gray + 0.5pt),
   ))
   let pts = points(data.iterations, "N", "log10_frob_dist")
   cetz-plot.plot.plot(
     name: "conv",
-    size: (6, 5),
+    size: (8.5, 5),
     x-label: $N$,
     y-label: $norm(P_N - X_oo)_F$,
     x-min: 0,
@@ -29,55 +28,13 @@
     },
     x-grid: "both",
     y-grid: "both",
-    axis-style: "school-book",
+    axis-style: "scientific",
     {
       cetz-plot.plot.add(
         pts,
         style: (stroke: black + 1pt),
         mark: "o",
         mark-size: 0.12,
-      )
-    },
-  )
-})
-
-#let panel-ellipses(data, max-shown: 12) = cetz.canvas(length: 1cm, {
-  cetz.draw.set-style(axes: (
-    stroke: (dash: "dotted", paint: gray),
-    tick: (stroke: gray + 0.5pt),
-  ))
-  let shown = data.iterations.filter(it => it.ellipse.a > 1e-6).slice(0, max-shown)
-  let n = calc.max(shown.len(), 2)
-  cetz-plot.plot.plot(
-    name: "ell",
-    size: (6, 6),
-    x-min: -2.2,
-    x-max: 2.2,
-    y-min: -2.2,
-    y-max: 2.2,
-    x-label: $x_1$,
-    y-label: $x_2$,
-    x-tick-step: 1,
-    y-tick-step: 1,
-    x-grid: "both",
-    y-grid: "both",
-    axis-style: "school-book",
-    {
-      for (i, it) in shown.enumerate() {
-        let frac = i / (n - 1)
-        let e = it.ellipse
-        add-ellipse(
-          radii: (e.a, e.b),
-          rotation: e.angle_rad * 1rad,
-          stroke: luma((1 - frac) * 70%) + 0.8pt,
-        )
-      }
-      let ess = data.lyap_sol_ellipse
-      add-ellipse(
-        radii: (ess.a, ess.b),
-        rotation: ess.angle_rad * 1rad,
-        stroke: red + 1.3pt,
-        show-radii: true,
       )
     },
   )
@@ -95,21 +52,7 @@
 }
 
 #let lyapunov-figure(data: lyap-data) = stack(
-  spacing: 0.7em,
-  grid(
-    columns: (auto, auto),
-    gutter: 1.5em,
-    align: bottom,
-    stack(
-      spacing: 0.6em,
-      panel-convergence(data),
-      align(center, text(size: 9pt)[(а) геометрическая сходимость по норме Фробениуса]),
-    ),
-    stack(
-      spacing: 0.6em,
-      panel-ellipses(data),
-      align(center, text(size: 9pt)[(б) эллипсы ковариации $P_N -> X_oo$]),
-    ),
-  ),
+  spacing: 0.9em,
+  panel-convergence(data),
   align(center, lyap-note(data)),
 )

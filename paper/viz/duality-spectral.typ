@@ -19,7 +19,7 @@
   ))
   cetz-plot.plot.plot(
     name: "p",
-    size: (4.3, 4.3),
+    size: (6.2, 6.2),
     x-min: -1.5, x-max: 1.5, y-min: -1.5, y-max: 1.5,
     x-label: $Re$, y-label: $Im$,
     x-tick-step: 0.5, y-tick-step: 0.5,

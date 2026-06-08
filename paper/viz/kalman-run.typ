@@ -10,6 +10,9 @@
   tick: (stroke: gray + 0.5pt),
 )
 
+#let kr-yfmt = v => box(width: 2.6em, align(right, text(size: 8pt)[#v]))
+#let kr-size = (13.5, 3.6) // plot area: fills the text block, modest height
+
 #let panel-track(data) = cetz.canvas(length: 1cm, {
   cetz.draw.set-style(axes: axes-style)
   let steps = data.steps
@@ -20,14 +23,16 @@
   let ys = true-pos.map(p => p.at(1)) + meas.map(p => p.at(1))
   cetz-plot.plot.plot(
     name: "trk",
-    size: (7, 5),
+    size: kr-size,
     x-label: $k$,
-    y-label: $x_1$,
+    y-label: box(width: 5.5em, align(center, $x_1$)),
+    y-format: kr-yfmt,
     x-min: 0,
     x-max: kmax,
     y-min: calc.min(..ys) - 2,
     y-max: calc.max(..ys) + 2,
     x-tick-step: 10,
+    y-tick-step: 3,
     x-grid: "both",
     y-grid: "both",
     axis-style: "school-book",
@@ -65,9 +70,10 @@
   let y-tick-step = calc.ceil(4.8 * smax / 5)
   cetz-plot.plot.plot(
     name: "err",
-    size: (7, 5),
+    size: kr-size,
     x-label: $k$,
-    y-label: $hat(x)_1 - x_1$,
+    y-label: box(width: 5.5em, align(center, $hat(x)_1 - x_1$)),
+    y-format: kr-yfmt,
     x-min: 0,
     x-max: kmax,
     y-min: -2.4 * smax,
@@ -99,10 +105,8 @@
   )
 })
 
-#let kalman-run-figure(data: kalman-data) = grid(
-  columns: (auto, auto),
-  gutter: 1.5em,
-  align: bottom,
+#let kalman-run-figure(data: kalman-data) = stack(
+  spacing: 1.1em,
   stack(
     spacing: 0.6em,
     panel-track(data),

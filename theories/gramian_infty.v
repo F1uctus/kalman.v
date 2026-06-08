@@ -289,7 +289,7 @@ Section ClosedLoopCtrlGramPd.
   (*
     Схема: тождество Ляпунова даёт конечную частичную сумму
     $"lyap_partial" F_p W N prec.eq P$ (`lyap_partial_fix_le`); на ядре $P$
-    форма частичной суммы зануляется, откуда $W (F_p†)^j v = 0$ для всех
+    форма частичной суммы обращается в ноль, откуда $W (F_p†)^j v = 0$ для всех
     $j < N$. Так как $W u = 0 => K_p† u = 0$ ($R$ положительно определена) и
     $Z u = 0$ ($Z$ неотрицательно определена), а $K_p† u = 0 => F_p† u = A† u$,
     по индукции $(F_p†)^j v = (A†)^j v$, значит $Z (A†)^j v = 0$;
@@ -326,7 +326,8 @@ Section ClosedLoopCtrlGramPd.
     rewrite lt0r; apply/andP; split; last by case: Ppsd => _ /(_ v).
     apply/negP=> /eqP qf0.
     (*
-      Конечная Лёвнер-оценка: lyap_partial Fp W N <= P, форма при v зануляется.
+      Конечная Лёвнер-оценка: lyap_partial Fp W N <= P, форма при v обращается в
+      ноль.
     *)
     have Lle : psd_le (lyap_partial Fp W N) P
       := lyap_partial_fix_le Ppsd Pfix N.
@@ -337,7 +338,7 @@ Section ClosedLoopCtrlGramPd.
       have h := hge v.
       by rewrite mulmxBr mulmxBl raddfB /= qf0 sub0r oppr_ge0 in h.
     rewrite lyap_partial_qform in Lqf0.
-    (* Зануление $W$-формы на сопряжённых итерациях $(F_p†)^j v$. *)
+    (* Обращение в ноль $W$-формы на сопряжённых итерациях $(F_p†)^j v$. *)
     have ge0 : forall i : 'I_N,
         0 <= \tr (((Fp^t*)^+i *m v)^t* *m W *m ((Fp^t*)^+i *m v)).
       by move=> i; case: Wpsd => _ /(_ ((Fp^t*)^+i *m v)).

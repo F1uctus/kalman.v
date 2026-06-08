@@ -10,6 +10,8 @@
   cetz.draw.set-style(axes: (
     stroke: (dash: "dotted", paint: gray),
     tick: (stroke: gray + 0.5pt),
+    x: (mark: (start: "straight", end: "straight")),
+    y: (mark: (start: "straight", end: "straight")),
   ))
   cetz-plot.plot.plot(
     name: "p",
@@ -28,8 +30,8 @@
 })
 
 #let antitone-pair(red-ell, green-ell, relation, r) = stack(
-  spacing: 0.5em,
-  qf-plot(r, size: 4.2, {
+  spacing: 1em,
+  qf-plot(r, size: 5, {
     add-ellipse(
       radii: (1, 1),
       rotation: 0deg,
@@ -88,7 +90,7 @@
 }
 
 #let spectral-figure(data: spectral-data) = stack(
-  spacing: 0.7em,
+  spacing: 1.4em,
   panel-antitone(data),
   align(center, spectral-note(data)),
 )

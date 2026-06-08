@@ -11,7 +11,7 @@
 #let gram-pd-color = rgb("#1f6f6b") // PD => a proper 2-D ellipse
 #let gram-deg-color = luma(45%) // degenerate => a flat sliver
 
-#let gram-frame(it, lim: gram-lim) = cetz.canvas(length: 0.8cm, {
+#let gram-frame(it, lim: gram-lim) = cetz.canvas(length: 1.4cm, {
   cetz-plot.plot.plot(
     size: (2, 2),
     axis-style: "scientific",

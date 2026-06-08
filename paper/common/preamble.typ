@@ -1,13 +1,7 @@
+#import "markup-shorthands.typ" as markup-shorthands
+#import "markup-shorthands.typ": *
+
 #show "†": math.attach("", tr: sym.ast)
 #show math.frac: f => $(#f.num) slash (#f.denom)$
 
-#let eps = math.epsilon
-#let ss = "ss"
-#let pss = "pss"
-#let bnd = "bnd"
-#let seq = "seq"
-#let cl = "cl"
-#let kalman = "kalman"
-#let frob = "frob"
-#let sq = "2"
-#let atinf = math.attach(math.arrow.r, t: math.infinity)
+#let markup-eval-scope = dictionary(markup-shorthands)

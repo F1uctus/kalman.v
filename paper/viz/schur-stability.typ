@@ -59,20 +59,25 @@
 
 #let panel-decay(data) = cetz.canvas(length: 1cm, {
   cetz.draw.set-style(axes: (
-    stroke: (dash: "dotted", paint: gray),
+    stroke: (paint: gray, thickness: 0.5pt),
     tick: (stroke: gray + 0.5pt),
   ))
   let pts = data.power_norms.map(r => (
     r.k,
     if r.frob > 0 { calc.log(r.frob, base: 10) } else { -16 },
   ))
+  let kmax = data.power_norms.last().k
+  let sr = data.spectral_radius
+  let rho-line = ((0, 0), (kmax, kmax * calc.log(sr, base: 10)))
   cetz-plot.plot.plot(
     name: "decay",
     size: (5.5, 5.5),
     x-label: $k$,
     y-label: $norm(A_(c l)^k)_F$,
     x-min: 0,
-    x-max: data.power_norms.last().k,
+    x-max: kmax,
+    y-min: -5.5,
+    y-max: 1,
     x-tick-step: 5,
     y-tick-step: 1,
     y-format: v => {
@@ -81,8 +86,15 @@
     },
     x-grid: "both",
     y-grid: "both",
-    axis-style: "school-book",
+    axis-style: "scientific",
+    legend: "inner-north-east",
+    legend-style: (stroke: none, fill: white, padding: 0.2, item: (spacing: 0.3)),
     {
+      cetz-plot.plot.add(
+        rho-line,
+        style: (stroke: (paint: red, dash: "dashed", thickness: 0.8pt)),
+        label: [$rho^k$],
+      )
       cetz-plot.plot.add(pts, style: (stroke: black + 1pt), mark: "o", mark-size: 0.1)
     },
   )
@@ -100,6 +112,7 @@
   stack(
     spacing: 0.6em,
     panel-decay(data),
-    align(center, text(size: 9pt)[(б) затухание $norm(A_(c l)^k)_F -> 0$]),
+    align(center, text(size: 9pt)[(б) геометрическая сходимость
+      $norm(A_(c l)^k)_F -> 0$]),
   ),
 )

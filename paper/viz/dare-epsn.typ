@@ -2,14 +2,15 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
 #import "frames.typ": frame-strip
-#import "plotdata.typ": load, dare-convergence-path
+#import "plotdata.typ": dare-convergence-path, load
 
 #let epsn-data = load(dare-convergence-path)
 
 #let epsn-exponents = (-2, -4, -6)
 
-#let epsn-ymin = -26
+#let epsn-ymin = -9
 #let epsn-ymax = 1
+#let epsn-xmax = 18
 
 #let n-eps(rows, e) = {
   let last-bad = -1
@@ -21,8 +22,9 @@
 
 #let epsn-frame(data, e) = {
   let rows = data.iterations
-  let pts = rows.map(it => (it.k, 2 * it.log10_frob_dist))
-  let kmax = calc.max(..rows.map(it => it.k))
+  let pts = rows
+    .filter(it => it.k <= epsn-xmax and 2 * it.log10_frob_dist >= epsn-ymin)
+    .map(it => (it.k, 2 * it.log10_frob_dist))
   let cross = n-eps(rows, e)
   cetz.canvas(length: 1cm, {
     cetz.draw.set-style(axes: (
@@ -35,18 +37,18 @@
       x-label: $k$,
       y-label: $norm(P_k - P_(s s))_F^2$,
       x-min: 0,
-      x-max: kmax + 1,
+      x-max: epsn-xmax,
       y-min: epsn-ymin,
       y-max: epsn-ymax,
-      x-tick-step: 10,
-      y-tick-step: 8,
+      x-tick-step: 4,
+      y-tick-step: 2,
       y-format: v => {
         let ee = int(calc.round(v))
         [#text(size: 7pt)[$10^(#ee)$]]
       },
       x-grid: "both",
       y-grid: "both",
-      axis-style: "school-book",
+      axis-style: "scientific",
       {
         cetz-plot.plot.add(
           pts,
@@ -58,13 +60,16 @@
         cetz-plot.plot.annotate(resize: false, {
           cetz.draw.line(
             (0, e),
-            (kmax + 1, e),
+            (epsn-xmax, e),
             stroke: (paint: red, dash: "dashed", thickness: 1pt),
           )
           cetz.draw.content(
-            (kmax * 0.9, e),
+            (epsn-xmax * 0.85, e),
             anchor: "center",
-            box(fill: white, inset: (x: 1.5pt), text(size: 8.5pt, fill: red)[$epsilon$]),
+            box(fill: white, inset: (x: 1.5pt), text(
+              size: 8.5pt,
+              fill: red,
+            )[$epsilon$]),
           )
           if cross != none {
             let nk = cross.k

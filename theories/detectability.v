@@ -1,7 +1,7 @@
 (*
-  Детектируемость, стабилизируемость, PBH-тест.
+  Детектируемость, стабилизируемость, критерий PBH.
 
-  Критерий Попова–Белевича–Хаутуса (PBH-тест):
+  Критерий Попова–Белевича–Хаутуса (PBH):
   - https://en.wikipedia.org/wiki/Hautus_lemma
   - https://arxiv.org/abs/2402.03245
 
@@ -65,7 +65,7 @@ Definition schur_stable
   (ℂ : numClosedFieldType) (n : nat) (A : 'M[ℂ]_n) : Prop :=
     spec_rad_lt1 A.
 
-(* Детектируемость (правый PBH-тест). *)
+(* Детектируемость (критерий PBH справа). *)
 Section Detectability.
 
   Variable (ℂ : numClosedFieldType).
@@ -75,7 +75,7 @@ Section Detectability.
   Variables (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)).
 
   (*
-    Детектируемость (правый тест PBH).
+    Детектируемость (критерий PBH для правых собственных векторов).
 
     Каждый правый собственный вектор $v$ матрицы $F$ с $|λ| >= 1$ не лежит в
     ядре выхода: $H v != 0$.
@@ -145,7 +145,7 @@ Section Detectability.
 
 End Detectability.
 
-(* Стабилизируемость и UCC (двойственное, левый PBH-тест). *)
+(* Стабилизируемость и UCC (двойственное, критерий PBH слева). *)
 Section Stabilizability.
 
   Variable (ℂ : numClosedFieldType).
@@ -155,7 +155,7 @@ Section Stabilizability.
   Variables (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m)).
 
   (*
-    Стабилизируемость (левый тест PBH).
+    Стабилизируемость (критерий PBH для левых собственных векторов).
 
     Каждый левый собственный вектор $w$ матрицы $F$ с $|λ| >= 1$ возбуждается
     входом: $w G != 0$.

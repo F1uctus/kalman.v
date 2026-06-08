@@ -1,7 +1,7 @@
 
 #import "@preview/cetz:0.5.2"
 
-#let duality-mirror-figure = cetz.canvas(length: 1cm, {
+#let duality-mirror-figure = cetz.canvas(length: 1.4cm, {
   let xLc = -3.7 // left (estimation) column centre
   let xRc = 3.7 // right (control) column centre
   let ax = 0.0 // mirror axis
@@ -41,7 +41,7 @@
       y: -4.6,
       l: [фильтр Риккати $P_(s s)$],
       r: [LQR Риккати $S_(s s)$],
-      lem: "классическое",
+      lem: "",
       dash: true,
     ),
   )
@@ -82,9 +82,9 @@
         fill: white,
         inset: (x: 1.5pt),
         text(
-          size: 6pt,
+          size: 10pt,
           fill: if row.dash { gray.darken(20%) } else { rgb(20, 90, 160) },
-          raw(row.lem),
+          if row.dash { emph(row.lem) } else { raw(row.lem) },
         ),
       ),
     )
@@ -109,6 +109,6 @@
   cetz.draw.content(
     (1.65, yl),
     anchor: "west",
-    text(size: 7.5pt)[классическое соответствие],
+    text(size: 7.5pt)[вне объёма работы],
   )
 })

@@ -221,10 +221,7 @@ Section KalmanFilter.
     set xh := x_hat u y Ps k.
     (*
       Внутреннее выражение:
-      ```
-        H ⋅ x_true k+1 + v k+1 - H ⋅ (F ⋅ xh + G ⋅ (u k))
-      = H ⋅ F ⋅ (xt - xh) + H ⋅ G ⋅ w k+1 + v k+1
-      ```
+      $ H "x_true"_(k+1) + v_(k+1) - H (F hat(x) + G u_k) = H F (x_t - hat(x)) + H G w_(k+1) + v_(k+1) $
     *)
     have inner :
       H *m (F *m xt + G *m u k + G *m w k.+1) + v k.+1 -
@@ -240,7 +237,7 @@ Section KalmanFilter.
   Qed.
 
   (*
-    Зануление математического ожидания инновации.
+    Обращение в ноль математического ожидания инновации.
 
     Если $EE tilde(x)_k = 0$, то и
     $EE(H F tilde(x)_k + H G w_(k+1) + v_(k+1)) = 0$.
@@ -585,8 +582,8 @@ Section KalmanFilter.
       have := congr1 (fun M : 'M[ℂ]_(n, p) => M^t*) KS.
       by rewrite !trmxC_mul trmxCK -Psym -Ssym.
     (*
-      Шаг 1: раскрываем `alt_update_cov K' P` в виде
-      `P + K' S K'† - K' H P - P H† K'†`
+      Раскрываем $"alt_update_cov" K' P$ в виде
+      $P + K' S K'† - K' H P - P H† K'†$
     *)
     have alt_e : alt_update_cov K' P_pred =
       P_pred + K' *m innov_cov P_pred *m K'^t*
@@ -602,10 +599,10 @@ Section KalmanFilter.
       rewrite -[in RHS]addrA -[in RHS]addrA.
       rewrite -addrA addrACA.
       by [].
-    (* Шаг 2: раскрываем `update_cov` *)
+    (* Раскрываем `update_cov` *)
     have upd_e : update_cov P_pred = P_pred - K *m H *m P_pred.
       by rewrite /update_cov -/K mulmxBl mul1mx.
-    (* Шаг 3: раскрываем `dK S dK†` *)
+    (* Раскрываем $(dif K) S (dif K)†$ *)
     have dK_e : dK *m S *m dK^t* =
       K' *m S *m K'^t* - K' *m H *m P_pred
       - P_pred *m H^t* *m K'^t* + K *m H *m P_pred.
@@ -632,11 +629,11 @@ Section KalmanFilter.
       by rewrite ht.
     rewrite alt_e dK_e -/K -/S -/dK upd_e.
     (*
-      Цель: `P + α - β - γ = (P - δ) + (α - β - γ + δ)`, где
-      - `α = K'SK'†`
-      - `β = K'HP`
-      - `γ = PH† K'†`
-      - `δ = KHP`.
+      Цель: $P + α - β - γ = (P - δ) + (α - β - γ + δ)$, где
+      - $α = K' S K'†$
+      - $β = K' H P$
+      - $γ = P H† K'†$
+      - $δ = K H P$.
     *)
     rewrite !addrA.
     rewrite [P_pred - K *m H *m P_pred + K' *m S *m K'^t*]addrAC.
