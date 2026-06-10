@@ -35,15 +35,19 @@ jobs:
           fc-cache -f
           fc-list | grep -i "times new roman"
 
-      - name: Build PDF
+      - name: Build PDFs
         env:
           TYPST_PACKAGE_PATH: paper/packages
-        run: typst compile paper/thesis.typ paper/thesis.pdf --root . --package-path paper/packages
+        run: |
+          typst compile paper/thesis.typ paper/thesis.pdf --root . --package-path paper/packages
+          typst compile paper/slides.typ paper/slides.pdf --root . --package-path paper/packages
 
       - uses: softprops/action-gh-release@v2
         if: github.event_name != 'pull_request'
         with:
           tag_name: thesis-${{ github.run_number }}
           name: Thesis PDF
-          files: paper/thesis.pdf
+          files: |
+            paper/thesis.pdf
+            paper/slides.pdf
           make_latest: true
