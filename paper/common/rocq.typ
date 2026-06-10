@@ -7,11 +7,11 @@
   height: 0.65em,
 )
 
-// 0.8em (а не 0.65em, как у #Rocq): в словесном знаке OCaml есть строчные
-// буквы, при равной высоте бокса он выглядит мельче.
+// Словесный знак OCaml (официальный dark-transparent-logo.svg с обрезанной
+// фигурой верблюда), по образцу #Rocq.
 #let OCaml = box(
   image("/paper/images/logo-ocaml.svg"),
-  height: 0.8em,
+  height: 0.65em,
 )
 
 #let rocq-syntax = to-sublime-syntax("/paper/assets/rocq.tmLanguage.json")

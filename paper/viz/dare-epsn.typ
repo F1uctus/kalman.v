@@ -119,10 +119,12 @@
               fill: blue,
             )
             cetz.draw.content(
-              (nk, epsn-ymin),
-              anchor: "north",
-              padding: 0.1,
-              text(size: st.annot, fill: blue)[$N(epsilon)$],
+              (nk + 0.3, epsn-ymin + 0.6),
+              anchor: "west",
+              box(fill: white, inset: (x: 1.5pt), text(
+                size: st.annot,
+                fill: blue,
+              )[$N(epsilon)$]),
             )
           }
         })
@@ -140,11 +142,17 @@
 }
 
 // Figure body (placed inside a #figure in parts/part4.typ). `dir: ttb` lays
-// the frames out as a column (used on slides).
-#let dare-epsn-figure(data: epsn-data, style: (:), dir: ltr) = {
+// the frames out as a column and `exponents` selects a subset of the sweep
+// (both used on slides).
+#let dare-epsn-figure(
+  data: epsn-data,
+  style: (:),
+  dir: ltr,
+  exponents: epsn-exponents,
+) = {
   let st = viz-resolve(style)
   frame-strip(
-    epsn-exponents,
+    exponents,
     e => epsn-frame(data, e, st),
     sublabel: e => epsn-sublabel(data, e, st),
     gutter: 1.2em,

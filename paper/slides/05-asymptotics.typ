@@ -100,5 +100,6 @@
   align(center + horizon, slide-fig(dare-epsn-figure(
     style: (..slide-viz, label: 16pt, tick: 13pt, subcaption: 14pt),
     dir: ttb,
+    exponents: (-2, -6),
   ))),
 )
