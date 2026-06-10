@@ -8,6 +8,7 @@
 # Local-only Typst prototypes (not used by thesis.typ)
 packages/local/preview/
 packages/local/djvu/0.1.0/
+packages/local/unn-itmm/
 typst.toml
 typst.lock
 loewner-order.typ
