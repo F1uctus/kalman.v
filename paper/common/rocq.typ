@@ -7,6 +7,13 @@
   height: 0.65em,
 )
 
+// 0.8em (а не 0.65em, как у #Rocq): в словесном знаке OCaml есть строчные
+// буквы, при равной высоте бокса он выглядит мельче.
+#let OCaml = box(
+  image("/paper/images/logo-ocaml.svg"),
+  height: 0.8em,
+)
+
 #let rocq-syntax = to-sublime-syntax("/paper/assets/rocq.tmLanguage.json")
 #let rocq-src(p) = read("/theories/" + p)
 
@@ -29,6 +36,7 @@
   block: true,
 )
 
+// Inline (non-block) Rocq code, e.g. a definition name dropped into prose.
 #let rocq-raw-inline(code) = raw(
   code,
   lang: "rocq",
@@ -75,6 +83,7 @@
   }
 }
 
+// `(* ... *)` block immediately above a definition/lemma line (may be multiline).
 #let rocq-standalone-comment(line) = {
   let t = line.trim()
   t.starts-with("(*") and t.ends-with("*)")
@@ -129,6 +138,8 @@
   (start: start-idx, end: to-idx)
 }
 
+// Render a half-open `[start, end]` line range of a `.v` file as a dedented,
+// codly-wrapped Rocq listing. Shared by `rocq-snippet` and `rocq-doc`.
 #let rocq-render-range(source, lines, start, end) = {
   let snippet = rocq-dedent-lines(lines.slice(start, end + 1))
   rocq-codly(
@@ -139,12 +150,16 @@
   )
 }
 
+// Extract a named item from a `.v` file under `/theories/`.
+// `comment`: prepend the `(* ... *)` block directly above the item.
+// `proof`: extend through `Qed.` / `Defined.` instead of statement-only.
 #let rocq-snippet(source, name, comment: false, proof: false) = {
   let lines = rocq-src(source).split("\n")
   let range = rocq-snippet-range(lines, name, comment: comment, proof: proof)
   rocq-render-range(source, lines, range.start, range.end)
 }
 
+// === Structured declaration parsing (used by the `rocq-doc` module) ===========
 
 #let rocq-decl-kinds = (
   "Theorem",
@@ -160,6 +175,8 @@
   "Axiom",
 )
 
+// Locate a declaration by its bare `name` (no kind keyword). Returns the line
+// index and the matched kind keyword. Panics if the declaration is absent.
 #let rocq-locate(lines, name) = {
   let decl-re = regex(
     "^\\s*(" + rocq-decl-kinds.join("|") + ")\\s+" + name + "\\b",
@@ -169,6 +186,8 @@
   (idx: hit.at(0), kind: hit.at(1).match(decl-re).captures.at(0))
 }
 
+// End of a statement signature: the first `.`-terminated line (or `}.` for a
+// Record). Unlike `rocq-endings`, this never runs into the proof for a Theorem.
 #let rocq-statement-range(lines, idx, kind) = {
   let end = if kind == "Record" { rocq-endings.Record } else { rocq-line-end }
   let to-idx = (
@@ -179,6 +198,7 @@
 
 #let rocq-proof-start = regex("^\\s*Proof\\.")
 
+// The proof body `Proof. ... Qed.`/`Defined.` after `idx`, or `none`.
 #let rocq-proofbody-range(lines, idx) = {
   let p = lines.slice(idx).enumerate().find(((i, l)) => rocq-proof-start in l)
   if p == none { return none }
@@ -191,6 +211,10 @@
   (start: proof-idx, end: e.at(0) + proof-idx)
 }
 
+// Line span `(start, end)` (end exclusive) of the `(* ... *)` block directly
+// above `idx`, skipping blank lines in between. Unlike `rocq-comment-start-before`
+// this handles comments that contain internal blank lines (title / description /
+// citations), by scanning back to the `(*` opener. `none` if there is no comment.
 #let rocq-comment-above(lines, idx) = {
   let c-end = idx
   while c-end > 0 and lines.at(c-end - 1).trim() == "" { c-end -= 1 }
@@ -212,6 +236,7 @@
   a
 }
 
+// Inner text of a comment span: strip `(*`/`*)`, dedent, drop blank edges.
 #let rocq-comment-text(lines, span) = {
   let raw = lines.slice(span.start, span.end).join("\n").trim()
   if raw.starts-with("(*") { raw = raw.slice(2) }
@@ -219,6 +244,7 @@
   rocq-trim-blank-edges(rocq-dedent-lines(raw.split("\n")))
 }
 
+// Split content lines into blank-line-separated paragraphs (list of line lists).
 #let rocq-split-paragraphs(ls) = {
   let paras = ()
   let cur = ()
@@ -236,8 +262,13 @@
   paras
 }
 
+// A trailing citation bullet `- @key[...]`. Used to peel the citation
+// paragraph off the description (it is rendered separately via rocq-cite).
 #let rocq-citation-line = regex("^\\s*-\\s*@[a-zA-Z0-9_]+\\[")
 
+// Parse the doc comment above a declaration into `(title, description)`. The
+// first paragraph is the title; the rest is the description; a trailing
+// all-bullet citation paragraph is dropped (rendered separately).
 #let rocq-doc-comment(lines, idx) = {
   let span = rocq-comment-above(lines, idx)
   if span == none { return (title: "", description: "") }
@@ -259,6 +290,8 @@
   "(?i)^\\s*схема(\\s+доказательства)?\\s*[:.]?\\s*",
 )
 
+// The proof-sketch comment placed between a statement and its `Proof.`, with a
+// leading `Схема`/`Схема доказательства` phrase stripped. `none` if absent.
 #let rocq-proof-sketch(lines, idx, kind) = {
   let stmt = rocq-statement-range(lines, idx, kind)
   let p = lines

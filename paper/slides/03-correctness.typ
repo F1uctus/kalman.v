@@ -42,7 +42,7 @@ $
 #set text(size: 16pt)
 
 #two-col(
-  columns: (1fr, 240pt),
+  columns: (1fr, 300pt),
   [
     - `kalman_gain_optimal`: усиление Калмана
       минимизирует след апостериорной
@@ -57,5 +57,7 @@ $
       выражает ортогональность ошибки
       и инновации
   ],
-  align(center + horizon, slide-fig(orthogonality-figure())),
+  align(center + horizon, slide-fig(orthogonality-figure(
+    style: (label: 11pt, annot: 10pt),
+  ))),
 )

@@ -1,7 +1,7 @@
 // Клей между темой unn-itmm и материалами тезиса: общие сокращения,
 // подсветка Rocq и помощники для слайдов.
 
-#import "@local/unn-itmm:0.2.0": *
+#import "@local/unn-itmm:0.2.1": *
 #import "@preview/codly:1.3.0": codly-init
 #import "../common/preamble.typ": *
 #import "../common/rocq.typ": *
@@ -23,6 +23,17 @@
   done: done,
   size: 11pt,
   height: 44pt,
+)
+
+// Размеры подписей viz-фигур на слайдах: один общий набор групп
+// (см. paper/viz/style.typ), крупнее тезисных значений, потому что фигуры
+// уменьшаются при вписывании в колонку слайда.
+#let slide-viz = (
+  label: 14pt,
+  tick: 11pt,
+  legend: 12pt,
+  subcaption: 12pt,
+  annot: 12pt,
 )
 
 // Готовая viz-фигура тезиса в масштабе слайда: вписывается в доступную

@@ -1,9 +1,28 @@
+// viz/gramian.typ — observability / controllability gramian ellipses.
+//
+// Data: paper/data/gramian.json, emitted by extraction/ocaml/driver.exe from the
+// extracted, verified seqmx programs theories/seqmx/experiments_seqmx.v
+// (`obsv_gram_seqmx` / `ctrl_gram_seqmx`, proven equal to theories/obsv_bound.v
+// `obsv_gram` / `ctrl_gram`). The picture is the
+// content of `obsv_gram_pd_of_observable` / `ctrl_gram_pd_of_controllable`: the
+// finite gramian becomes positive-definite *exactly* at k = n when the pair is
+// observable / controllable, and never for a degenerate pair.
+//
+// Layout — a 4-row frame strip (small multiples over k), reusing add-ellipse:
+//   O_k observable    : a rank-1 sliver at k=1 that fills out to a PD ellipse at
+//                       k=n=2 and keeps growing (teal);
+//   O_k unobservable  : a flat degenerate sliver at every k (gray dashed);
+//   C_k controllable  : dual of the first row;
+//   C_k uncontrollable: dual of the second.
+// The gramian ellipsoid is the image of the unit ball under G_k^{1/2}, so its
+// semi-axes are sqrt(eig G_k) — exactly the cov_ellipse2 convention.
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
 #import "ellipse.typ": add-ellipse
 #import "frames.typ": frame-grid
 #import "plotdata.typ": load
+#import "style.typ": viz-canvas, viz-resolve
 
 #let gramian-data = load("/paper/data/gramian.json")
 
@@ -11,6 +30,11 @@
 #let gram-pd-color = rgb("#1f6f6b") // PD => a proper 2-D ellipse
 #let gram-deg-color = luma(45%) // degenerate => a flat sliver
 
+// One small multiple: the gramian ellipse at a single k, on the shared scale.
+// A boxed panel (no central cross — the degenerate slivers are axis-aligned and
+// would hide under it). PD frames get a solid teal ellipse (add-ellipse); a
+// degenerate gramian (b = 0) collapses to a flat gray sliver, drawn with tip
+// markers so its extent — and its growth in k — stays legible.
 #let gram-frame(it, lim: gram-lim) = cetz.canvas(length: 1.4cm, {
   cetz-plot.plot.plot(
     size: (2, 2),
@@ -50,24 +74,36 @@
   )
 })
 
-#let gram-row-label(c) = {
+// Left-hand row label: the gramian symbol plus a short observability /
+// controllability qualifier.
+#let gram-row-label(c, st) = {
   let sym = if c.kind == "obsv" { $cal(O)_k$ } else { $cal(C)_k$ }
   let qual = if c.kind == "obsv" {
     if c.positive { [$(H,F)$ набл.] } else { [$(H,F)$ ненабл.] }
   } else {
     if c.positive { [$(F,G)$ упр.] } else { [$(F,G)$ неупр.] }
   }
-  stack(spacing: 0.3em, sym, text(size: 7.5pt, qual))
+  stack(
+    spacing: 0.3em,
+    text(size: st.label, sym),
+    text(size: st.annot, qual),
+  )
 }
 
-#let gram-top-labels(data) = range(1, data.kmax + 1).map(k => if k == data.n {
-  text(size: 8.5pt, weight: "bold")[$k = #k = n$]
+// Top labels k = 1 … kmax; the k = n column (where PD switches on) is emphasized.
+#let gram-top-labels(data, st) = range(1, data.kmax + 1).map(k => if (
+  k == data.n
+) {
+  text(size: st.label, weight: "bold")[$k = #k = n$]
 } else {
-  text(size: 8.5pt)[$k = #k$]
+  text(size: st.label)[$k = #k$]
 })
 
-#let gramian-figure(data: gramian-data) = frame-grid(
-  data.cases.map(c => (label: gram-row-label(c), items: c.frames)),
-  it => gram-frame(it),
-  top-labels: gram-top-labels(data),
-)
+#let gramian-figure(data: gramian-data, style: (:)) = {
+  let st = viz-resolve(style)
+  frame-grid(
+    data.cases.map(c => (label: gram-row-label(c, st), items: c.frames)),
+    it => gram-frame(it),
+    top-labels: gram-top-labels(data, st),
+  )
+}

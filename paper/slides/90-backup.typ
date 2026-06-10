@@ -37,7 +37,7 @@
 
 #set text(size: 15pt)
 
-#slide-fig(duality-spectral-figure(), max-h: 165pt)
+#slide-fig(duality-spectral-figure(style: slide-viz), max-h: 165pt)
 
 #v(2pt)
 
@@ -78,7 +78,7 @@
 
 #table(
   columns: (1fr, auto, auto),
-  inset: (x: 8pt, y: 3.5pt),
+  inset: (x: 8pt, y: 3pt),
   stroke: unn-colors.panel + 1pt,
   fill: (x, y) => if y == 0 { unn-colors.panel-light },
   table.header([Свойство], [Утверждение], [Файл]),
@@ -97,8 +97,6 @@
   [`riccati_seqmx.v`],
   [Обращение матрицы], [`fl_inv_correct`], [`faddeev.v`],
 )
-
-#v(2pt)
 
 Профиль аксиом ключевых теорем: три аксиомы модуля `boolp`
 библиотеки mathcomp и назначение полюсов (`pole_placement_detect`).

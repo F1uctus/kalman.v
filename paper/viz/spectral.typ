@@ -1,3 +1,15 @@
+// viz/spectral.typ — the antitone inverse figure.
+//
+// Data: paper/data/spectral.json, emitted by extraction/ocaml/driver.exe
+// (gen_spectral). Matrices and their inverses are the extracted, verified core
+// (cinv_fl = invmx, Faddeev-LeVerrier); the driver self-checks A ⪯ B and B⁻¹ ⪯ A⁻¹ on the exact
+// rationals and emits float eigenvalues + quadratic-form ellipse axes.
+//
+// Quadratic-form level set { x : xᵀ M x = 1 }, semi-axes 1/√λ along the
+// eigenvectors (the Loewner convention: A ⪯ B ⟺ E_B ⊆ E_A). Illustrates
+// pd_inv_antimono: A ⪯ B (PD) ⇒ B⁻¹ ⪯ A⁻¹, so the level-set containment reverses
+// and the major/minor axes swap under inversion. A dashed gray unit circle (the
+// level set of the identity) anchors the absolute scale.
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
@@ -6,7 +18,11 @@
 
 #let spectral-data = load(spectral-path)
 
+// A small square plot canvas on a fixed symmetric range, school-book axes.
 #let qf-plot(r, size: 3.1, body) = cetz.canvas(length: 1cm, {
+  // Двусторонние стрелки осей делают рамку холста симметричной относительно
+  // оси $x = 0$, поэтому подписи под панелями центрируются ровно по вертикальной
+  // оси (иначе односторонняя стрелка справа смещает центр вправо).
   cetz.draw.set-style(axes: (
     stroke: (dash: "dotted", paint: gray),
     tick: (stroke: gray + 0.5pt),
@@ -29,9 +45,13 @@
   )
 })
 
+// A pair of quadratic-form ellipses (A-family red, B-family green) over a dashed
+// gray unit circle, with a color-keyed relation label. Nesting follows from the
+// radii in the data.
 #let antitone-pair(red-ell, green-ell, relation, r) = stack(
   spacing: 1em,
   qf-plot(r, size: 5, {
+    // unit circle = level set of the identity, a dashed gray scale reference.
     add-ellipse(
       radii: (1, 1),
       rotation: 0deg,
@@ -65,11 +85,14 @@
     columns: (auto, auto),
     column-gutter: 1.6em,
     align: bottom,
+    // A ⪯ B: the bigger matrix B has the smaller level ellipse (E_B ⊆ E_A).
     antitone-pair(a.A.qform_ellipse, a.B.qform_ellipse, rel-ab, 1.25),
+    // inversion reverses it: E_{A⁻¹} ⊆ E_{B⁻¹} (A stays red, B stays green).
     antitone-pair(a.A_inv.qform_ellipse, a.B_inv.qform_ellipse, rel-inv, 3.4),
   )
 }
 
+// Reactive note: eigenvalues, and how inversion reciprocates them (quoted data).
 #let frac-or-int(x) = {
   let r = calc.round(1 / x)
   if calc.abs(1 / x - r) < 1e-6 and r != 1 { $1 \/ #r$ } else {
@@ -89,6 +112,7 @@
   ]
 }
 
+// Figure body (placed inside a #figure in parts/part2.typ).
 #let spectral-figure(data: spectral-data) = stack(
   spacing: 1.4em,
   panel-antitone(data),

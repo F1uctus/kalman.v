@@ -21,7 +21,9 @@
       (`obsv_gram_pd_of_observable`),
       симметрично для управляемости
   ],
-  align(center + horizon, slide-fig(gramian-figure())),
+  align(center + horizon, slide-fig(gramian-figure(
+    style: (..slide-viz, label: 17pt, annot: 14pt),
+  ))),
 )
 
 == Результат 3: детектируемость и двойственность
@@ -42,5 +44,7 @@
       переносят факты между парами
       $(H, F)$ и $(F^*, H^*)$
   ],
-  align(center + horizon, slide-fig(duality-mirror-figure)),
+  align(center + horizon, slide-fig(duality-mirror-figure(
+    style: slide-viz,
+  ))),
 )

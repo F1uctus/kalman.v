@@ -1,3 +1,10 @@
+// viz/ellipse.typ — generic ellipse drawing helpers for cetz-plot.
+//
+// Extracted from the loewner-order.typ prototype so several figures can share
+// them. These are convention-agnostic: the caller passes explicit semi-axes
+// `radii` and a `rotation` angle. (Covariance ellipses use radii = sqrt(eig P);
+// quadratic-form level sets use radii = 1/sqrt(eig P) — see add-psd-ellipse in
+// loewner-order.typ.)
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
@@ -8,6 +15,7 @@
   ellipse-stroke: 1pt,
 )
 
+// Parametric ellipse with the given semi-axes, rotated by `rotation`.
 #let ellipse-curve(radii: (1, 1), rotation: 0deg) = t => {
   let a = rotation
   let x = radii.at(0) * calc.cos(t)
@@ -17,6 +25,7 @@
   (rx, ry)
 }
 
+// The two principal-axis segments (for `show-radii`).
 #let ellipse-axis-segments(radii: (1, 1), rotation: 0deg) = {
   let (a, b) = radii
   let ca = calc.cos(rotation)
@@ -33,6 +42,7 @@
   (paint: paint, dash: "dashed", thickness: 0.75pt)
 }
 
+// Add one ellipse (optionally its radii) to the enclosing cetz-plot.plot body.
 #let add-ellipse(
   radii: (1, 1),
   rotation: 0deg,

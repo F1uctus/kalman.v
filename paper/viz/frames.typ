@@ -1,15 +1,40 @@
+// viz/frames.typ — small-multiples ("frame strip") helper.
+//
+// The static analogue of an interactive slider: render the same plot for a sweep
+// of a parameter (k, eps, an
+// eigenvalue, …) as a row — or a labelled grid of rows — of cetz canvases on a
+// shared scale. Figures stay declarative: pass the per-frame data and a `render`
+// function returning one (fixed-size) canvas, and this lays them out aligned.
 
-#let frame-strip(items, render, sublabel: none, gutter: 0.4em) = grid(
-  columns: items.map(_ => auto),
-  column-gutter: gutter,
-  align: bottom + center,
-  ..items.map(it => if sublabel != none {
+// A strip of frames, optional per-frame sublabel underneath.
+//   items    — array of per-frame data
+//   render   — item => content (a fixed-size canvas)
+//   sublabel — none | (item => content) placed under each frame
+//   dir      — ltr (a horizontal row, the default) | ttb (a vertical column)
+#let frame-strip(items, render, sublabel: none, gutter: 0.4em, dir: ltr) = {
+  let cells = items.map(it => if sublabel != none {
     stack(spacing: 0.3em, render(it), sublabel(it))
   } else {
     render(it)
-  }),
-)
+  })
+  if dir == ttb {
+    grid(columns: (auto,), row-gutter: gutter, align: center, ..cells)
+  } else {
+    grid(
+      columns: items.map(_ => auto),
+      column-gutter: gutter,
+      align: bottom + center,
+      ..cells,
+    )
+  }
+}
 
+// A labelled grid of frame rows sharing one column scale.
+//   rows       — array of (label: content, items: array)
+//   render     — item => content (a fixed-size canvas), shared by every cell
+//   top-labels — none | array of content (length = #columns) shown above the grid
+// All rows must have the same number of items; the left label column is `auto`,
+// frame columns are equal so the cells line up across rows.
 #let frame-grid(
   rows,
   render,

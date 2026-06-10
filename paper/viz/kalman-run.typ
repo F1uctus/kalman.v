@@ -1,7 +1,21 @@
+// viz/kalman-run.typ — a Kalman filter run over synthetic data.
+//
+// Data: paper/data/kalman_run.json, emitted by extraction/ocaml/driver.exe. The
+// +/-sigma covariance band is the exact, verified Riccati covariance (extracted
+// theories/seqmx/riccati_seqmx.v); the trajectory and measurements use a seeded
+// PRNG and the extracted Kalman gain. Two panels:
+//   (a) position tracking — noisy measurements, the true position, and the
+//       filter estimate;
+//   (b) the classic consistency plot — the estimation error stays inside the
+//       +/- sigma confidence band, which shrinks as the covariance converges to
+//       the DARE steady state (the same P_ss visualized in dare-convergence.typ).
+//
+// sigma_k = sqrt((P_k)_11) is emitted per step by the OCaml driver.
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
 #import "plotdata.typ": load
+#import "style.typ": viz-canvas, viz-resolve
 
 #let kalman-data = load("/paper/data/kalman_run.json")
 
@@ -10,11 +24,15 @@
   tick: (stroke: gray + 0.5pt),
 )
 
-#let kr-yfmt = v => box(width: 2.6em, align(right, text(size: 8pt)[#v]))
+// Both panels share the k-axis; stacking them vertically only lines the x-ticks
+// up if the left margin (the y-tick-label column) has the same width in both.
+// Render every y-tick label inside a fixed-width right-aligned box to force it.
+#let kr-yfmt(st) = v => box(width: 2.6em, align(right, text(size: st.tick)[#v]))
 #let kr-size = (13.5, 3.6) // plot area: fills the text block, modest height
 
-#let panel-track(data) = cetz.canvas(length: 1cm, {
-  cetz.draw.set-style(axes: axes-style)
+// Panel (a): measurements vs true vs estimate.
+#let panel-track(data, st, size) = viz-canvas(st, cetz.canvas(length: 1cm, {
+  cetz.draw.set-style(axes: axes-style, legend: (orientation: ltr))
   let steps = data.steps
   let kmax = steps.last().k
   let true-pos = steps.map(s => (s.k, s.x_true.at(0)))
@@ -23,10 +41,10 @@
   let ys = true-pos.map(p => p.at(1)) + meas.map(p => p.at(1))
   cetz-plot.plot.plot(
     name: "trk",
-    size: kr-size,
-    x-label: $k$,
-    y-label: box(width: 5.5em, align(center, $x_1$)),
-    y-format: kr-yfmt,
+    size: size,
+    x-label: text(size: st.label, $k$),
+    y-label: box(width: 5.5em, align(center, text(size: st.label, $x_1$))),
+    y-format: kr-yfmt(st),
     x-min: 0,
     x-max: kmax,
     y-min: calc.min(..ys) - 2,
@@ -37,43 +55,54 @@
     y-grid: "both",
     axis-style: "school-book",
     legend: "south",
-    legend-style: (stroke: none, fill: none, item: (spacing: 0.3)),
+    legend-style: (
+      stroke: none,
+      fill: none,
+      item: (spacing: 0.7),
+    ),
     {
       cetz-plot.plot.add(
         meas,
         mark: "x",
         mark-size: 0.14,
         style: (stroke: none),
-        label: [измерения $y_k$],
+        label: text(size: st.legend)[измерения $y_k$],
       )
-      cetz-plot.plot.add(true-pos, style: (stroke: blue + 1pt), label: [истинное $x_1$])
+      cetz-plot.plot.add(true-pos, style: (stroke: blue + 1pt), label: text(
+        size: st.legend,
+      )[истинное $x_1$])
       cetz-plot.plot.add(
         est-pos,
         style: (stroke: red + 1pt),
         mark: "o",
         mark-size: 0.07,
         mark-style: (stroke: red, fill: red.lighten(55%)),
-        label: [оценка $hat(x)_1$],
+        label: text(size: st.legend)[оценка $hat(x)_1$],
       )
     },
   )
-})
+}))
 
-#let panel-error(data) = cetz.canvas(length: 1cm, {
-  cetz.draw.set-style(axes: axes-style)
+// Panel (b): estimation error with the +/- sigma confidence band.
+#let panel-error(data, st, size) = viz-canvas(st, cetz.canvas(length: 1cm, {
+  cetz.draw.set-style(axes: axes-style, legend: (orientation: ltr))
   let steps = data.steps
   let kmax = steps.last().k
   let err = steps.map(s => (s.k, s.x_est.at(0) - s.x_true.at(0)))
   let up = steps.map(s => (s.k, 2 * s.pos_sigma))
   let lo = steps.map(s => (s.k, -2 * s.pos_sigma))
   let smax = calc.max(..steps.map(s => s.pos_sigma))
+  // school-book axes ignore per-axis auto-tick-count; set y-tick-step explicitly.
   let y-tick-step = calc.ceil(4.8 * smax / 5)
   cetz-plot.plot.plot(
     name: "err",
-    size: kr-size,
-    x-label: $k$,
-    y-label: box(width: 5.5em, align(center, $hat(x)_1 - x_1$)),
-    y-format: kr-yfmt,
+    size: size,
+    x-label: text(size: st.label, $k$),
+    y-label: box(width: 5.5em, align(center, text(
+      size: st.label,
+      $hat(x)_1 - x_1$,
+    ))),
+    y-format: kr-yfmt(st),
     x-min: 0,
     x-max: kmax,
     y-min: -2.4 * smax,
@@ -85,36 +114,58 @@
     y-grid: "major",
     axis-style: "school-book",
     legend: "south",
-    legend-style: (stroke: none, fill: none, item: (spacing: 0.3)),
+    legend-style: (stroke: none, fill: none, item: (spacing: 0.7)),
     {
       cetz-plot.plot.add-fill-between(
         up,
         lo,
         style: (fill: luma(88%), stroke: none),
-        label: [$plus.minus 2 sigma_k$],
+        label: text(size: st.legend)[$plus.minus 2 sigma_k$],
       )
-      cetz-plot.plot.add(((0, 0), (kmax, 0)), style: (stroke: (paint: gray, dash: "dotted")))
+      cetz-plot.plot.add(((0, 0), (kmax, 0)), style: (
+        stroke: (paint: gray, dash: "dotted"),
+      ))
       cetz-plot.plot.add(
         err,
         style: (stroke: red + 1pt),
         mark: "o",
         mark-size: 0.07,
-        label: [ошибка],
+        label: text(size: st.legend)[ошибка],
       )
     },
   )
-})
+}))
 
-#let kalman-run-figure(data: kalman-data) = stack(
-  spacing: 1.1em,
-  stack(
+// In the thesis the panels are stacked vertically (`dir: ttb`, the default)
+// on a shared, aligned k-axis (see kr-yfmt / kr-size), each enlarged to fill
+// the text block. On slides `dir: ltr` puts them side by side. `size` is the
+// cetz plot area of one panel.
+#let kalman-run-figure(
+  data: kalman-data,
+  style: (:),
+  size: kr-size,
+  dir: ttb,
+) = {
+  let st = viz-resolve(style)
+  let panel-a = stack(
     spacing: 0.6em,
-    panel-track(data),
-    align(center, text(size: 9pt)[(а) слежение за положением]),
-  ),
-  stack(
+    panel-track(data, st, size),
+    align(center, text(size: st.subcaption)[(а) слежение за положением]),
+  )
+  let panel-b = stack(
     spacing: 0.6em,
-    panel-error(data),
-    align(center, text(size: 9pt)[(б) ошибка оценки в коридоре $plus.minus 2 sigma_k$]),
-  ),
-)
+    panel-error(data, st, size),
+    align(center, text(size: st.subcaption)[(б) ошибка оценки в коридоре
+      $plus.minus 2 sigma_k$]),
+  )
+  if dir == ltr {
+    grid(
+      columns: (auto, auto),
+      column-gutter: 1.2em,
+      align: bottom,
+      panel-a, panel-b,
+    )
+  } else {
+    stack(spacing: 1.1em, panel-a, panel-b)
+  }
+}
