@@ -1,7 +1,7 @@
 // Клей между темой unn-itmm и материалами тезиса: общие сокращения,
 // подсветка Rocq и помощники для слайдов.
 
-#import "@local/unn-itmm:0.1.0": *
+#import "@local/unn-itmm:0.2.0": *
 #import "@preview/codly:1.3.0": codly-init
 #import "../common/preamble.typ": *
 #import "../common/rocq.typ": *

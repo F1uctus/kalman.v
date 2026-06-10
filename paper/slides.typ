@@ -12,7 +12,7 @@
   specialty: [01.03.01 Математика],
   program: [Общий профиль],
   // Дата защиты: плейсхолдер, уточнить перед печатью.
-  date: datetime(year: 2026, month: 6, day: 25),
+  date: datetime(year: 2026, month: 6, day: 19),
 ))
 
 #show: codly-init.with()
@@ -29,7 +29,10 @@
 #include "slides/06-extraction.typ"
 #include "slides/07-conclusion.typ"
 
-#thanks-slide(contact: [github.com/F1uctus/kalman.v])
+#thanks-slide(
+  contact: [github.com/F1uctus/kalman.v],
+  qr: "https://github.com/F1uctus/kalman.v",
+)
 
 // Резервные слайды.
 #show: appendix
