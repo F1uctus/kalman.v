@@ -137,7 +137,12 @@ Section KalmanFilter.
   *)
   Local Notation update_cov := (riccati_def.update_cov conjC H R).
 
-  (* Обновление истинного вектора состояния. *)
+  (*
+    Истинная траектория состояния.
+
+    Последовательность $x_k$, заданная уравнением состояния
+    $x_(k+1) = F x_k + G u_k + G w_(k+1)$ с начальным условием $x_0$.
+  *)
   Definition x_true (u : nat -> 'cV[ℂ]_m) : nat -> 'cV[ℂ]_n :=
     fix f k :=
       match k with
@@ -145,7 +150,13 @@ Section KalmanFilter.
       | k'.+1 => F *m f k' + G *m u k' + G *m w k'.+1
       end.
 
-  (* Обновление оценочного вектора состояния. *)
+  (*
+    Траектория апостериорных оценок состояния.
+
+    На каждом шаге полушаг предсказания по динамике системы сменяется полушагом
+    обновления по наблюдению $y_(k+1)$. Начальная оценка $hat(x)_(0|0) = 0$
+    согласована с предположением о нулевом среднем начального состояния.
+  *)
   Definition x_hat (u : nat -> 'cV[ℂ]_m) (y : nat -> 'cV[ℂ]_p)
       (P_seq : nat -> 'M[ℂ]_n) : nat -> 'cV[ℂ]_n :=
     fix f k :=
@@ -157,7 +168,12 @@ Section KalmanFilter.
         update_state P_pred x_pred (y k'.+1)
       end.
 
-  (* Ошибка оценивания. *)
+  (*
+    Ошибка оценивания.
+
+    $tilde(x)_(k|k) = x_k - hat(x)_(k|k)$, разность истинного состояния и
+    апостериорной оценки.
+  *)
   Definition err u y Ps k := x_true u k - x_hat u y Ps k.
 
   (*
@@ -788,8 +804,7 @@ Section KalmanFilter.
     - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
   *)
   Definition kf_step (st : kf_state) (u : 'cV[ℂ]_m) (y : 'cV[ℂ]_p) :
-      kf_state :=
-    kf_update (kf_predict st u) y.
+    kf_state := kf_update (kf_predict st u) y.
 
   (*
     Инвариант неотрицательной определённости одного шага.

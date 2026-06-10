@@ -4,6 +4,11 @@
 )
 #import "rocq-cite.typ": rocq-cite-list
 
+// great-theorems emits, inside every counted block, a metadata element labelled
+// `great-theorems:numberfunc` whose value is `loc => <displayed number>`. The
+// cross-reference handle resolves it eagerly to a fixed string, so the captured
+// number is the block's own (rendering the lazy `prefix` number elsewhere would
+// re-evaluate the counter at the reference site and be off by one).
 #let great-theorems-numberfunc = label("great-theorems:numberfunc")
 
 

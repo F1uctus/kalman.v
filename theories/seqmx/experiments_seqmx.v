@@ -17,6 +17,7 @@ Import Refinements.Op.
 Local Open Scope ring_scope.
 Local Open Scope sesquilinear_scope.
 
+(* Операции кольца (см. `riccati_seqmx.v`). *)
 #[local] Instance ring_zero (R : comUnitRingType) : zero_of R := 0%R.
 #[local] Instance ring_one  (R : comUnitRingType) : one_of R  := 1%R.
 #[local] Instance ring_opp  (R : comUnitRingType) : opp_of R  := -%R.
@@ -25,6 +26,7 @@ Local Open Scope sesquilinear_scope.
 #[local] Instance ring_eq   (R : comUnitRingType) : eq_of R   := eqtype.eq_op.
 #[local] Instance ring_inv  (R : comUnitRingType) : inv_of R  := GRing.inv.
 
+(* Исполнимые программы над CoqEAL. *)
 Section EffPrograms.
 
   Context (C : Type).
@@ -32,9 +34,11 @@ Section EffPrograms.
 
   Variable conj : C -> C.
 
+  (* Степень матрицы $A^k$ правым домножением ($A^0 = E$). *)
   Definition mpow_seqmx (n : nat) (sA : @seqmx C) (k : nat) : @seqmx C :=
     iter k (fun acc => @hmul_op _ _ _ n n n acc sA) (seqmx1 n).
 
+  (* Грамиан наблюдаемости: sum_{j<k} (F^j)^t* H^t* W H F^j. *)
   Fixpoint obsv_gram_seqmx (n p : nat) (sF sH sW : @seqmx C) (k : nat)
       : @seqmx C :=
     if k is k'.+1 then
@@ -49,6 +53,7 @@ Section EffPrograms.
           Fj)
     else seqmx0 n n.
 
+  (* Грамиан управляемости: sum_{j<k} F^j G Q G^t* (F^j)^t*. *)
   Fixpoint ctrl_gram_seqmx (n m : nat) (sF sG sQ : @seqmx C) (k : nat)
       : @seqmx C :=
     if k is k'.+1 then
@@ -62,6 +67,12 @@ Section EffPrograms.
           (ctr_seqmx conj n n Fj))
     else seqmx0 n n.
 
+  (*
+    Матрица замкнутого контура.
+
+    $A_(c l) = F - F K_f H$, где $K_f$ обозначает усиление Калмана на
+    предсказанной ковариации. Извлекается для эксперимента по устойчивости Шура.
+  *)
   Definition closed_loop_seqmx (m n p : nat) (sF sG sH sQ sRm : @seqmx C)
       (cinv : @seqmx C -> @seqmx C) (sP : @seqmx C) : @seqmx C :=
     let Kf := kalman_gain_seqmx conj n p sH sRm cinv
@@ -116,6 +127,7 @@ Section Refine.
     exact: (refines_ctr_seqmx conj rA).
   Qed.
 
+  (* Степень: `A^k` уточняется `mpow_seqmx`. *)
   Lemma rmpow (n : nat) (A : 'M[R]_n) (sA : @seqmx R)
       (rA : refines (RR n n) A sA) (k : nat) :
     refines (RR n n) (A ^+ k) (mpow_seqmx n sA k).
@@ -199,6 +211,7 @@ Section Refine.
 
 End Refine.
 
+(* Мост к спецификациям при conj := conjC. *)
 Section BridgeC.
 
   Variable ℂ : numClosedFieldType.
@@ -215,6 +228,11 @@ Section BridgeC.
     riccati_def.ctrl_gram conjC F G Q k = ctrl_gram F G Q k.
   Proof. by []. Qed.
 
+  (*
+    Замкнутый контур совпадает с предсказательной матрицей $F_p = F - F K_f H$
+    (`Kf` - усиление Калмана на предсказанной ковариации), исследуемой в
+    `dare.v`.
+  *)
   Lemma gclosed_loop_bridge (m n p : nat) (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m))
       (H : 'M[ℂ]_(p, n)) (Q : 'M[ℂ]_m) (R : 'M[ℂ]_p) (P : 'M[ℂ]_n) :
     riccati_def.closed_loop conjC F G H Q R P =

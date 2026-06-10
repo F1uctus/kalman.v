@@ -30,6 +30,9 @@
   "spectral",
 )
 
+// `@module.name` is a Rocq citation iff the part before the first dot is a
+// theory-file stem; everything else (figure/section/eq refs, `@bibkey`) is left
+// to Typst.
 #let rocq-target(t) = {
   let dot = t.position(".")
   if dot == none { false } else {
@@ -37,6 +40,15 @@
   }
 }
 
+// Books whose committed `.djvu` can be searched for printed page numbers.
+//  - path:        project-root-absolute path to the `.djvu`.
+//  - front-skip:  number of leading (front-matter) djvu pages to ignore when
+//                 searching, so a table-of-contents line never matches first.
+//  - folio:       djvu page index (1-based) -> printed folio. The offset is not
+//                 constant across a scan (unnumbered divider pages), so it is a
+//                 small piecewise map calibrated once per book.
+// Wonham is intentionally absent: it is not committed, so reading it would fail
+// the build. Add it here (and commit the `.djvu`) to enable its page numbers.
 #let book-sources = (
   kailath2000: (
     path: "/references/Kailath T., Sayed A., Hassibi B. - Linear Estimation.djvu",
@@ -51,6 +63,9 @@
   encoding: none,
 ))
 
+// Resolve the printed folio for one parsed source, or `none`. Needs both a
+// search anchor (e.g. `Lemma 9.3.2`) and the quoted theorem name; searches only
+// the book body (front matter skipped); maps the djvu index to a printed folio.
 #let resolve-page(source) = {
   if source.anchor == none or source.quoted == none { return none }
   if not book-sources.keys().contains(source.key) { return none }
@@ -64,10 +79,16 @@
   if hit == none { none } else { (book.folio)(book.front-skip + hit) }
 }
 
+// A bib citation in a `.v` comment uses Typst cite syntax `@key[locator "quoted"]`.
+// Captures the key and the supplement (which may contain one nested `[...]`, e.g.
+// a quoted title that itself has brackets).
 #let citation-ref-re = regex(
   "@([a-zA-Z0-9_]+)\\[((?:[^\\[\\]]|\\[[^\\[\\]]*\\])*)\\]",
 )
 #let number-re = regex("[A-Z]?\\.?\\d+(\\.\\d+)*")
+// A `Kind Number` phrase (e.g. `Lemma 9.3.2`, `Theorem E.5.1`). Used as the
+// primary search needle: it is specific enough to skip table-of-contents lines
+// that carry the bare section number only.
 #let kind-number-re = regex(
   "(Theorem|Lemma|Corollary|Proposition|Fact|Equation|Eq\\.?|Definition|Def\\.?)"
     + "\\s+[A-Z]?\\.?\\d+(\\.\\d+)*",
@@ -75,6 +96,7 @@
 
 #let parse-source(key, supplement) = {
   let locator = supplement.trim()
+  // Quoted theorem name (page-search anchor; not displayed).
   let q-open = locator.position("\"")
   let quoted = if q-open != none {
     let rest = locator.slice(q-open + 1, none)
@@ -83,6 +105,8 @@
   } else {
     none
   }
+  // Search anchor: the `Kind Number` phrase if present, else the most specific
+  // bare number, taken from the locator head before the quote.
   let head = if q-open != none { locator.slice(0, q-open) } else { locator }
   let km = head.match(kind-number-re)
   let anchor = if km != none {
@@ -100,6 +124,9 @@
     .map(m => parse-source(m.captures.at(0), m.captures.at(1)))
 }
 
+// Locate `module.name`'s declaration, read the comment above it, parse its
+// citation(s). Lenient: `sources` may be empty (panics only if the declaration
+// itself is missing).
 #let rocq-cite-data-opt(module, name) = {
   let lines = rocq-src(module + ".v").split("\n")
   let decl-re = regex(
@@ -110,6 +137,7 @@
     panic("rocq-cite: no declaration `" + name + "` in " + module + ".v")
   }
   let def-idx = hit.at(0)
+  // Skip blank lines between the declaration and the comment above it.
   let c-end = def-idx
   while c-end > 0 and lines.at(c-end - 1).trim() == "" { c-end -= 1 }
   let start = rocq-comment-start-before(lines, c-end)
@@ -119,6 +147,7 @@
   (name: name, sources: parse-citations(comment))
 }
 
+// Strict variant: additionally panics when no citation is parseable.
 #let rocq-cite-data(module, name) = {
   let data = rocq-cite-data-opt(module, name)
   if data.sources.len() == 0 {
@@ -132,6 +161,8 @@
   data
 }
 
+// Displayed locator: the quoted theorem name (a search anchor) is dropped, the
+// page is appended when found.
 #let supplement-text(source, page) = {
   let loc = source.locator.replace(regex("\\s*\"[^\"]*\""), "").trim()
   if page != none {
@@ -203,14 +234,17 @@
   } else {
     rocq-cite-data(p.module, p.name)
       .sources
-    .map(source => cite(
-      label(source.key),
-      supplement: supplement-text(source, resolve-page(source)),
-    ))
-    .join("; ")
+      .map(source => cite(
+        label(source.key),
+        supplement: supplement-text(source, resolve-page(source)),
+      ))
+      .join("; ")
   }
 }
 
+// Render every citation in `module.name`'s doc comment as a `; `-joined run of
+// live bibliography links (the same shape as `rocq-cite-render`), for inline use
+// at the end of a prose description. Empty when the comment has no citation.
 #let rocq-cite-list(module, name) = {
   let data = rocq-cite-data-opt(module, name)
   if data.sources.len() == 0 { return none }
@@ -223,6 +257,8 @@
     .join("; ")
 }
 
+// `show ref` hook for the template: intercept `@module.name`, pass through the
+// rest.
 #let rocq-cite-ref(it) = {
   let t = str(it.target)
   if rocq-target(t) { rocq-cite-render(t) } else { it }

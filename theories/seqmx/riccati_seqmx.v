@@ -5,7 +5,7 @@ From mathcomp Require Import order rat.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From CoqEAL Require Import hrel param refinements seqmx binint binrat.
 From Bignums Require Import BigQ.
-From Kalman Require Import mxnotation riccati_def.
+From Kalman Require Import mxnotation riccati_def faddeev.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -16,6 +16,11 @@ Import Refinements.Op.
 Local Open Scope ring_scope.
 Local Open Scope sesquilinear_scope.
 
+(*
+  Операции коммутативного кольца с обратимыми как инстансы над CoqEAL. Это
+  позволяет seqmx-программам исполняться на конкретном кольце (`rat`, `ℂ`). Для
+  `bigQ` (не `comUnitRingType`) используются экземпляры из `CoqEAL.binrat`.
+*)
 #[local] Instance ring_zero (R : comUnitRingType) : zero_of R := 0%R.
 #[local] Instance ring_one  (R : comUnitRingType) : one_of R  := 1%R.
 #[local] Instance ring_opp  (R : comUnitRingType) : opp_of R  := -%R.
@@ -40,6 +45,7 @@ Variables (m n p : nat).
 Variables (sF sG sH sQ sRm : @seqmx C).
 Variable cinv : @seqmx C -> @seqmx C.
 
+  (* Эрмитово сопряжение: транспонируем и применяем `conj` поэлементно. *)
 Definition ctr_seqmx (a b : nat) (A : @seqmx C) : @seqmx C :=
   map_seqmx conj (@trseqmx C a b A).
 
@@ -63,17 +69,29 @@ Definition update_cov_seqmx (sP : @seqmx C) : @seqmx C :=
   @hmul_op _ _ _ n n n
     (sub_seqmx (seqmx1 n) (@hmul_op _ _ _ n p n K sH)) sP.
 
+  (*
+    Альтернативный шаг обновления с заданным усилением `sKp` в форме Джозефа:
+    $(E_n - K_p H) P (E_n - K_p H)† + K_p R K_p†$. Исполнимый аналог
+    `alt_update_cov`.
+  *)
 Definition alt_update_cov_seqmx (sKp sP : @seqmx C) : @seqmx C :=
   let ImKH := sub_seqmx (seqmx1 n) (@hmul_op _ _ _ n p n sKp sH) in
   add_seqmx
     (@hmul_op _ _ _ n n n (@hmul_op _ _ _ n n n ImKH sP) (ctr_seqmx n n ImKH))
     (@hmul_op _ _ _ n p n (@hmul_op _ _ _ n p p sKp sRm) (ctr_seqmx n p sKp)).
 
+  (*
+    Исполнимый шаг Риккати.
+
+    Композиция исполнимых полушагов предсказания и обновления; дословный аналог
+    оператора `riccati_step` из `riccati_def.v`.
+  *)
 Definition riccati_step_seqmx (sP : @seqmx C) : @seqmx C :=
   update_cov_seqmx (predict_cov_seqmx sP).
 
 End EffPrograms.
 
+(* Корректность: подстановка C := R и уточнения. *)
 Section RefineRiccati.
 
 Variable R : comUnitRingType.
@@ -133,6 +151,7 @@ Hypothesis rH : refines (Rseqmx (nat_Rxx p) (nat_Rxx n)) H sH.
 Hypothesis rQ : refines (Rseqmx (nat_Rxx m) (nat_Rxx m)) Q sQ.
 Hypothesis rRm : refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) Rm sRm.
 
+    (* Обращение p*p-матрицы (см. заголовок файла). *)
 Variable cinv : @seqmx R -> @seqmx R.
 
 Hypothesis cinv_correct : forall (S : 'M[R]_p) (sS : @seqmx R),
@@ -212,6 +231,13 @@ Proof.
   exact: (update_cov_seqmx_correct (predict_cov_seqmx_correct rP)).
 Qed.
 
+    (*
+      Корректность итерации исполнимого шага.
+
+      Программа `iter k riccati_step_seqmx sP0` уточняет абстрактную итерацию
+      `iter k riccati_step P0`, что позволяет вычислять конечные приближения к
+      установившейся ковариации $P_(s s)$ без обращения к пределу `mx_mono_lim`.
+    *)
 Lemma riccati_iter_seqmx_correct (k : nat) (P0 : 'M[R]_n) (sP0 : @seqmx R)
     (rP0 : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P0 sP0) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
@@ -226,108 +252,151 @@ End System.
 
 End RefineRiccati.
 
-Section ScalarInverse.
-
-  Variable K : fieldType.
-
-  Lemma invmx_1x1 (S : 'M[K]_1) : invmx S = map_mx GRing.inv S.
-  Proof.
-    rewrite {1}[S]mx11_scalar invmx_scalar.
-    by rewrite [X in _ = X]mx11_scalar mxE.
-  Qed.
-
-  End ScalarInverse.
-
-  Local Notation i1of2 := (lift ord0 ord0).
-
-  Lemma ord2_eq (i : 'I_2) : {i = ord0} + {i = i1of2}.
-  Proof.
-    case: i => [[|[|m]] pf]; [left|right|]; try by apply: val_inj.
-    by [].
-  Qed.
-
-  Lemma det22 (R : comPzRingType) (S : 'M[R]_2) :
-    \det S = S ord0 ord0 * S i1of2 i1of2 - S ord0 i1of2 * S i1of2 ord0.
-  Proof.
-    rewrite (expand_det_row S ord0) big_ord_recl big_ord1.
-    rewrite /cofactor !det_mx11 !mxE /=.
-    rewrite expr0 mul1r expr1 mulN1r mulrN.
-    have l2 : lift i1of2 (ord0 : 'I_1) = ord0 :> 'I_2 by apply: val_inj.
-    by rewrite l2.
-  Qed.
-
-  Lemma adj22 (R : comPzRingType) (S : 'M[R]_2) :
-    \adj S = (S ord0 ord0 + S i1of2 i1of2)%:M - S.
-  Proof.
-    have lb : lift i1of2 (ord0 : 'I_1) = ord0 :> 'I_2 by apply: val_inj.
-    have b1 : bump 0 0 = 1 by [].
-    apply/matrixP => i j; rewrite !mxE /cofactor.
-    case: (ord2_eq i) => ->; case: (ord2_eq j) => ->;
-      rewrite !det_mx11 !mxE /=.
-    - by rewrite expr0 mul1r mulr1n (addrC (S ord0 ord0)) addrK.
-    - by rewrite b1 lb expr1 mulN1r mulr0n sub0r.
-    - by rewrite b1 lb expr1 mulN1r mulr0n sub0r.
-    - by rewrite b1 lb exprD !expr1 mulrNN !mul1r mulr1n addrK.
-  Qed.
-
-  Section EffInverse2.
+  (*
+    Обращение произвольной p*p-матрицы методом Фаддеева-Леверье. Снимает
+    обязательство cinv для любого числа выходов p через рекурренту по следу:
+    $M_1 = E, c_(n-j) = - tr(A M_j) / j, M_(j+1) = A M_j + c_(n-j) E$,
+    $A^(-1) = - c_0^(-1) M_n$. `S \in unitmx` берётся из спецификации:
+    kalman.innov_cov_pd даёт innov_cov ... \in unitmx. При $p = 1$ обращение
+    верно безусловно (cinv_fl_correct1, так как в поле $0^(-1) = 0$).
+  *)
+  Section EffInverseFL.
   Context (C : Type).
-  Context `{!zero_of C, !opp_of C, !add_of C, !mul_of C, !inv_of C}.
+  Context `{!zero_of C, !one_of C, !opp_of C, !add_of C, !mul_of C, !inv_of C}.
 
-  Definition cinv2 (sS : @seqmx C) : @seqmx C :=
-    let a := nth 0%C (nth [::] sS 0) 0 in
-    let b := nth 0%C (nth [::] sS 0) 1 in
-    let c := nth 0%C (nth [::] sS 1) 0 in
-    let d := nth 0%C (nth [::] sS 1) 1 in
-    let di := (a * d + - (b * c))%C^-1%C in
-    [:: [:: (d * di)%C ; ((- b) * di)%C ];
-        [:: ((- c) * di)%C ; (a * di)%C ] ].
+  (* j-кратная сумма единиц как элемент C (образ j%:R). *)
+  Definition cnat (j : nat) : C := iter j (fun x => (1 + x)%C) 0%C.
 
-End EffInverse2.
+  (* Матрица $M_(j+1)$ рекуррентности Фаддеева-Леверье для n*n-матрицы sA. *)
+  Fixpoint fl_M (n : nat) (sA : @seqmx C) (j : nat) : @seqmx C :=
+    if j is j'.+1 then
+      let AM := @hmul_op _ _ _ n n n sA (fl_M n sA j') in
+      add_seqmx AM (scalar_seqmx n (- trace_seqmx (m:=n) AM * (cnat j'.+1)^-1)%C)
+    else scalar_seqmx n 1%C.
 
-Section Inverse2Correct.
+  (*
+    Исполнимое обращение методом Фаддеева-Леверье.
 
-  Variable F : fieldType.
+    Последний член рекуррентности `fl_M` нормируется свободным коэффициентом
+    характеристического многочлена; программа дословно повторяет `fl_inv` из
+    `faddeev.v` на слое операций CoqEAL.
+  *)
+  Definition cinv_fl (n : nat) (sS : @seqmx C) : @seqmx C :=
+    let M := fl_M n sS n.-1 in
+    let c := (- trace_seqmx (m:=n) (@hmul_op _ _ _ n n n sS M) * (cnat n)^-1)%C in
+    @hmul_op _ _ _ n n n (scalar_seqmx n (- c^-1)%C) M.
 
-  Lemma seqmxE m n (A : 'M[F]_(m, n)) (sA : @seqmx F) (i : 'I_m) (j : 'I_n) :
-    refines (Rseqmx (nat_Rxx m) (nat_Rxx n)) A sA ->
-    A i j = nth 0%C (nth [::] sA i) j.
-  Proof. by rewrite refinesE => -[A' M _ _ hel]; apply: hel. Qed.
+  End EffInverseFL.
 
-  Lemma cinv2_correct (S : 'M[F]_2) (sS : @seqmx F) :
-    S \in unitmx ->
-    refines (Rseqmx (nat_Rxx 2) (nat_Rxx 2)) S sS ->
-    refines (Rseqmx (nat_Rxx 2) (nat_Rxx 2)) (invmx S) (cinv2 sS).
+  Section InverseFLcorrect.
+  Variable F : numFieldType.
+  Local Notation RR a := (Rseqmx (nat_Rxx a) (nat_Rxx a)).
+
+  Existing Instance Rseqmx_mul.
+  Existing Instance Rseqmx_add.
+  Existing Instance Rseqmx_scalar_seqmx.
+  Existing Instance Rseqmx_trace_seqmx.
+  Existing Instance Rseqmx_1.
+
+  Lemma refines_mulmx_fl a b c (X : 'M[F]_(a, b)) (Y : 'M[F]_(b, c))
+      (sX sY : @seqmx F) :
+    refines (Rseqmx (nat_Rxx a) (nat_Rxx b)) X sX ->
+    refines (Rseqmx (nat_Rxx b) (nat_Rxx c)) Y sY ->
+    refines (Rseqmx (nat_Rxx a) (nat_Rxx c)) (X *m Y) (@hmul_op _ _ _ a b c sX sY).
+  Proof. move=> rX rY; exact: refines_apply. Qed.
+
+  Lemma refines_scalarmx a (x : F) : refines (RR a) (x%:M) (scalar_seqmx a x).
   Proof.
-    move=> Sunit rS.
-    have HdetE : \det S = S ord0 ord0 * S i1of2 i1of2
-                          + - (S ord0 i1of2 * S i1of2 ord0).
-      by rewrite det22.
-    have HinvE : invmx S = (\det S)^-1 *: \adj S by rewrite /invmx ifT.
-    have e00 : nth 0%C (nth [::] sS 0) 0 = S ord0 ord0
-      by rewrite (seqmxE ord0 ord0 rS).
-    have e01 : nth 0%C (nth [::] sS 0) 1 = S ord0 i1of2
-      by rewrite (seqmxE ord0 i1of2 rS).
-    have e10 : nth 0%C (nth [::] sS 1) 0 = S i1of2 ord0
-      by rewrite (seqmxE i1of2 ord0 rS).
-    have e11 : nth 0%C (nth [::] sS 1) 1 = S i1of2 i1of2
-      by rewrite (seqmxE i1of2 i1of2 rS).
-    rewrite refinesE; constructor => //.
-    - by case=> [|[|i]].
-    move=> i j.
-    rewrite HinvE.
-    case: (ord2_eq i) => ->; case: (ord2_eq j) => ->;
-      rewrite /cinv2 /mul_op /add_op /opp_op /inv_op
-              /ring_mul /ring_add /ring_opp /ring_inv /=
-              e00 e01 e10 e11 adj22 !mxE HdetE /=.
-    - by rewrite mulr1n (addrC (S ord0 ord0) (S i1of2 i1of2)) addrK mulrC.
-    - by rewrite mulr0n sub0r mulrC.
-    - by rewrite mulr0n sub0r mulrC.
-    - by rewrite mulr1n addrK mulrC.
+  exact: (refines_apply (Rseqmx_scalar_seqmx _ (nat_Rxx _)) (trivial_refines erefl)).
   Qed.
 
-End Inverse2Correct.
+  Lemma cnat_natr (j : nat) : (cnat j : F) = j%:R.
+  Proof.
+  elim: j => [//|j IH]; rewrite /cnat /= -/(cnat j).
+  by rewrite IH mulrSr addrC.
+  Qed.
 
+  Lemma fl_M_refines (n' : nat) (A : 'M[F]_n'.+1) (sA : @seqmx F) j :
+    refines (RR n'.+1) A sA ->
+    refines (RR n'.+1) (flM A j) (fl_M n'.+1 sA j).
+  Proof.
+  move=> rA; elim: j => [|j IH].
+    rewrite /=.
+    exact: (refines_apply (Rseqmx_scalar_seqmx _ (nat_Rxx _))
+                          (trivial_refines erefl)).
+  have eflM : flM A j.+1
+            = A *m flM A j + (- \tr (A *m flM A j) / (j.+1)%:R) *: 1%:M by [].
+  have eM : fl_M n'.+1 sA j.+1
+          = add_seqmx (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sA (fl_M n'.+1 sA j))
+              (scalar_seqmx n'.+1
+                (- trace_seqmx (m:=n'.+1) (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sA
+                     (fl_M n'.+1 sA j)) * (cnat j.+1)^-1)) by [].
+  rewrite eflM eM.
+  have rAM : refines (RR n'.+1) (A *m flM A j)
+                     (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sA (fl_M n'.+1 sA j)).
+    exact: refines_apply.
+  have htr : \tr (A *m flM A j)
+           = trace_seqmx (m:=n'.+1)
+               (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sA (fl_M n'.+1 sA j)).
+    by apply: refines_eq; exact: refines_apply.
+  have hcoef : (- \tr (A *m flM A j) / (j.+1)%:R
+              = - trace_seqmx (m:=n'.+1)
+                    (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sA (fl_M n'.+1 sA j))
+                  * (cnat j.+1)^-1 :> F).
+    by rewrite htr cnat_natr.
+  have -> : - \tr (A *m flM A j) / (j.+1)%:R *: 1%:M
+          = (- \tr (A *m flM A j) / (j.+1)%:R)%:M :> 'M[F]_n'.+1.
+    by rewrite scale_scalar_mx mulr1.
+  rewrite hcoef.
+  apply: refines_apply.
+  apply: refines_apply.
+  by rewrite refinesE.
+  Qed.
+
+  (* Уточнение исполнимого обращения абстрактным fl_inv (без условия). *)
+  Lemma cinv_fl_refines (n' : nat) (S : 'M[F]_n'.+1) (sS : @seqmx F) :
+    refines (RR n'.+1) S sS ->
+    refines (RR n'.+1) (fl_inv S) (cinv_fl n'.+1 sS).
+  Proof.
+  move=> rS; rewrite /fl_inv /cinv_fl.
+  have predE : (n'.+1).-1 = n' by [].
+  rewrite predE.
+  have rM : refines (RR n'.+1) (flM S n') (fl_M n'.+1 sS n').
+    exact: fl_M_refines.
+  have rAM : refines (RR n'.+1) (S *m flM S n')
+                     (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sS (fl_M n'.+1 sS n')).
+    exact: refines_apply.
+  have htr : \tr (S *m flM S n')
+           = trace_seqmx (m:=n'.+1)
+               (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sS (fl_M n'.+1 sS n')).
+    by apply: refines_eq; exact: refines_apply.
+  have hflc : flc S n'
+            = (- trace_seqmx (m:=n'.+1)
+                  (@hmul_op _ _ _ n'.+1 n'.+1 n'.+1 sS (fl_M n'.+1 sS n'))
+                * (cnat n'.+1)^-1 :> F).
+    by rewrite /flc htr cnat_natr.
+  rewrite hflc -mul_scalar_mx.
+  exact: (refines_mulmx_fl (refines_scalarmx _ _) rM).
+  Qed.
+
+  (* cinv_fl уточняет invmx для обратимой $p*p$-матрицы. *)
+  Lemma cinv_fl_correct (n' : nat) (S : 'M[F]_n'.+1) (sS : @seqmx F) :
+    S \in unitmx ->
+    refines (RR n'.+1) S sS ->
+    refines (RR n'.+1) (invmx S) (cinv_fl n'.+1 sS).
+  Proof.
+  by move=> Sunit rS; rewrite -(fl_inv_correct Sunit); exact: cinv_fl_refines.
+  Qed.
+
+  (* При $p = 1$ обращение верно безусловно (снимает cinv при $p = 1$). *)
+  Lemma cinv_fl_correct1 (S : 'M[F]_1) (sS : @seqmx F) :
+    refines (RR 1) S sS ->
+    refines (RR 1) (invmx S) (cinv_fl 1 sS).
+  Proof. by move=> rS; rewrite -(fl_inv1 S); exact: (cinv_fl_refines (n':=0)). Qed.
+
+  End InverseFLcorrect.
+
+(* Мост к kalman.v: при conj := conjC возвращаемся к спецификации над $ℂ$. *)
 Section BridgeC.
   Variable ℂ : numClosedFieldType.
 
@@ -349,6 +418,10 @@ Section BridgeC.
     refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) S sS ->
     refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) (invmx S) (cinv sS).
 
+  (*
+    Исполнимый шаг seqmx уточняет `riccati_step conjC`, то есть оператор
+    `kalman.riccati_step` (по определению).
+  *)
   Corollary kalman_riccati_step_seqmx_correct (P : 'M[ℂ]_n) (sP : @seqmx ℂ)
       (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
     refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
@@ -360,24 +433,12 @@ Section BridgeC.
 
 End BridgeC.
 
+(* Конкретное исполнение над rat (conj := idfun, p = 1). *)
 Section ConcreteRat.
 
   Existing Instance Rseqmx_map_seqmx.
 
-  Definition cinv1 (sS : @seqmx rat) : @seqmx rat := map_seqmx GRing.inv sS.
-
-  #[local] Instance refines_invQ :
-    refines (@eq (rat -> rat)) GRing.inv GRing.inv := trivial_refines erefl.
-
-  Lemma cinv1_correct (S : 'M[rat]_1) (sS : @seqmx rat)
-      (rS : refines (Rseqmx (nat_Rxx 1) (nat_Rxx 1)) S sS) :
-    refines (Rseqmx (nat_Rxx 1) (nat_Rxx 1)) (invmx S) (cinv1 sS).
-  Proof.
-    rewrite invmx_1x1 /cinv1.
-    exact: (refines_apply
-              (refines_apply (Rseqmx_map_seqmx _ _) refines_invQ) rS).
-  Qed.
-
+  (* Уточнение скалярной матрицы её singleton-литералом seqmx. *)
   Lemma rseqmx_11 (a : rat) :
     refines (Rseqmx (nat_Rxx 1) (nat_Rxx 1)) (a%:M : 'M[rat]_1) [:: [:: a]].
   Proof.
@@ -387,6 +448,7 @@ Section ConcreteRat.
     - by move=> i j; rewrite !ord1 mxE eqxx mulr1n.
   Qed.
 
+  (* Скалярная система: $F = 2, G = H = Q = R = P_0 = 1$. *)
   Definition exF : 'M[rat]_1 := (2%:R)%:M.
   Definition exG : 'M[rat]_1 := 1%:M.
   Definition exH : 'M[rat]_1 := 1%:M.
@@ -402,8 +464,9 @@ Section ConcreteRat.
   Definition sxP0 : @seqmx rat := [:: [:: 1 : rat]].
 
   Definition ex_step : @seqmx rat -> @seqmx rat :=
-    riccati_step_seqmx (idfun : rat -> rat) 1 1 1 sxF sxG sxH sxQ sxR cinv1.
+    riccati_step_seqmx (idfun : rat -> rat) 1 1 1 sxF sxG sxH sxQ sxR (cinv_fl 1).
 
+  (* Итерация исполнимого шага уточняет абстрактную итерацию над rat. *)
   Lemma ex_iter_correct (k : nat) :
     refines (Rseqmx (nat_Rxx 1) (nat_Rxx 1))
       (iter k (riccati_step idfun exF exG exH exQ exR) exP0)
@@ -412,31 +475,37 @@ Section ConcreteRat.
     apply: (@riccati_iter_seqmx_correct rat idfun 1 1 1
               exF exG exH exQ exR sxF sxG sxH sxQ sxR
               (rseqmx_11 _) (rseqmx_11 _) (rseqmx_11 _) (rseqmx_11 _) (rseqmx_11 _)
-              cinv1 cinv1_correct k exP0 sxP0).
+              (cinv_fl 1) (@cinv_fl_correct1 rat) k exP0 sxP0).
     exact: rseqmx_11.
   Qed.
 
   End ConcreteRat.
 
+  (*
+    Два шага: скалярное ДАУР из $P_0 = 1$ даёт $5/6$, затем $13/16$. Значение
+    проверено через `vm_compute` и связано со спецификацией через
+    `ex_iter_correct` (отношение `Rseqmx` функционально).
+  *)
   Definition ex_two : @seqmx rat := iter 2 ex_step sxP0.
 
   Lemma ex_two_val :
     (ex_two == [:: [:: (13%:R / 16%:R : rat)]] :> @seqmx rat) = true.
   Proof. by vm_compute. Qed.
 
-Section ConcreteBigQ.
+(*
+  Мост параметричности rat -> bigQ через RseqmxC r_ratBigQ
 
-  Definition bxF : @seqmx bigQ := [:: [:: 2%bigQ]].
-  Definition bx1 : @seqmx bigQ := [:: [:: 1%bigQ]].
-  Definition bcinv (sS : @seqmx bigQ) : @seqmx bigQ := map_seqmx inv_op sS.
+  Уточнение из `RefineRiccati` доказано на одном кольце (`Rseqmx`, поле = rat).
+  Здесь оно поднимается до гетерогенного отношения `RseqmxC r_ratBigQ`,
+  связывающего абстрактную матрицу `'M[rat]` напрямую с seqmx-программой над
+  `bigQ`. Композиция (`RseqmxC rAC = Rseqmx \o list_R (list_R rAC)`) выполняется
+  через те же экземпляры `RseqmxC_*` библиотеки CoqEAL и поэлементные уточнения
+  `binrat` (`refine_ratBigQ_*`). Зеркало `RefineRiccati`, но
+  `Rseqmx -> RseqmxC`.
 
-  Definition bx_step : @seqmx bigQ -> @seqmx bigQ :=
-    riccati_step_seqmx (idfun : bigQ -> bigQ) 1 1 1 bxF bx1 bx1 bx1 bx1 bcinv.
-
-  Definition bx_two : @seqmx bigQ := iter 2 bx_step bx1.
-
-End ConcreteBigQ.
-
+  Итоговая теорема `riccati_iter_seqmxC` устанавливает, что итерация шага
+  Риккати над `bigQ` уточняет абстрактную `rat`-итерацию спецификации.
+*)
 Section BridgeBigQ.
 
   Notation RC a b := (RseqmxC r_ratBigQ (nat_Rxx a) (nat_Rxx b)).
@@ -558,59 +627,3 @@ Section System.
   End System.
 
 End BridgeBigQ.
-
-Section ConcreteBigQRefine.
-
-  Notation RC11 := (RseqmxC r_ratBigQ (nat_Rxx 1) (nat_Rxx 1)).
-
-  Lemma rb2 : refines r_ratBigQ (2%:R : rat) 2%bigQ.
-  Proof.
-    have e : cast_op 2%N = 2%bigQ by vm_compute.
-    rewrite -e (_ : (2%:R : rat) = 2%:~R); last by rewrite pmulrn.
-    exact: (refines_apply refine_ratBigQ_of_nat (trivial_refines (nat_Rxx 2))).
-  Qed.
-
-  Lemma rb1 : refines r_ratBigQ (1 : rat) 1%bigQ.
-  Proof.
-    exact: refine_ratBigQ_one.
-  Qed.
-
-  Lemma rseqmxC_11 (a : rat) (b : bigQ) (rab : refines r_ratBigQ a b) :
-    refines RC11 (a%:M : 'M[rat]_1) [:: [:: b]].
-  Proof.
-    apply: (refines_trans (b := [:: [:: a]]) _ (rseqmx_11 a)).
-    rewrite refinesE.
-    apply: cons_R; last exact: nil_R.
-    apply: cons_R; last exact: nil_R.
-    exact: refinesP rab.
-  Qed.
-
-  Lemma refines_idfunQ : refines (r_ratBigQ ==> r_ratBigQ) idfun idfun.
-  Proof.
-    by rewrite refinesE => x y h; apply: h.
-  Qed.
-
-  Lemma bcinv_correctC (S : 'M[rat]_1) (sS : @seqmx bigQ) :
-    refines RC11 S sS -> refines RC11 (invmx S) (bcinv sS).
-  Proof.
-    move=> rS; rewrite invmx_1x1 /bcinv.
-    exact: (refines_apply
-              (refines_apply (refine_map_seqmx r_ratBigQ r_ratBigQ 1 1)
-                            refine_ratBigQ_inv) rS).
-  Qed.
-
-  Lemma bx_iter_correct (k : nat) :
-    refines RC11
-      (iter k (riccati_step idfun exF exG exH exQ exR) exP0)
-      (iter k bx_step bx1).
-  Proof.
-    apply: (@riccati_iter_seqmxC idfun idfun refines_idfunQ 1 1 1
-              exF exG exH exQ exR bxF bx1 bx1 bx1 bx1
-              (rseqmxC_11 rb2) (rseqmxC_11 rb1) (rseqmxC_11 rb1)
-              (rseqmxC_11 rb1) (rseqmxC_11 rb1)
-              bcinv bcinv_correctC k exP0 bx1).
-    exact: (rseqmxC_11 rb1).
-  Qed.
-
-
-End ConcreteBigQRefine.

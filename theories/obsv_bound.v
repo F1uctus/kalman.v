@@ -286,7 +286,7 @@ Section ObsvBound.
     $"tr"("ctrl_gram" k) <= "tr"(G Q G†) / (1 - "frob_sq" F)$ равномерно по $k$.
     Доказывается индукцией: из тождества сдвига
     $"ctrl_gram" (k+1) = G Q G† + F ("ctrl_gram" k) F†$ и линейности следа
-    получаем рекуррентность
+    получаем рекурренту
     $t_(k+1) = "tr" T + "tr"(F ("ctrl_gram" k) F†) <= "tr" T + "frob_sq" F dot t_k$
     с инвариантом (неподвижной точкой) $B = "tr" T / (1 - "frob_sq" F)$, т.к.
     $"tr" T + "frob_sq" F dot B = B$.

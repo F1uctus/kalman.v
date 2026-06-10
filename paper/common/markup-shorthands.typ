@@ -10,3 +10,40 @@
 #let frob = "frob"
 #let sq = "2"
 #let Herm = "Herm"
+#let hat(it) = math.accent(it, math.hat, size: 1.1em)
+#let est(x) = $hat(bold(#x))$
+#let tilde(it) = math.accent(it, math.tilde, size: 1.1em)
+#let err(x) = $tilde(limits(bold(#x)))$
+
+#let replace-comma-in-script(body) = {
+  let f(c) = {
+    if c.has("text") and c.text == "," {
+      $times$
+    } else if c.has("children") {
+      c.children.map(f).join()
+    } else if c.has("body") {
+      math.lr(f(c.body))
+    } else {
+      c
+    }
+  }
+  if body.has("children") {
+    body.children.map(f).join()
+  } else {
+    f(body)
+  }
+}
+
+#let show-markup-shorthands(it) = {
+  show math.attach: attach => {
+    if attach.has("label") and attach.label == <comma-dim-done> {
+      return attach
+    }
+    let (base, ..atts) = attach.fields()
+    if atts.t != none {
+      atts.t = replace-comma-in-script(atts.t)
+    }
+    [#math.attach(base, ..atts)<comma-dim-done>]
+  }
+  it
+}

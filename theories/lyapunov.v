@@ -69,6 +69,12 @@ Section LyapunovPartialSum.
 
   Hypothesis Q_psd : psd Q.
 
+  (*
+    Частичная сумма Ляпунова.
+
+    $P_N = sum_(k < N) A^k Q (A†)^k$: накопленный за $N$ шагов вклад шума,
+    переносимого динамикой $A$.
+  *)
   Definition lyap_partial (N : nat) : 'M[ℂ]_n :=
     \sum_(k < N) A^+k *m Q *m (A^t*)^+k.
 
@@ -108,16 +114,12 @@ Section LyapunovPartialSum.
   Qed.
 
   (*
-    Накопленная за N шагов матрица неопределенности (сумма шумов) неотрицательно
-    определена.
+    Неотрицательная определённость частичной суммы.
 
-    Геометрически: Каждое слагаемое, согласно `lyap_partial_term_psd` -
-    неотрицательно определенная матрица. Функция lyap_partial N это сумма таких
-    матриц. В геометрии квадратичных форм сложение неотрицательно определённых
-    матриц соответствует сумме Минковского для их эллипсоидов
-    (или, точнее, сложению 'стоимостей' неопределенности в каждом направлении).
-    Лемма доказывает, что результат такого сложения `psd (lyap_partial N)`
-    всегда остается выпуклым эллипсоидом, задаваемым $x† P_N x = 1$.
+    Каждое слагаемое неотрицательно определено по лемме `lyap_partial_term_psd`,
+    а сложение сохраняет неотрицательную определённость. В геометрии
+    квадратичных форм сложению таких матриц отвечает расширение эллипсоида
+    неопределённости по каждому направлению.
   *)
   Lemma lyap_partial_psd N :
     psd (lyap_partial N).
@@ -342,6 +344,7 @@ Section LyapunovFixpointUnique.
 
   (*
     Единственность эрмитовой неподвижной точки.
+
     - @kailath2000[App. D, Lemma D.1.1 "Uniqueness of Solutions"].
   *)
   Theorem lyap_fix_unique (X1 X2 : 'M[ℂ]_n) :
@@ -407,8 +410,12 @@ Section LyapunovSolutionExistence.
   Local Notation P := (lyap_partial A Q).
 
   (*
-    Предел частичных сумм
-    (ряд $sum_k A^k Q (A†)^k$ - решение уравнения Ляпунова).
+    Решение уравнения Ляпунова как предел частичных сумм.
+
+    Сумма ряда $sum_k A^k Q (A†)^k$, определённая через монотонный предел
+    `mx_mono_lim`; ниже доказано, что она удовлетворяет уравнению
+    $X = A X A† + Q$.
+
     - @kailath2000[App. D, Lemma D.1.2 "Properties of the Lyapunov Equation"].
   *)
   Definition lyap_sol : 'M[ℂ]_n :=
@@ -432,6 +439,14 @@ Section LyapunovSolutionExistence.
     apply: lyap_partial_le_bnd; [exact: Q_psd | exact: A_contract].
   Qed.
 
+  (*
+    Сходимость частичных сумм к решению.
+
+    Монотонная по порядку Лёвнера и равномерно ограниченная последовательность
+    частичных сумм сходится к `lyap_sol` в матричной топологии.
+
+    - @kailath2000[App. D, Lemma D.1.2 "Properties of the Lyapunov Equation"].
+  *)
   Theorem lyap_sol_cvgn :
     P @ \oo --> lyap_sol.
   Proof.
@@ -447,6 +462,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Неотрицательная определённость решения при неотрицательно определённом Q.
+
     - @kailath2000[App. D, Lemma D.1.2 "Properties of the Lyapunov Equation"].
   *)
   Theorem lyap_sol_psd :
@@ -499,6 +515,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Решение уравнения Ляпунова является его неподвижной точкой.
+
     - @kailath2000[App. D, Lemma D.1.2 "Properties of the Lyapunov Equation"].
   *)
   Theorem lyap_sol_fix :
@@ -519,6 +536,7 @@ Section LyapunovSolutionExistence.
 
   (*
     Единственность среди эрмитовых решений (частный случай lyap_fix_unique).
+
     - @kailath2000[App. D, Lemma D.1.1 "Uniqueness of Solutions"].
   *)
   Theorem lyap_sol_unique (X : 'M[ℂ]_n) :
@@ -544,7 +562,7 @@ Section InputToStateStability.
       ∀ x : R, ∃ ub : nat, `|x| < ub%:R.
     ```
     Здесь `R` - (частично!) упорядоченная нормированная область целостности. Как
-    подчеркивалось в работах, посвященных теореме Линдемана - Вейерштрасса,
+    подчеркивалось в работах, посвященных теореме Линдемана-Вейерштрасса,
     установление этой аксиомы на поле комплексных чисел открывает возможность
     определения конструктивных булевых предикатов. Здесь мы тоже её установим.
   *)

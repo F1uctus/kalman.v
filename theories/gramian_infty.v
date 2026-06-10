@@ -75,8 +75,10 @@ Section GramianInf.
   Qed.
 
   (*
-    Управляемый Грамиан в пределе - решение уравнения Ляпунова
-    $W_c = F W_c F† + G Q G†$.
+    Бесконечный грамиан управляемости.
+
+    Решение уравнения Ляпунова $W_c = F W_c F† + G Q G†$, построенное как предел
+    частичных сумм (`lyap_sol`).
 
     - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
   *)
@@ -90,6 +92,11 @@ Section GramianInf.
             GQGt_psd F_contract).
   Qed.
 
+  (*
+    Бесконечный грамиан удовлетворяет уравнению Ляпунова.
+
+    - @kailath2000[App. C, § C.3 "Controllability and Stabilizability"].
+  *)
   Theorem ctrl_gram_infty_fix :
     ctrl_gram_infty = F *m ctrl_gram_infty *m F^t* + G *m Q *m G^t*.
   Proof.
@@ -98,7 +105,12 @@ Section GramianInf.
             GQGt_psd F_contract).
   Qed.
 
-  (* Связь конечного `ctrl_gram` с `lyap_partial`. *)
+  (*
+    Конечный грамиан управляемости как частичная сумма Ляпунова.
+
+    Обе записи задают одну и ту же сумму $sum_(j < k) F^j G Q G† (F†)^j$;
+    равенство сводится к перестановке скобок в каждом слагаемом.
+  *)
   Lemma ctrl_gram_eq_partial k :
     ctrl_gram F G Q k = lyap_partial F (G *m Q *m G^t*) k.
   Proof.
@@ -107,7 +119,7 @@ Section GramianInf.
     by rewrite trmxCX !mulmxA.
   Qed.
 
-  (* Конечный Грамиан <= бесконечный в порядке Лёвнера. *)
+  (* Конечный грамиан не превосходит бесконечный в порядке Лёвнера. *)
   Lemma ctrl_gram_le_infty k :
     psd_le (ctrl_gram F G Q k) ctrl_gram_infty.
   Proof.
@@ -198,8 +210,7 @@ Section GramianInf.
 End GramianInf.
 
 (*
-  Взвешенный грамиан наблюдаемости с произвольным неотрицательно определённым
-  весом $W$:
+  Грамиан наблюдаемости с произвольным неотрицательно определённым весом $W$:
 
   $"obsv_gram_infty_w" F W := "lyap_sol" (F†) W <=> X = F† X F + W$
 

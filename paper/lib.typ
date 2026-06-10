@@ -134,6 +134,7 @@
   codly.codly(languages: languages)
 
   // Инициализация глоссария
+  show: show-markup-shorthands
   show: make-glossary
 
   register-glossary(acronyms-entries)
@@ -401,6 +402,10 @@
   numbering: none,
 )
 
+// Scope passed to `eval` when rendering the prose pulled from `.v` doc comments,
+// so descriptions/sketches may use the project's markup helpers. Math symbols,
+// references and basic markup need no scope; extend this when a description
+// requires a custom binding.
 #let rocq-eval-scope = (
   ..markup-eval-scope,
   Rocq: Rocq,
@@ -409,6 +414,9 @@
   half: half,
 )
 
+// Thin wrappers binding `rocq-doc` to the great-theorems environments. The `.v`
+// file is the single source of truth: title, description, citations, statement,
+// proof sketch and proof body are all pulled from the named declaration.
 #let rocq-theorem(source, name, ..rest) = rocq-doc(
   source,
   name,

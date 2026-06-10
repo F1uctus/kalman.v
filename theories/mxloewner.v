@@ -1,8 +1,4 @@
-(*
-  Порядок Лёвнера на эрмитовых матрицах над алгебраически замкнутым полем. A <=
-  B <=> B - A неотрицательно определена.
-  https://en.wikipedia.org/wiki/Loewner_order.
-*)
+(* https://en.wikipedia.org/wiki/Loewner_order. *)
 
 From HB Require Import structures.
 From mathcomp.boot Require Import all_boot.
@@ -28,6 +24,11 @@ Section LoewnerOrder.
 
   Implicit Types (A B C : 'M[ℂ]_n).
 
+  (*
+    Порядок Лёвнера.
+
+    $forall A, B in CC^(n,n): A <= B <==> B - A$ неотрицательно определена.
+  *)
   Definition psd_le n (A B : 'M[ℂ]_n) : Prop := psd (B - A).
 
   Lemma psd_le_refl A : psd A -> psd_le A A.

@@ -11,8 +11,8 @@ let conj (x : Q.t) : Q.t = x
 
 type mat = Q.t list list
 
-let cinv1 s = List.map (List.map qinv) s
-let cinv2 s = R.cinv2 q0 qopp qadd qmul qinv s
+(* General-p inverse: the extracted Faddeev-LeVerrier method. *)
+let cinv ~n s = R.cinv_fl q0 q1 qopp qadd qmul qinv n s
 
 let ident n : mat =
   List.init n (fun i -> List.init n (fun j -> if i = j then q1 else q0))
@@ -133,7 +133,7 @@ let sys_Q = [ [ qfrac 1 10 ] ]
 let sys_R = [ [ q1 ] ]
 let sys_P0 = [ [ q0; q0 ]; [ q0; q0 ] ]
 
-let dare_step = step ~m:1 ~n:2 ~p:1 ~cinv:cinv1 sys_F sys_G sys_H sys_Q sys_R
+let dare_step = step ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R
 
 let jsystem =
   jobj
@@ -184,7 +184,7 @@ let gen_dare ~kmax ~kss path =
 
 
 let gram_F = [ [ qfrac 4 5; qfrac 3 10 ]; [ q0; qfrac 1 2 ] ]
-let gram_W = cinv1 [ [ q1 ] ] (* weight = invmx R, R = I *)
+let gram_W = cinv ~n:1 [ [ q1 ] ] (* weight = invmx R, R = I *)
 let gram_Q = [ [ q1 ] ]
 
 let gram_frame g k =
@@ -239,7 +239,7 @@ let gen_gramian ~n ~kmax path =
 let gen_schur ~kmax ~kss path =
   let pss_q = iter kss dare_step sys_P0 in
   let acl_q =
-    closed_loop ~m:1 ~n:2 ~p:1 ~cinv:cinv1 sys_F sys_G sys_H sys_Q sys_R pss_q
+    closed_loop ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R pss_q
   in
   let acl = mf acl_q in
   let (r1, i1), (r2, i2) = eig2_general acl in
@@ -289,13 +289,13 @@ let gen_kalman_run ~kmax path =
   let steps = ref [] in
   for k = 0 to kmax do
     let ppred = predict_cov ~m:1 ~n:2 sys_F sys_G sys_Q !pcur in
-    let kk = mf (kalman_gain ~n:2 ~p:1 ~cinv:cinv1 sys_H sys_R ppred) in
+    let kk = mf (kalman_gain ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R ppred) in
     let meas = (matvec fH !xt).(0) +. sigma_v *. gauss () in
     let xpred = matvec fF !xe in
     let innov = meas -. (matvec fH xpred).(0) in
     let xe' = Array.mapi (fun i x -> x +. kk.(i).(0) *. innov) xpred in
     xe := xe';
-    let pfilt = step ~m:1 ~n:2 ~p:1 ~cinv:cinv1 sys_F sys_G sys_H sys_Q sys_R !pcur in
+    let pfilt = step ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R !pcur in
     let pf = mf pfilt in
     steps :=
       jobj
@@ -388,9 +388,9 @@ let qscale c (s : mat) : mat = List.map (List.map (qmul c)) s
 let gen_orthogonality ~kss path =
   let pss = iter kss dare_step sys_P0 in
   let p_pred = predict_cov ~m:1 ~n:2 sys_F sys_G sys_Q pss in
-  let k = kalman_gain ~n:2 ~p:1 ~cinv:cinv1 sys_H sys_R p_pred in
+  let k = kalman_gain ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R p_pred in
   let s = innov_cov ~n:2 ~p:1 sys_H sys_R p_pred in
-  let p_opt = update_cov ~n:2 ~p:1 ~cinv:cinv1 sys_H sys_R p_pred in
+  let p_opt = update_cov ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R p_pred in
   let tr_opt = trace2 (mf p_opt) in
   let alt label kp =
     let p_alt = alt_update_cov ~n:2 ~p:1 sys_H sys_R kp p_pred in
@@ -480,7 +480,8 @@ let spec_mat_obj g =
     ]
 
 let gen_spectral path =
-  let a_inv = cinv2 spec_A and b_inv = cinv2 spec_B in
+  let a_inv = cinv ~n:2 spec_A and b_inv = cinv ~n:2 spec_B in
+  (* self-checks: A, B PD; A <= B; and the antitone conclusion B^-1 <= A^-1 *)
   assert (pd_exact spec_A);
   assert (pd_exact spec_B);
   assert (psd_exact (msub spec_B spec_A));
@@ -500,8 +501,9 @@ let gen_spectral path =
 
 
 let () =
+  (* self-test: scalar DARE iterate 2 from P0 = 1 is 13/16 *)
   let f = [ [ qof_int 2 ] ] and one = [ [ q1 ] ] in
-  let p2 = iter 2 (step ~m:1 ~n:1 ~p:1 ~cinv:cinv1 f one one one one) [ [ q1 ] ] in
+  let p2 = iter 2 (step ~m:1 ~n:1 ~p:1 ~cinv:(cinv ~n:1) f one one one one) [ [ q1 ] ] in
   (match p2 with
    | [ [ v ] ] -> assert (Q.equal v (qfrac 13 16))
    | _ -> assert false);
