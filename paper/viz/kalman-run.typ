@@ -1,9 +1,12 @@
 // viz/kalman-run.typ — a Kalman filter run over synthetic data.
 //
 // Data: paper/data/kalman_run.json, emitted by extraction/ocaml/driver.exe. The
-// +/-sigma covariance band is the exact, verified Riccati covariance (extracted
-// theories/seqmx/riccati_seqmx.v); the trajectory and measurements use a seeded
-// PRNG and the extracted Kalman gain. Two panels:
+// whole run is the extracted verified program theories/seqmx/kalman_sim.v: the
+// noises come from the four-point model of theories/noise.v, the sample path is
+// the Lehmer generator defined inside Rocq, and the covariance band is the
+// exact Riccati covariance. No PRNG and no simulation logic lives in OCaml.
+// The first row (k = 0) is the initial state and carries no measurement.
+// Two panels:
 //   (a) position tracking — noisy measurements, the true position, and the
 //       filter estimate;
 //   (b) the classic consistency plot — the estimation error stays inside the
@@ -37,7 +40,7 @@
   let kmax = steps.last().k
   let true-pos = steps.map(s => (s.k, s.x_true.at(0)))
   let est-pos = steps.map(s => (s.k, s.x_est.at(0)))
-  let meas = steps.map(s => (s.k, s.meas))
+  let meas = steps.filter(s => "meas" in s).map(s => (s.k, s.meas))
   let ys = true-pos.map(p => p.at(1)) + meas.map(p => p.at(1))
   cetz-plot.plot.plot(
     name: "trk",

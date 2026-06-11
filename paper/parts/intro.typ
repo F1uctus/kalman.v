@@ -166,16 +166,15 @@ Library (CoqEAL). Фильтр Калмана представляет собо�
 == Математическое ожидание <sec:exp-algebra>
 
 Предположения модели о шуме и доказательство несмещённости (см. раздел
-@sec:unbiased) опираются на оператор математического ожидания $EE$. Он
-моделируется как матричнозначное линейное отображение
-`𝔼 : 'M[C]_(r, c) -> 'M[C]_(r, c)` со следующими аксиомами:
+@sec:unbiased) опираются на оператор математического ожидания $EE$: сумму
+значений случайной матрицы с весами конечного распределения `fdist` из
+библиотеки infotheo (формула её оператора `Ex`, записанная в
+`expectation.v` над `numDomainType`). Линейность и производные тождества
+доказаны леммами:
 
-#rocq-snippet("expectation.v", "Hypothesis Exp_add ")
-#rocq-snippet("expectation.v", "Hypothesis Exp_scale ")
-#rocq-snippet("expectation.v", "Hypothesis Exp_mulmx_l ")
-
-Этих трёх аксиом достаточно для всех нужных производных тождеств:
-
+#rocq-snippet("expectation.v", "Lemma Exp_add ")
+#rocq-snippet("expectation.v", "Lemma Exp_scale ")
+#rocq-snippet("expectation.v", "Lemma Exp_mulmx_l ")
 #rocq-snippet("expectation.v", "Lemma Exp_zero ")
 #rocq-snippet("expectation.v", "Lemma Exp_opp ")
 #rocq-snippet("expectation.v", "Lemma Exp_sub ")

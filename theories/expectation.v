@@ -72,7 +72,8 @@ Section Expectation.
   Qed.
 
   (* Вынос постоянной матрицы из-под знака ожидания слева. *)
-  Lemma Exp_mulmx_l r c s (A : 'M[ℂ]_(r, c)) (X : Ω -> 'M[ℂ]_(c, s)) :
+  Lemma Exp_mulmx_l r c s (A : 'M[ℂ]_(r, c))
+      (X : Ω -> 'M[ℂ]_(c, s)) :
     Exp (fun ω => A *m X ω) = A *m Exp X.
   Proof.
     rewrite /Exp mulmx_sumr.

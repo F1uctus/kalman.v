@@ -8,7 +8,6 @@ From mathcomp.algebra Require Import sesquilinear spectral.
 From infotheo.probability Require Import fdist.
 From Kalman Require Import mxnotation mxherm mxdefinite mxloewner spectral expectation.
 From Kalman Require Export riccati_def.
-
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -23,9 +22,9 @@ Local Open Scope sesquilinear_scope.
 Section KalmanFilter.
 
   Variable (ℂ : numClosedFieldType).
-
   Variables (m n p : nat).
-
+  (* Конечное вероятностное пространство шумов; см. expectation.v и noise.v. *)
+  Variable (Ω : finType) (μ : fdist ℂ Ω).
   Variable F : 'M[ℂ]_n.      (* Матрица перехода состояний *)
   Variable G : 'M[ℂ]_(n, m). (* Матрица управляющего воздействия *)
   Variable H : 'M[ℂ]_(p, n). (* Матрица наблюдения *)
@@ -37,16 +36,6 @@ Section KalmanFilter.
   Hypothesis R_pd : pd R.
 
   Variable x0 : 'cV[ℂ]_n.
-
-  (*
-    Конечное вероятностное пространство шумов.
-
-    Носитель Ω и распределение μ взяты из infotheo (`probability.fdist`);
-    случайная величина в смысле infotheo есть функция из Ω в значения,
-    поэтому шумы ниже задаются как случайные процессы.
-  *)
-  Variable Ω : finType.
-  Variable μ : fdist ℂ Ω.
 
   Variable w : nat -> Ω -> 'cV[ℂ]_m. (* Шум управления *)
   Variable v : nat -> Ω -> 'cV[ℂ]_p. (* Шум измерения *)
@@ -152,8 +141,7 @@ Section KalmanFilter.
     Истинная траектория состояния.
 
     Случайный процесс $x_k$, заданный уравнением состояния
-    $x_(k+1) = F x_k + G u_k + G w_(k+1)$ с начальным условием $x_0$;
-    зависимость от исхода ω наследуется от шума управления.
+    $x_(k+1) = F x_k + G u_k + G w_(k+1)$ с начальным условием $x_0$.
   *)
   Definition x_true (u : nat -> 'cV[ℂ]_m) : nat -> Ω -> 'cV[ℂ]_n :=
     fix f k :=
@@ -184,7 +172,7 @@ Section KalmanFilter.
     Ошибка оценивания.
 
     $tilde(x)_(k|k) = x_k - hat(x)_(k|k)$, разность истинного состояния и
-    апостериорной оценки; случайная величина при каждом фиксированном $k$.
+    апостериорной оценки.
   *)
   Definition err u y Ps k : Ω -> 'cV[ℂ]_n :=
     fun ω => x_true u k ω - x_hat u y Ps k ω.
@@ -195,8 +183,13 @@ Section KalmanFilter.
     Математическое ожидание `Exp` определено в `expectation.v` формулой
     оператора `Ex` из infotheo над конечным распределением μ; линейность
     (Exp_add/Exp_scale/Exp_mulmx_l) и производные тождества там доказаны
-    как леммы. Гипотезами остаются только содержательные вероятностные
-    предположения о шумах: нулевое среднее на каждом шаге.
+    как леммы, а на вещественном поле оператор совпадает с `E из infotheo
+    (лемма ExpE). Гипотезами остаются только содержательные вероятностные
+    предположения о шумах: нулевое среднее на каждом шаге. Эти гипотезы
+    выполнимы: в `noise.v` построена конкретная модель шумов
+    (четырёхточечное распределение на равномерном пространстве траекторий
+    исходов), для которой нулевые средние доказаны, а несмещённость для
+    неё получается следствием `model_unbiased`.
   *)
 
   Local Notation 𝔼 := (Exp μ).
@@ -208,8 +201,7 @@ Section KalmanFilter.
   Lemma abelian_swap_cancel (M : zmodType) (a b c d e : M) :
     a + b + c - (d + b + e) = a - d + c - e.
   Proof.
-    rewrite !opprD !addrA.
-    rewrite (addrAC _ _ (- b)) (addrAC _ c (- b)) addrK.
+    rewrite !opprD !addrA (addrAC _ _ (- b)) (addrAC _ c (- b)) addrK.
     by rewrite (addrAC _ c (- d)).
   Qed.
 
@@ -286,16 +278,14 @@ Section KalmanFilter.
   Proof.
     move=> Hzm E0; elim=> [//|k IH].
     have stepE : 𝔼 (err u y Ps k.+1) =
-        𝔼 (fun ω =>
-             F *m err u y Ps k ω + G *m w k.+1 ω -
-             kalman_gain (predict_cov (Ps k)) *m
-               (H *m F *m err u y Ps k ω
-                + H *m G *m w k.+1 ω + v k.+1 ω)).
+        𝔼 (fun ω => F *m err u y Ps k ω + G *m w k.+1 ω -
+           kalman_gain (predict_cov (Ps k)) *m
+             (H *m F *m err u y Ps k ω + H *m G *m w k.+1 ω + v k.+1 ω)).
       by apply: eq_Exp => ω; exact: err_recursion.
     rewrite stepE Exp_sub Exp_add (Exp_mulmx_l F) IH mulmx0 add0r.
     rewrite (Exp_mulmx_l G) Exp_w_zero mulmx0 add0r.
-    rewrite (Exp_mulmx_l (kalman_gain _)) (Exp_predict_innov_zero IH).
-    by rewrite mulmx0 oppr0.
+    by rewrite (Exp_mulmx_l (kalman_gain _)) (Exp_predict_innov_zero IH)
+       mulmx0 oppr0.
   Qed.
 
   (*
