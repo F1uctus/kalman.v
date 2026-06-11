@@ -5,6 +5,7 @@ From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp.
 From mathcomp.algebra Require Import sesquilinear spectral.
+From infotheo.probability Require Import fdist.
 From Kalman Require Import mxnotation mxherm mxdefinite mxloewner spectral expectation.
 From Kalman Require Export riccati_def.
 
@@ -37,8 +38,18 @@ Section KalmanFilter.
 
   Variable x0 : 'cV[ℂ]_n.
 
-  Variable w : nat -> 'cV[ℂ]_m. (* Шум управления *)
-  Variable v : nat -> 'cV[ℂ]_p. (* Шум измерения *)
+  (*
+    Конечное вероятностное пространство шумов.
+
+    Носитель Ω и распределение μ взяты из infotheo (`probability.fdist`);
+    случайная величина в смысле infotheo есть функция из Ω в значения,
+    поэтому шумы ниже задаются как случайные процессы.
+  *)
+  Variable Ω : finType.
+  Variable μ : fdist ℂ Ω.
+
+  Variable w : nat -> Ω -> 'cV[ℂ]_m. (* Шум управления *)
+  Variable v : nat -> Ω -> 'cV[ℂ]_p. (* Шум измерения *)
 
   (*
     Шаг построения новой оценки состояния.
@@ -140,14 +151,15 @@ Section KalmanFilter.
   (*
     Истинная траектория состояния.
 
-    Последовательность $x_k$, заданная уравнением состояния
-    $x_(k+1) = F x_k + G u_k + G w_(k+1)$ с начальным условием $x_0$.
+    Случайный процесс $x_k$, заданный уравнением состояния
+    $x_(k+1) = F x_k + G u_k + G w_(k+1)$ с начальным условием $x_0$;
+    зависимость от исхода ω наследуется от шума управления.
   *)
-  Definition x_true (u : nat -> 'cV[ℂ]_m) : nat -> 'cV[ℂ]_n :=
+  Definition x_true (u : nat -> 'cV[ℂ]_m) : nat -> Ω -> 'cV[ℂ]_n :=
     fix f k :=
       match k with
-      | 0%N => x0
-      | k'.+1 => F *m f k' + G *m u k' + G *m w k'.+1
+      | 0%N => fun _ => x0
+      | k'.+1 => fun ω => F *m f k' ω + G *m u k' + G *m w k'.+1 ω
       end.
 
   (*
@@ -157,50 +169,40 @@ Section KalmanFilter.
     обновления по наблюдению $y_(k+1)$. Начальная оценка $hat(x)_(0|0) = 0$
     согласована с предположением о нулевом среднем начального состояния.
   *)
-  Definition x_hat (u : nat -> 'cV[ℂ]_m) (y : nat -> 'cV[ℂ]_p)
-      (P_seq : nat -> 'M[ℂ]_n) : nat -> 'cV[ℂ]_n :=
+  Definition x_hat (u : nat -> 'cV[ℂ]_m) (y : nat -> Ω -> 'cV[ℂ]_p)
+      (P_seq : nat -> 'M[ℂ]_n) : nat -> Ω -> 'cV[ℂ]_n :=
     fix f k :=
       match k with
-      | 0%N => 0  (* начальная оценка; предполагаем несмещённый старт *)
-      | k'.+1 =>
-        let x_pred := predict_state (f k') (u k') in
+      | 0%N => fun _ => 0  (* начальная оценка; предполагаем несмещённый старт *)
+      | k'.+1 => fun ω =>
+        let x_pred := predict_state (f k' ω) (u k') in
         let P_pred := predict_cov (P_seq k') in
-        update_state P_pred x_pred (y k'.+1)
+        update_state P_pred x_pred (y k'.+1 ω)
       end.
 
   (*
     Ошибка оценивания.
 
     $tilde(x)_(k|k) = x_k - hat(x)_(k|k)$, разность истинного состояния и
-    апостериорной оценки.
+    апостериорной оценки; случайная величина при каждом фиксированном $k$.
   *)
-  Definition err u y Ps k := x_true u k - x_hat u y Ps k.
+  Definition err u y Ps k : Ω -> 'cV[ℂ]_n :=
+    fun ω => x_true u k ω - x_hat u y Ps k ω.
 
   (*
     Несмещённость.
 
-    Абстрактный оператор математического ожидания. Алгебраические аксиомы и
-    производные тождества (Exp_zero/Exp_opp/Exp_sub) вынесены в `expectation.v`;
-    здесь сохранены гипотезы линейности и шум-специфичные `Exp_w_zero`,
-    `Exp_v_zero`.
+    Математическое ожидание `Exp` определено в `expectation.v` формулой
+    оператора `Ex` из infotheo над конечным распределением μ; линейность
+    (Exp_add/Exp_scale/Exp_mulmx_l) и производные тождества там доказаны
+    как леммы. Гипотезами остаются только содержательные вероятностные
+    предположения о шумах: нулевое среднее на каждом шаге.
   *)
 
-  Variable 𝔼 : forall {r c : nat}, 'M[ℂ]_(r, c) -> 'M[ℂ]_(r, c).
-
-  Hypothesis Exp_add : forall r c (A B : 'M[ℂ]_(r, c)),
-    𝔼 (A + B) = 𝔼 A + 𝔼 B.
-  Hypothesis Exp_scale : forall r c (a : ℂ) (A : 'M[ℂ]_(r, c)),
-    𝔼 (a *: A) = a *: 𝔼 A.
-  Hypothesis Exp_mulmx_l : forall r c s (A : 'M[ℂ]_(r, c)) (B : 'M[ℂ]_(c, s)),
-    𝔼 (A *m B) = A *m 𝔼 B.
+  Local Notation 𝔼 := (Exp μ).
 
   Hypothesis Exp_w_zero : forall k, 𝔼 (w k) = 0.
   Hypothesis Exp_v_zero : forall k, 𝔼 (v k) = 0.
-
-  (* Удобные локальные имена для алгебраических тождеств из expectation.v *)
-  Notation Exp_zero := (Exp_zero Exp_scale).
-  Notation Exp_opp := (Exp_opp Exp_scale).
-  Notation Exp_sub := (Exp_sub Exp_add Exp_scale).
 
   (* Чисто абелева перегруппировка, используемая ниже. *)
   Lemma abelian_swap_cancel (M : zmodType) (a b c d e : M) :
@@ -219,30 +221,30 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
-  Lemma err_recursion u y Ps k :
-    (forall j, y j = H *m x_true u j + v j) ->
-    err u y Ps k.+1 =
-      F *m err u y Ps k + G *m w k.+1 -
+  Lemma err_recursion u y Ps k ω :
+    (forall j ω', y j ω' = H *m x_true u j ω' + v j ω') ->
+    err u y Ps k.+1 ω =
+      F *m err u y Ps k ω + G *m w k.+1 ω -
       kalman_gain (predict_cov (Ps k)) *m
-        (H *m F *m err u y Ps k + H *m G *m w k.+1 + v k.+1).
+        (H *m F *m err u y Ps k ω + H *m G *m w k.+1 ω + v k.+1 ω).
   Proof.
     move=> Hzm.
     rewrite /err /= /update_state /predict_state.
-    rewrite (Hzm k.+1) /=.
+    rewrite (Hzm k.+1 ω) /=.
     set Kk := kalman_gain (predict_cov (Ps k)).
-    set xt := x_true u k.
-    set xh := x_hat u y Ps k.
+    set xt := x_true u k ω.
+    set xh := x_hat u y Ps k ω.
     (*
       Внутреннее выражение:
       $ H "x_true"_(k+1) + v_(k+1) - H (F hat(x) + G u_k) = H F (x_t - hat(x)) + H G w_(k+1) + v_(k+1) $
     *)
     have inner :
-      H *m (F *m xt + G *m u k + G *m w k.+1) + v k.+1 -
+      H *m (F *m xt + G *m u k + G *m w k.+1 ω) + v k.+1 ω -
         H *m (F *m xh + G *m u k) =
-      H *m F *m (xt - xh) + H *m G *m w k.+1 + v k.+1.
+      H *m F *m (xt - xh) + H *m G *m w k.+1 ω + v k.+1 ω.
     { rewrite mulmxBr !mulmxDr !mulmxA addrAC opprD !addrA.
       rewrite (addrAC _ _ (- (H *m G *m u k))).
-      rewrite (addrAC _ (H *m G *m w k.+1)) addrK.
+      rewrite (addrAC _ (H *m G *m w k.+1 ω)) addrK.
       by rewrite [X in X + _ = _]addrAC. }
     rewrite inner.
     (* Внешнее выражение *)
@@ -259,7 +261,8 @@ Section KalmanFilter.
   *)
   Lemma Exp_predict_innov_zero u y Ps k :
     𝔼 (err u y Ps k) = 0 ->
-    𝔼 (H *m F *m err u y Ps k + H *m G *m w k.+1 + v k.+1) = 0.
+    𝔼 (fun ω => H *m F *m err u y Ps k ω
+                + H *m G *m w k.+1 ω + v k.+1 ω) = 0.
   Proof.
     move=> H0.
     rewrite 2!Exp_add.
@@ -277,12 +280,19 @@ Section KalmanFilter.
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
   Theorem unbiased u y Ps :
-    (forall j, y j = H *m x_true u j + v j) ->
+    (forall j ω, y j ω = H *m x_true u j ω + v j ω) ->
     𝔼 (err u y Ps 0) = 0 ->
     forall k, 𝔼 (err u y Ps k) = 0.
   Proof.
     move=> Hzm E0; elim=> [//|k IH].
-    rewrite (err_recursion _ _ Hzm) Exp_sub Exp_add (Exp_mulmx_l F) IH mulmx0 add0r.
+    have stepE : 𝔼 (err u y Ps k.+1) =
+        𝔼 (fun ω =>
+             F *m err u y Ps k ω + G *m w k.+1 ω -
+             kalman_gain (predict_cov (Ps k)) *m
+               (H *m F *m err u y Ps k ω
+                + H *m G *m w k.+1 ω + v k.+1 ω)).
+      by apply: eq_Exp => ω; exact: err_recursion.
+    rewrite stepE Exp_sub Exp_add (Exp_mulmx_l F) IH mulmx0 add0r.
     rewrite (Exp_mulmx_l G) Exp_w_zero mulmx0 add0r.
     rewrite (Exp_mulmx_l (kalman_gain _)) (Exp_predict_innov_zero IH).
     by rewrite mulmx0 oppr0.
