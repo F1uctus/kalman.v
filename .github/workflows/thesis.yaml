@@ -32,23 +32,26 @@ jobs:
             https://github.com/F1uctus/touying-unn-itmm \
             paper/packages/local/unn-itmm/0.2.1
 
+      # Версия typst фиксируется: раскладка страниц зависит от версии.
       - uses: typst-community/setup-typst@v4
+        with:
+          typst-version: '0.14.2'
 
-      - name: Install Times New Roman
-        run: |
-          echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" \
-            | sudo debconf-set-selections
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends fontconfig ttf-mscorefonts-installer
-          fc-cache -f
-          fc-list | grep -i "times new roman"
-
+      # Шрифты берутся только из paper/fonts (байтовые копии локально
+      # используемых файлов: Times New Roman, Iosevka Regular, Segoe UI
+      # Emoji, Arial), системные шрифты раннера игнорируются. Это даёт
+      # постраничное совпадение PDF с локальной сборкой (mscorefonts ставил
+      # Times New Roman v2.82 с другой метрикой, и страницы съезжали).
       - name: Build PDFs
         env:
           TYPST_PACKAGE_PATH: paper/packages
         run: |
-          typst compile paper/thesis.typ paper/thesis.pdf --root . --package-path paper/packages
-          typst compile paper/slides.typ paper/slides.pdf --root . --package-path paper/packages
+          typst compile paper/thesis.typ paper/thesis.pdf --root . \
+            --package-path paper/packages --font-path paper/fonts \
+            --ignore-system-fonts
+          typst compile paper/slides.typ paper/slides.pdf --root . \
+            --package-path paper/packages --font-path paper/fonts \
+            --ignore-system-fonts
 
       - uses: softprops/action-gh-release@v2
         if: github.event_name != 'pull_request'
