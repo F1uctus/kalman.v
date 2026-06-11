@@ -71,3 +71,26 @@
 
 // Приложения
 #include "./parts/appendix.typ"
+
+#metadata("thesis-end") <thesis-end>
+
+// Проверка заморозки печатной раскладки.
+// Отключается флагом --input assert-pages=off (используется thesis-lint).
+#context {
+  if sys.inputs.at("assert-pages", default: "on") != "off" {
+    let heads = query(heading.where(level: 1))
+    let pages = heads.map(h => h.location().page())
+    let frozen = (2, 4, 5, 6, 13, 20, 27, 37, 66, 73, 74)
+    let total = query(<thesis-end>).first().location().page()
+    let frozen-total = 74
+    let msg = (
+      "Печатная раскладка сместилась."
+      + " Число страниц: " + str(total)
+      + " (ожидалось " + str(frozen-total) + ")."
+      + " Начала разделов первого уровня: " + repr(pages)
+      + " (ожидалось " + repr(frozen) + ")."
+      + " Для принятия новой раскладки запустите thesis-lint --update."
+    )
+    assert(pages == frozen and total == frozen-total, message: msg)
+  }
+}

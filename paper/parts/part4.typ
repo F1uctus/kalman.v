@@ -66,7 +66,7 @@ $norm(M)_F^2 = "Tr"(M^* M)$. Он задаёт ту же топологию, ч�
 #rocq-snippet("mxfrob.v", "Lemma frob_sq_eq0 ")
 #rocq-snippet("mxfrob.v", "Lemma frob_sq_subr0 ")
 
-#pagebreak(weak: true)
+#pagebreak()
 
 == Вещественный мост `r2c`/`c2r` <sec:rc-bridge>
 
@@ -112,6 +112,8 @@ _упорядоченных алгебраически замкнутых пол
 антисимметрии Лёвнера (раздел @sec:dare-pd-unique); второй обеспечивает
 построение предела монотонной по Лёвнеру траектории Риккати (раздел
 @sec:dare-existence).
+
+#pagebreak()
 
 === Что означают шесть гипотез
 
@@ -234,6 +236,8 @@ $S_k in CC^(n times n)$ сходится в матричной топологи�
 
 #rocq-theorem("spec_rad.v", "schur_stable_pow_cvgn", proof: false)
 
+#pagebreak()
+
 == Уравнение Ляпунова и бесконечные грамианы <sec:lyapunov-eq>
 
 Первое применение монотонного предела не сама итерация Риккати, а её линейный
@@ -267,6 +271,8 @@ $S_k in CC^(n times n)$ сходится в матричной топологи�
 #rocq-theorem("lyapunov.v", "lyap_sol_fix", proof: false)
 
 #rocq-theorem("lyapunov.v", "lyap_sol_unique", proof: false)
+
+#pagebreak()
 
 #figure(
   lyapunov-figure(),
@@ -395,6 +401,8 @@ $K_0$.
 
 #rocq-theorem("riccati_mono.v", "riccati_iter0_mono", proof: false)
 
+#pagebreak()
+
 #figure(
   riccati-monotone-figure(),
   kind: image,
@@ -445,6 +453,8 @@ $K_0$.
 
 #rocq-theorem("dare.v", "dare_psd_sol", proof: false)
 
+#pagebreak()
+
 #figure(
   dare-cone-figure(),
   kind: image,
@@ -487,6 +497,8 @@ $P_(s s)$ для любого неотрицательно определённ�
 #rocq-theorem("spectral.v", "pd_inv_antimono", sketch: true)
 
 #rocq-theorem("spectral.v", "psd_le_antisym", sketch: true, proof: false)
+
+#pagebreak()
 
 #figure(
   spectral-figure(),
@@ -564,6 +576,8 @@ $K_f = "kalman_gain" thin P_(p s s)$, предсказательное усил�
 
 #rocq-theorem("dare.v", "Fp_schur", proof: false)
 
+#pagebreak()
+
 #figure(
   schur-stability-figure(),
   kind: image,
@@ -630,6 +644,8 @@ $epsilon$--$N$ форма сходимости: гарантия, что при 
     вычислена извлечённым из доказательств алгоритмом (глава @sec:extraction).
   ],
 ) <fig:dare-conv>
+
+#pagebreak()
 
 Сам $epsilon$--$N$ квантор удобно прочитать по рис. @fig:dare-epsn: для каждого
 порога $epsilon$ виден соответствующий ему шаг $N(epsilon)$, начиная с которого

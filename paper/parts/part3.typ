@@ -64,6 +64,8 @@ $[G, F G, dots, F^(n-1) G]$.
 #rocq-snippet("obsv_bound.v", "Lemma obsv_gram_psd ")
 #rocq-snippet("obsv_bound.v", "Lemma ctrl_gram_psd ")
 
+#pagebreak()
+
 Главные результаты дают переход от ранговых условий к положительной
 определённости грамианов:
 
@@ -71,7 +73,7 @@ $[G, F G, dots, F^(n-1) G]$.
 
 #rocq-lemma("obsv_bound.v", "ctrl_gram_pd_of_controllable", proof: false)
 
-#pagebreak(weak: true)
+#pagebreak()
 
 #figure(
   gramian-figure(),
@@ -154,6 +156,8 @@ $|lambda| >= 1$, которые без коррекции не убывают с
   proof: false,
 )
 
+#pagebreak()
+
 == Двойственность оценивания и управления <sec:duality>
 
 Наблюдаемость и управляемость, их грамианы (раздел @sec:gramians) образуют одно
@@ -231,7 +235,7 @@ $lambda |-> lambda^*$ сохраняется.
   ],
 ) <fig:duality-square>
 
-#pagebreak(weak: true)
+#pagebreak()
 
 Наконец, двойственны и сами стабилизирующие обратные связи: существование
 коррекции по выходу, делающей $F - K H$ устойчивой по Шуру (раздел

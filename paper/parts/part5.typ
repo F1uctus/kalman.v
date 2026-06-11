@@ -50,6 +50,8 @@
   "theories/dare.v",
 )).
 
+#pagebreak()
+
 Не извлекаются:
 
 - все теоремы (`unbiased`, `kalman_gain_optimal`, #raw(
@@ -202,6 +204,8 @@ CoqEAL и уточняет сначала `fl_inv`, а через него и `i
 Программы экспериментов устроены так же, как шаг Риккати; например, матрица
 замкнутого контура для эксперимента по устойчивости Шура (раздел
 @sec:closed-loop) вычисляется программой:
+
+#pagebreak()
 
 #rocq-snippet("seqmx/experiments.v", "Definition closed_loop_seqmx ")
 

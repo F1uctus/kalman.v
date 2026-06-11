@@ -4,15 +4,14 @@
 = Введение <intro>
 
 Данная работа посвящена формальной верификации дискретного фильтра Калмана.
-Математическим основанием служат монографии о линейном оценивании
-@kailath2000 и линейном многомерном управлении @wonham1985; формализация
-выполнена в системе доказательств #Rocq (ранее Coq) с использованием
-библиотек Mathematical Components (MathComp) @mahboubi2021, Infotheo
-@affeldt2014, CoqQuantum (CoqQ) @zhou2023 и Coq Efficient Algebra Library
-(CoqEAL) @denes2012. Фильтр Калмана @kalman1960 представляет собой
-рекурсивный алгоритм оценки состояния линейной динамической системы по
-зашумлённым наблюдениям. Он занимает центральное место в теории
-управления, навигации и обработке сигналов, а также применяется в задачах
+Математическим основанием служат монографии о линейном оценивании @kailath2000 и
+линейном многомерном управлении @wonham1985; формализация выполнена в системе
+доказательств #Rocq (ранее Coq) с использованием библиотек Mathematical
+Components (MathComp) @mahboubi2021, Infotheo @affeldt2014, CoqQuantum (CoqQ)
+@zhou2023 и Coq Efficient Algebra Library (CoqEAL) @denes2012. Фильтр Калмана
+@kalman1960 представляет собой рекурсивный алгоритм оценки состояния линейной
+динамической системы по зашумлённым наблюдениям. Он занимает центральное место в
+теории управления, навигации и обработке сигналов, а также применяется в задачах
 анализа временных рядов и компьютерного зрения.
 
 Формальная верификация позволяет получить гарантии корректности свойств фильтра:
@@ -172,8 +171,9 @@
 Предположения модели о шуме и доказательство несмещённости (см. раздел
 @sec:unbiased) опираются на оператор математического ожидания $EE$: сумму
 значений случайной матрицы с весами конечного распределения `fdist` из
-библиотеки infotheo @affeldt2014 (формула её оператора `Ex`, записанная в `expectation.v` над
-`numDomainType`). Линейность и производные тождества доказаны леммами:
+библиотеки infotheo @affeldt2014 (формула её оператора `Ex`, записанная в
+`expectation.v` над `numDomainType`). Линейность и производные тождества
+доказаны леммами:
 
 #rocq-snippet("expectation.v", "Lemma Exp_add ")
 #rocq-snippet("expectation.v", "Lemma Exp_scale ")
@@ -181,6 +181,8 @@
 #rocq-snippet("expectation.v", "Lemma Exp_zero ")
 #rocq-snippet("expectation.v", "Lemma Exp_opp ")
 #rocq-snippet("expectation.v", "Lemma Exp_sub ")
+
+#pagebreak()
 
 == Модель в пространстве состояний <sec:model>
 
@@ -244,6 +246,8 @@ $bold(v)_k in CC^p$ являются (векторными) случайными
 #rocq-snippet("kalman.v", "Variable w ")
 #rocq-snippet("kalman.v", "Variable v ")
 
+#pagebreak()
+
 #rocq-snippet("kalman.v", "Hypothesis Exp_w_zero ")
 #rocq-snippet("kalman.v", "Hypothesis Exp_v_zero ")
 
@@ -306,6 +310,8 @@ $
 
 #rocq-snippet("kalman.v", "Hypothesis Q_psd ")
 #rocq-snippet("kalman.v", "Hypothesis R_pd ")
+
+#pagebreak()
 
 == Критерий оптимальности <sec:criterion>
 
@@ -386,4 +392,3 @@ $a^* [P(K) - P(K_o)] a >= 0$, что равносильно неотрицате
     @state-update-eqs устанавливается в разделе @sec:innov-cov).
   ],
 ) <fig:observer>
-
