@@ -131,16 +131,17 @@
     }
   }
 
-  let stmt = if statement {
-    let r = rocq-statement-range(lines, loc.idx, loc.kind)
-    rocq-render-range(source, lines, r.start, r.end)
-  }
-
   // Proof sketches are opt-in.
   let sketch-text = if sketch {
     rocq-proof-sketch(lines, loc.idx, loc.kind)
   } else { none }
   let has-sketch = sketch-text != none and sketch-env != none
+
+  // A statement signature is a short, self-contained listing: never split it.
+  let stmt = if statement {
+    let r = rocq-statement-range(lines, loc.idx, loc.kind)
+    rocq-render-range(source, lines, r.start, r.end, breakable: false)
+  }
 
   let proofbody = if proof {
     let r = rocq-proofbody-range(lines, loc.idx)
@@ -172,15 +173,19 @@
     if not has-sketch { proofbody }
     handle
   }
+  // The box holds prose and statement, plus the proof body only when there is
+  // no sketch. With the proof body inside, the box can outgrow a page and must
+  // break; otherwise it is short and stays whole on one page.
+  let box-breakable = proof and not has-sketch
   if env != none {
     // A title is a label, so drop a trailing full stop.
     let t = if title-str.ends-with(".") {
       title-str.slice(0, title-str.len() - 1)
     } else { title-str }
     if t != "" {
-      env(title: rocq-eval(t, scope))[#inner]
+      env(title: rocq-eval(t, scope), breakable: box-breakable)[#inner]
     } else {
-      env[#inner]
+      env(breakable: box-breakable)[#inner]
     }
   } else {
     inner

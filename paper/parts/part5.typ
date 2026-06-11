@@ -8,7 +8,7 @@
 между доказанным и работающим кодом должен существовать однозначный мост. В этой
 главе описана реализованная стратегия получения исполняемого кода фильтра
 Калмана и решателя ДАУР из формализации в #Rocq, а также её связь с
-визуализациями основных результатов (@sec:dare-frob, @sec:riccati-mono).
+визуализациями основных результатов (разделы @sec:dare-frob, @sec:riccati-mono).
 
 В отличие от ручного переноса, где соответствие спецификации и кода проверяется
 глазами, реализованный подход делает это соответствие _машинно-проверяемым_:
@@ -44,9 +44,9 @@
 Извлечению подлежат _структурно вычислимые_ определения из #raw(
   "theories/kalman.v",
 ): шаг предсказания/обновления ковариации, усиление Калмана и полный шаг Риккати
-`riccati_step` (см. @sec:kf-step, @sec:dare-existence), а также производные от
-них эксперименты: степень матрицы, грамианы наблюдаемости и управляемости
-(`theories/obsv_bound.v`) и матрица замкнутого контура (#raw(
+`riccati_step` (см. разделы @sec:kf-step, @sec:dare-existence), а также
+производные от них эксперименты: степень матрицы, грамианы наблюдаемости и
+управляемости (`theories/obsv_bound.v`) и матрица замкнутого контура (#raw(
   "theories/dare.v",
 )).
 
@@ -59,8 +59,8 @@
 - доменные гипотезы (`Q_psd`, `R_pd`, `Exp_*`) суть предпосылки без
   вычислительного значения;
 - стационарное решение `Pss` целиком: оно определено как #emph[топологический
-    предел] (`mx_mono_lim`, @sec:mono-limits) и невычислимо как таковое; на
-  практике его заменяет итерация `riccati_step` до неподвижной точки.
+    предел] (`mx_mono_lim`, раздел @sec:mono-limits) и невычислимо как таковое;
+  на практике его заменяет итерация `riccati_step` до неподвижной точки.
 
 == Конкретизация полиморфного поля `numClosedFieldType` <sec:extract-field>
 
@@ -175,38 +175,35 @@ CoqEAL и уточняет сначала `fl_inv`, а через него и `i
 
 == Структура сборки <sec:extract-build>
 
-Извлечение и драйвер описаны через `dune`:
-
-```
-extraction/ocaml/
-├── riccati_extract.v   # Extraction "riccati.ml" <программы>
-├── dune                # (rocq.extraction ...) + (executable ...)
-└── driver.ml           # zarith Q.t + yojson → paper/data/*.json
-```
-
 Файл `riccati_extract.v` отображает индуктивные типы #Rocq на идиоматичные типы
 #OCaml и перечисляет извлекаемые программы:
 
-```rocq
-Extract Inductive bool => "bool" [ "true" "false" ].
-Extract Inductive list => "list" [ "[]" "( :: )" ].
-Extract Inductive prod => "( * )" [ "( , )" ].
-Extract Inductive nat => "int" [ "0" "succ" ]
-  "(fun fO fS n -> if n=0 then fO () else fS (n-1))".
+#rocq-codly(
+  rocq-raw(
+    ```
+    Extract Inductive bool => "bool" [ "true" "false" ].
+    Extract Inductive list => "list" [ "[]" "( :: )" ].
+    Extract Inductive prod => "( * )" [ "( , )" ].
+    Extract Inductive nat => "int" [ "0" "succ" ]
+      "(fun fO fS n -> if n=0 then fO () else fS (n-1))".
 
-Extraction "riccati.ml"
-  riccati_step_seqmx predict_cov_seqmx innov_cov_seqmx kalman_gain_seqmx
-  update_cov_seqmx alt_update_cov_seqmx ctr_seqmx cinv_fl
-  mpow_seqmx obsv_gram_seqmx ctrl_gram_seqmx closed_loop_seqmx.
-```
+    Extraction "riccati.ml"
+      riccati_step_seqmx predict_cov_seqmx innov_cov_seqmx kalman_gain_seqmx
+      update_cov_seqmx alt_update_cov_seqmx ctr_seqmx cinv_fl
+      mpow_seqmx obsv_gram_seqmx ctrl_gram_seqmx closed_loop_seqmx.
+    ```.text,
+  ),
+  "riccati_extract.v",
+  display-icon: false,
+)
 
 Выражение `(rocq.extraction ...)` позволяет извлечь `riccati.ml`, содержащий
 `*_seqmx`-программы (шаг Риккати, степень матрицы, грамианы, замкнутый контур).
 Программы экспериментов устроены так же, как шаг Риккати; например, матрица
-замкнутого контура для эксперимента по устойчивости Шура (@sec:closed-loop)
-вычисляется программой:
+замкнутого контура для эксперимента по устойчивости Шура (раздел
+@sec:closed-loop) вычисляется программой:
 
-#rocq-snippet("seqmx/experiments_seqmx.v", "Definition closed_loop_seqmx ")
+#rocq-snippet("seqmx/experiments.v", "Definition closed_loop_seqmx ")
 
 Драйвер `driver.ml` подставляет коэффициент `Q.t` (zarith), запускает
 извлечённые программы и сохраняет результат в формате `JSON`:
@@ -229,11 +226,11 @@ dune exec extraction/ocaml/driver.exe -- paper/data
 + Стационарное `Pss` невычислимо как предел; вместо него берётся конечная
   итерация `riccati_step` до невязки неподвижной точки.
 
-+ Синтетический прогон фильтра (@fig:kalman-run) по своей природе стохастичен:
-  коридор $plus.minus 2 sigma_k$ есть _точная_ извлечённая ковариация Риккати,
-  тогда как траектория, измерения и оценка получены посевным ГПСЧ и извлечённым
-  усилением Калмана (эта часть представляет собой численную симуляцию без
-  статуса верифицированного результата).
++ Синтетический прогон фильтра (рис. @fig:kalman-run) по своей природе
+  стохастичен: коридор $plus.minus 2 sigma_k$ есть _точная_ извлечённая
+  ковариация Риккати, тогда как траектория, измерения и оценка получены посевным
+  ГПСЧ и извлечённым усилением Калмана (эта часть представляет собой численную
+  симуляцию без статуса верифицированного результата).
 
 + Параметры модели (`F, G, H, Q, R, P0`) становятся аргументами извлечённых
   функций, что даёт свободу настройки на этапе вызова.

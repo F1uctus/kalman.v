@@ -140,23 +140,36 @@
 
 // Render a half-open `[start, end]` line range of a `.v` file as a dedented,
 // codly-wrapped Rocq listing. Shared by `rocq-snippet` and `rocq-doc`.
-#let rocq-render-range(source, lines, start, end) = {
+#let rocq-render-range(source, lines, start, end, breakable: auto) = {
   let snippet = rocq-dedent-lines(lines.slice(start, end + 1))
+  let codly-args = (
+    offset: start,
+    display-icon: false,
+  )
+  if breakable != auto {
+    codly-args = codly-args + (breakable: breakable)
+  }
   rocq-codly(
     rocq-raw(snippet.join("\n")),
     source,
-    offset: start,
-    display-icon: false,
+    ..codly-args,
   )
 }
 
 // Extract a named item from a `.v` file under `/theories/`.
 // `comment`: prepend the `(* ... *)` block directly above the item.
 // `proof`: extend through `Qed.` / `Defined.` instead of statement-only.
-#let rocq-snippet(source, name, comment: false, proof: false) = {
+// `sketch`: reserved for sketch inclusion; keeps the listing breakable.
+#let rocq-snippet(source, name, comment: false, proof: false, sketch: false) = {
   let lines = rocq-src(source).split("\n")
   let range = rocq-snippet-range(lines, name, comment: comment, proof: proof)
-  rocq-render-range(source, lines, range.start, range.end)
+  rocq-render-range(
+    source,
+    lines,
+    range.start,
+    range.end,
+    breakable: proof or sketch,
+  )
 }
 
 // === Structured declaration parsing (used by the `rocq-doc` module) ===========

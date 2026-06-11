@@ -252,8 +252,6 @@
     "детектируемостью",
     "диагонализируема",
     "доказанно",
-    "Зануление",
-    "занулению",
     "Знакоопределённые",
     "знакополуопределённые",
     "ИИТММ",
@@ -380,5 +378,5 @@
     ".v": "typst"
   },
   "scopeMath.typstPath": "typst",
-  "scopeMath.typst.preamble": ".vscode/scope-math-preamble.typ"
+  "scopeMath.typst.preamble": "common/preamble.typ"
 }

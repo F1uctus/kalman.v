@@ -174,8 +174,8 @@
   show figure.where(kind: table): set figure(numbering: num => (
     (counter(heading.where(level: 1)).get() + (num,)).map(str).join(".")
   ))
-  // Разбивать таблицы по страницам
-  show figure: set block(breakable: true)
+  // Не разбивать фигуры по страницам
+  show figure: set block(breakable: false)
 
   // Настройка списков
   set enum(indent: 2.5em)
@@ -380,12 +380,13 @@
 #let remark = make-uncounted-mathblock(
   "Замечание",
 )
+// `breakable` is left to the caller (`rocq-doc` decides it per declaration; a
+// direct `#definition[...]` should pass `breakable: false` to stay whole).
 #let definition(name: "", ..args) = make-counted-mathblock(
   "Определение",
   titlix: t => [_ #t: #(math.thick) _],
   radius: 5pt,
   stroke: gray + 0.3pt,
-  breakable: false,
 )(..args)
 #let proof = proofblock(
   prefix: [_Доказательство._],

@@ -1,6 +1,6 @@
 
 Set Warnings "-all".
-From Kalman.seqmx Require Import riccati_seqmx experiments_seqmx.
+From Kalman.seqmx Require Import riccati_seqmx experiments.
 Require Extraction.
 
 Extraction Language OCaml.

@@ -1,7 +1,7 @@
 // viz/schur-stability.typ — Schur stability of the closed loop.
 //
 // Data: paper/data/schur_stability.json, emitted by extraction/ocaml/driver.exe
-// from the extracted, verified theories/seqmx/experiments_seqmx.v
+// from the extracted, verified theories/seqmx/experiments.v
 // `closed_loop_seqmx`. The closed-loop matrix A_cl = F - F Kf H = F(I - Kf H)
 // (the predicted-covariance form Fp of dare.v `riccati_closed_loop_identity`)
 // has spectral radius rho < 1 — the classical condition behind DARE convergence

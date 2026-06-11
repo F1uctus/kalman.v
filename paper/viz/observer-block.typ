@@ -37,7 +37,7 @@
     box(
       fill: white,
       inset: (x: 2.5pt),
-      text(size: st.label + 1pt, fill: gray.darken(25%))[СИСТЕМА],
+      text(size: st.label + 1pt, fill: gray.darken(25%))[Система],
     ),
   )
 
@@ -85,7 +85,7 @@
     box(
       fill: white,
       inset: (x: 2.5pt),
-      text(size: st.label + 1pt, fill: gray.darken(25%))[НАБЛЮДАТЕЛЬ],
+      text(size: st.label + 1pt, fill: gray.darken(25%))[Наблюдатель],
     ),
   )
 
