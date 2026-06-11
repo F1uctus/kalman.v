@@ -92,6 +92,8 @@
 //   statement    render the statement signature listing.
 //   proof        also render the proof body `Proof. ... Qed.`.
 //   scope        eval scope for the description / title / sketch markup.
+//   kinds        Rocq keywords accepted for the declaration (see rocq-locate);
+//                `none` accepts any keyword.
 #let rocq-doc(
   source,
   name,
@@ -105,10 +107,11 @@
   proof: false,
   scope: (:),
   kind: none,
+  kinds: none,
   counted: true,
 ) = {
   let lines = rocq-src(source).split("\n")
-  let loc = rocq-locate(lines, name)
+  let loc = rocq-locate(lines, name, kinds: kinds)
   let doc = rocq-doc-comment(lines, loc.idx)
   let module = if source.ends-with(".v") {
     source.slice(0, source.len() - 2)

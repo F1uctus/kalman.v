@@ -75,7 +75,7 @@ Section EffPrograms.
   *)
   Definition closed_loop_seqmx (m n p : nat) (sF sG sH sQ sRm : @seqmx C)
       (cinv : @seqmx C -> @seqmx C) (sP : @seqmx C) : @seqmx C :=
-    let Kf := kalman_gain_seqmx conj n p sH sRm cinv
+    let Kf := filter_gain_seqmx conj n p sH sRm cinv
                 (predict_cov_seqmx conj m n sF sG sQ sP) in
     add_seqmx sF (opp_seqmx (@hmul_op _ _ _ n p n (@hmul_op _ _ _ n n p sF Kf) sH)).
 
@@ -201,10 +201,10 @@ Section Refine.
       rewrite /riccati_def.innov_cov /innov_cov_seqmx.
       apply: radd => //; exact: (rmul (rmul rH rPpred) (rctr rH)).
     have rKf : refines (RR n p)
-        (riccati_def.kalman_gain conj H Rm (riccati_def.predict_cov conj F G Q P))
-        (kalman_gain_seqmx conj n p sH sRm cinv
+        (riccati_def.filter_gain conj H Rm (riccati_def.predict_cov conj F G Q P))
+        (filter_gain_seqmx conj n p sH sRm cinv
           (predict_cov_seqmx conj m n sF sG sQ sP)).
-      rewrite /riccati_def.kalman_gain /kalman_gain_seqmx.
+      rewrite /riccati_def.filter_gain /filter_gain_seqmx.
       exact: (rmul (rmul rPpred (rctr rH)) (cinv_correct _ _ rInnov)).
     exact: (radd rF (ropp (rmul (rmul rF rKf) rH))).
   Qed.
@@ -236,7 +236,7 @@ Section BridgeC.
   Lemma gclosed_loop_bridge (m n p : nat) (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m))
       (H : 'M[ℂ]_(p, n)) (Q : 'M[ℂ]_m) (R : 'M[ℂ]_p) (P : 'M[ℂ]_n) :
     riccati_def.closed_loop conjC F G H Q R P =
-    F - F *m kalman_gain H R (predict_cov F G Q P) *m H.
+    F - F *m filter_gain H R (predict_cov F G Q P) *m H.
   Proof.
     by [].
   Qed.

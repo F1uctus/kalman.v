@@ -110,7 +110,7 @@ Definition sim_step (st : @seqmx C * @seqmx C * @seqmx C) (ow ov : nat)
                        (@hmul_op _ _ _ 2 1 1 sim_G wk) in
   let yk := add_seqmx (@hmul_op _ _ _ 1 2 1 sim_H xt') vk in
   let Ppred := predict_cov_seqmx cconj 1 2 sim_F sim_G sim_Q P in
-  let K := kalman_gain_seqmx cconj 2 1 sim_H sim_R cinv Ppred in
+  let K := filter_gain_seqmx cconj 2 1 sim_H sim_R cinv Ppred in
   let xpred := @hmul_op _ _ _ 2 2 1 sim_F xe in
   let innov := sub_seqmx yk (@hmul_op _ _ _ 1 2 1 sim_H xpred) in
   let xe' := add_seqmx xpred (@hmul_op _ _ _ 2 1 1 K innov) in

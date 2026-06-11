@@ -335,7 +335,7 @@ $K=0$ заведомо хуже оптимального усиления Кал
 
 #rocq-lemma("obsv_bound.v", "ctrl_gram_shift", sketch: true, proof: false)
 
-#rocq-theorem(
+#rocq-lemma(
   "obsv_bound.v",
   "riccati_iter_le_ctrl_gram",
   sketch: true,
@@ -399,7 +399,7 @@ $K_0$.
 
 #rocq-lemma("riccati_mono.v", "riccati_step_mono", proof: false)
 
-#rocq-theorem("riccati_mono.v", "riccati_iter0_mono", proof: false)
+#rocq-lemma("riccati_mono.v", "riccati_iter0_mono", proof: false)
 
 #pagebreak()
 
@@ -525,7 +525,7 @@ $P_(s s)$ для любого неотрицательно определённ�
 Дальнейший анализ ведётся в терминах замкнутого контура на неподвижной точке.
 Обозначим предсказанную стационарную ковариацию
 $P_(p s s) = "predict_cov" thin P_(s s)$, стационарное фильтрующее усиление
-$K_f = "kalman_gain" thin P_(p s s)$, предсказательное усиление $K_p = F K_f$ и
+$K_f = "filter_gain" thin P_(p s s)$, предсказательное усиление $K_p = F K_f$ и
 предикторную матрицу замкнутого контура $F_p = F - K_p H$. Подстановка
 неподвижной точки в шаг Риккати сворачивает ДАУР в уравнение Ляпунова замкнутого
 контура:
@@ -626,7 +626,7 @@ $epsilon$--$N$ форма сходимости: гарантия, что при 
 
 #rocq-theorem("dare.v", "riccati_frob_cvgn", proof: false)
 
-#rocq-theorem("dare.v", "kalman_gain_frob_cvgn", proof: false)
+#rocq-theorem("dare.v", "filter_gain_frob_cvgn", proof: false)
 
 #figure(
   dare-convergence-figure(),

@@ -53,9 +53,9 @@ Section RiccatiUnique.
   *)
   Hypothesis FG_stab : stabilizable F (G *m Q *m G^t*).
 
-  Local Notation Kf M := (kalman_gain H R M).
-  Local Notation Kp M := (F *m kalman_gain H R M).
-  Local Notation Fp M := (F - F *m kalman_gain H R M *m H).
+  Local Notation Kf M := (filter_gain H R M).
+  Local Notation Kp M := (F *m filter_gain H R M).
+  Local Notation Fp M := (F - F *m filter_gain H R M *m H).
   Local Notation predM M := (predict_cov F G Q (update_cov H R M)).
 
   (*
@@ -67,7 +67,7 @@ Section RiccatiUnique.
     (F - F *m Kf M *m H) *m M *m H^t* = F *m Kf M *m R.
   Proof.
     move=> Mpsd.
-    have gsp := kalman_gain_normal_eq H R_pd Mpsd.
+    have gsp := filter_gain_normal_eq H R_pd Mpsd.
     have e : Kf M *m H *m M *m H^t* + Kf M *m R = M *m H^t*.
       by move: gsp; rewrite innov_covE mulmxDr !mulmxA.
     have key : (1%:M - Kf M *m H) *m M *m H^t* = Kf M *m R.
@@ -80,7 +80,7 @@ Section RiccatiUnique.
   Qed.
 
   (* $F (E - "Kf" M H) = "Fp" M$ (свёртка усиления). *)
-  Lemma F_ImKfH (M : 'M[ℂ]_n) :
+  Lemma F_EmKfH (M : 'M[ℂ]_n) :
     F *m (1%:M - Kf M *m H) = F - F *m Kf M *m H.
   Proof.
     by rewrite mulmxBr mulmx1 mulmxA.
@@ -114,7 +114,7 @@ Section RiccatiUnique.
     move=> Mpsd.
     rewrite !predict_covE -(joseph_formE H R_pd Mpsd) /joseph_form.
     rewrite mulmxDr mulmxDl; congr (_ + _ + _).
-    - by rewrite -F_ImKfH trmxC_mul !mulmxA.
+    - by rewrite -F_EmKfH trmxC_mul !mulmxA.
     - by rewrite trmxC_mul !mulmxA.
   Qed.
 

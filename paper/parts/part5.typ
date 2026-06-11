@@ -54,7 +54,7 @@
 
 Не извлекаются:
 
-- все теоремы (`unbiased`, `kalman_gain_optimal`, #raw(
+- все теоремы (`unbiased`, `filter_gain_optimal`, #raw(
     "dare_stabilizing_sol_frob",
   ) и др.) суть _сертификаты корректности_; их вычислительное содержание
   отсутствует в исполняемом выходе;
@@ -190,7 +190,7 @@ CoqEAL и уточняет сначала `fl_inv`, а через него и `i
       "(fun fO fS n -> if n=0 then fO () else fS (n-1))".
 
     Extraction "riccati.ml"
-      riccati_step_seqmx predict_cov_seqmx innov_cov_seqmx kalman_gain_seqmx
+      riccati_step_seqmx predict_cov_seqmx innov_cov_seqmx filter_gain_seqmx
       update_cov_seqmx alt_update_cov_seqmx ctr_seqmx cinv_fl
       mpow_seqmx obsv_gram_seqmx ctrl_gram_seqmx closed_loop_seqmx.
     ```.text,

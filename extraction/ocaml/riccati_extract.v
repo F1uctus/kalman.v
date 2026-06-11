@@ -25,7 +25,7 @@ Extract Inductive nat => "int" [ "0" "Stdlib.Int.succ" ]
 From Stdlib Require Import ExtrOcamlZInt.
 
 Extraction "riccati.ml"
-  riccati_step_seqmx predict_cov_seqmx innov_cov_seqmx kalman_gain_seqmx
+  riccati_step_seqmx predict_cov_seqmx innov_cov_seqmx filter_gain_seqmx
   update_cov_seqmx alt_update_cov_seqmx ctr_seqmx cinv_fl
   mpow_seqmx obsv_gram_seqmx ctrl_gram_seqmx closed_loop_seqmx
   kalman_sim_run.

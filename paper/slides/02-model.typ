@@ -40,7 +40,7 @@
 
 #v(4pt)
 
-#slide-snippet("riccati_def.v", "kalman_gain")
+#slide-snippet("riccati_def.v", "filter_gain")
 #slide-snippet("riccati_def.v", "riccati_step")
 
 #v(4pt)

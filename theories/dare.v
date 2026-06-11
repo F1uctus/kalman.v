@@ -197,18 +197,18 @@ Section DARE.
                       (alt_update_cov H R K0 (predict_cov F G Q Sigma)).
       rewrite /psd_le (alt_update_cov_diff H R_pd K0 psdPred).
       rewrite addrAC subrr add0r.
-      exact: psd_lcongr (K0 - kalman_gain H R (predict_cov F G Q Sigma))
+      exact: psd_lcongr (K0 - filter_gain H R (predict_cov F G Q Sigma))
                         (pd_psd (innov_cov_pd H R_pd psdPred)).
     have heq : alt_update_cov H R K0 (predict_cov F G Q Sigma)
              = Mc *m Sigma *m Mc^t* + Wc.
       rewrite !alt_update_covE !predict_covE /=.
-      set ImKH := 1%:M - K0 *m H.
+      set EmKH := 1%:M - K0 *m H.
       have hsplit : forall Xa Xb : 'M[ℂ]_n,
-          ImKH *m (Xa + Xb) *m ImKH^t*
-          = ImKH *m Xa *m ImKH^t* + ImKH *m Xb *m ImKH^t*.
+          EmKH *m (Xa + Xb) *m EmKH^t*
+          = EmKH *m Xa *m EmKH^t* + EmKH *m Xb *m EmKH^t*.
         by move=> Xa Xb; rewrite mulmxDr mulmxDl.
       rewrite hsplit.
-      have h1 : ImKH *m (F *m Sigma *m F^t*) *m ImKH^t*
+      have h1 : EmKH *m (F *m Sigma *m F^t*) *m EmKH^t*
               = Mc *m Sigma *m Mc^t*.
         by rewrite trmxC_mul !mulmxA.
       by rewrite h1 addrA.
@@ -374,7 +374,7 @@ Section DARE.
       Выделение полного квадрата (Lem 14.5.1 для произвольного `K`): один
       предсказательный шаг Риккати мажорируется замкнутым контуром наблюдателя.
       $"update_cov" <= "alt_update_cov"_K$
-      (разность - конгруэнция неотрицательно определённых матриц $(K - K_kalman) R_e (dot)†$),
+      (разность $(K - K_f) R_e (dot)†$ есть конгруэнция $R_e succ.eq 0$),
       далее монотонность `predict_cov` и тождество
       $F dot "alt_update_cov"_K (Sigma F† + G Q G†) = M Sigma M† + W$.
     *)
@@ -387,7 +387,7 @@ Section DARE.
       have hle : psd_le (update_cov H R Sigma) (alt_update_cov H R K Sigma).
         rewrite /psd_le (alt_update_cov_diff H R_pd K psdS).
         rewrite addrAC subrr add0r.
-        exact: psd_lcongr (K - kalman_gain H R Sigma)
+        exact: psd_lcongr (K - filter_gain H R Sigma)
                           (pd_psd (innov_cov_pd H R_pd psdS)).
       have key := predict_cov_mono F G Q hle.
       have heq : predict_cov F G Q (alt_update_cov H R K Sigma)
@@ -422,7 +422,7 @@ Section DARE.
 
     (*
       Spred k <= lyap_partial M W (k+1) - индукция через выделение полного
-      квадрата + лево-конгруэнтную монотонность + сдвиг частичной суммы.
+      квадрата, монотонность левой конгруэнции и сдвиг частичной суммы.
     *)
     Lemma Spred_le k :
       psd_le (Spred k) (lyap_partial cl_loop cl_weight k.+1).
@@ -449,7 +449,7 @@ Section DARE.
       конечный управляемый Грамиан замкнутого контура любого усиления `K`
       (= ковариация суб-оптимального наблюдателя).
     *)
-    Theorem riccati_iter_le_lyap_partial k :
+    Lemma riccati_iter_le_lyap_partial k :
       psd_le (iter k (riccati_step F G H Q R) 0)
              (lyap_partial cl_loop cl_weight k).
     Proof.
@@ -486,7 +486,7 @@ Section DARE.
 
     - @kailath2000[App. E, § E.4 "Properties of the Maximal Solution"].
   *)
-    Theorem Pss_le_fixed_gain_lyap_sol :
+    Lemma Pss_le_fixed_gain_lyap_sol :
       psd_le Pss (lyap_sol cl_loop cl_weight).
     Proof.
       apply: (@mx_mono_lim_le ℝ ℂ r2c c2r
@@ -527,12 +527,12 @@ Section DARE.
     apply: cvgn_mulmx (cvg_cst _) HP.
   Qed.
 
-  Lemma cvgn_kalman_gain_k (Pf : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
+  Lemma cvgn_filter_gain_k (Pf : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pf @ \oo --> L -> innov_cov H R L \in unitmx ->
-    (fun k => kalman_gain H R (Pf k)) @ \oo --> kalman_gain H R L.
+    (fun k => filter_gain H R (Pf k)) @ \oo --> filter_gain H R L.
   Proof.
     move=> HP Sunit.
-    rewrite kalman_gainE; under eq_cvg=> k do rewrite kalman_gainE.
+    rewrite filter_gainE; under eq_cvg=> k do rewrite filter_gainE.
     apply: cvgn_mulmx.
     - apply: cvgn_mulmx HP _; exact: cvg_cst.
     - exact: riccati_cont.cvgn_invmx (cvgn_innov_cov_k HP) Sunit.
@@ -547,7 +547,7 @@ Section DARE.
     apply: cvgn_mulmx; last exact: HP.
     apply: cvgn_submx; first exact: cvg_cst.
     apply: cvgn_mulmx; last exact: cvg_cst.
-    exact: cvgn_kalman_gain_k HP Sunit.
+    exact: cvgn_filter_gain_k HP Sunit.
   Qed.
 
   Lemma cvgn_riccati_step_k (Pf : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
@@ -627,7 +627,7 @@ Section DARE.
 
   (* Сокращения. *)
   Local Notation P_pss := (predict_cov F G Q Pss).
-  Local Notation Kf := (kalman_gain H R P_pss).
+  Local Notation Kf := (filter_gain H R P_pss).
   Local Notation Kp := (F *m Kf).
   Local Notation Fp := (F - Kp *m H).
   Local Notation R_e := (innov_cov H R P_pss).
@@ -664,7 +664,7 @@ Section DARE.
   Lemma Fp_Ppss_Ht : Fp *m P_pss *m H^t* = Kp *m R.
   Proof.
     rewrite mulmxBl mulmxBl.
-    rewrite -[F *m P_pss *m H^t*]mulmxA -(kalman_gain_normal_eq H R_pd P_pss_psd).
+    rewrite -[F *m P_pss *m H^t*]mulmxA -(filter_gain_normal_eq H R_pd P_pss_psd).
     rewrite mulmxA.
     rewrite innov_covE mulmxDr !mulmxA.
     by rewrite addrAC subrr add0r.
@@ -679,8 +679,8 @@ Section DARE.
   Theorem riccati_closed_loop_identity :
     predict_cov F G Q Pss =
       Fp *m predict_cov F G Q Pss *m Fp^t* +
-      (F *m kalman_gain H R (predict_cov F G Q Pss)) *m R *m
-        (F *m kalman_gain H R (predict_cov F G Q Pss))^t* +
+      (F *m filter_gain H R (predict_cov F G Q Pss)) *m R *m
+        (F *m filter_gain H R (predict_cov F G Q Pss))^t* +
       G *m Q *m G^t*.
   Proof.
     rewrite {1}predict_cov_closed_loop.
@@ -741,7 +741,7 @@ Section DARE.
 
     Из него немедленно следуют:
     1.  Сходимость усиления Калмана
-        (по непрерывности `kalman_gain ∘ predict_cov`) - `Pss_gain_cvgn`.
+        (по непрерывности `filter_gain ∘ predict_cov`) - `Pss_gain_cvgn`.
     2.  Единственность положительно определённой неподвижной точки: любая
         положительно определённая неподвижная точка `Pi`
         (как константная последовательность) сходится к самой себе и
@@ -1121,15 +1121,15 @@ Section DARE.
     Сходимость матрицы усиления Калмана в матричной топологии.
 
     Усиление Калмана, вычисленное по $"iter" k thin "riccati_step" thin P_0$,
-    сходится к $K_(s s) := "kalman_gain"("predict_cov" P_ss$.
+    сходится к $K_(s s) := "filter_gain"("predict_cov" P_ss$.
 
     - @kailath2000[§ 14.5, Theorem 14.5.1 "Sufficiency"].
   *)
   Theorem Pss_gain_cvgn (P0 : 'M[ℂ]_n) (HP0 : psd P0) :
-    (fun k => kalman_gain H R
+    (fun k => filter_gain H R
                 (predict_cov F G Q
                   (iter k (riccati_step F G H Q R) P0)))
-      @ \oo --> kalman_gain H R (predict_cov F G Q Pss).
+      @ \oo --> filter_gain H R (predict_cov F G Q Pss).
   Proof.
     have HPcvg := riccati_iter_cvgn HP0.
     have HpredCvg :
@@ -1140,7 +1140,7 @@ Section DARE.
       := predict_cov_psd F G Q_psd Pss_psd.
     have Sunit : innov_cov H R (predict_cov F G Q Pss) \in unitmx
       := innov_cov_inv H R_pd predPss_psd.
-    exact: cvgn_kalman_gain_k HpredCvg Sunit.
+    exact: cvgn_filter_gain_k HpredCvg Sunit.
   Qed.
 
   (*
@@ -1278,14 +1278,14 @@ Section DARE.
                 (iter k (riccati_step F G H Q R) P0 - Pss0)) < eps) /\
         (forall eps : ℂ, eps > 0 ->
           exists N : nat, forall k, (N <= k)%N ->
-            \tr ((kalman_gain H R
+            \tr ((filter_gain H R
                     (predict_cov F G Q
                       (iter k (riccati_step F G H Q R) P0)) -
-                  kalman_gain H R (predict_cov F G Q Pss0))^t* *m
-                (kalman_gain H R
+                  filter_gain H R (predict_cov F G Q Pss0))^t* *m
+                (filter_gain H R
                     (predict_cov F G Q
                       (iter k (riccati_step F G H Q R) P0)) -
-                  kalman_gain H R (predict_cov F G Q Pss0))) < eps).
+                  filter_gain H R (predict_cov F G Q Pss0))) < eps).
   Proof.
     exists Pss; split; first exact: Pss_fix.
     split; first exact: Pss_pd.
@@ -1303,23 +1303,23 @@ Section DARE.
 
     - @kailath2000[§ 14.5, Theorem 14.5.1 "Sufficiency"].
   *)
-  Theorem kalman_gain_frob_cvgn (P0 : 'M[ℂ]_n) :
+  Theorem filter_gain_frob_cvgn (P0 : 'M[ℂ]_n) :
     psd P0 ->
     exists (Pss0 : 'M[ℂ]_n) (Kp : 'M[ℂ]_(n, p)),
       [/\ Pss0 = riccati_step F G H Q R Pss0,
           pd Pss0,
-          Kp = kalman_gain H R (predict_cov F G Q Pss0) &
+          Kp = filter_gain H R (predict_cov F G Q Pss0) &
           forall eps : ℂ, eps > 0 ->
             exists N : nat, forall k, (N <= k)%N ->
-              \tr ((kalman_gain H R
+              \tr ((filter_gain H R
                       (predict_cov F G Q
                         (iter k (riccati_step F G H Q R) P0)) - Kp)^t* *m
-                  (kalman_gain H R
+                  (filter_gain H R
                       (predict_cov F G Q
                         (iter k (riccati_step F G H Q R) P0)) - Kp)) < eps].
   Proof.
     move=> HP0.
-    exists Pss, (kalman_gain H R (predict_cov F G Q Pss)); split.
+    exists Pss, (filter_gain H R (predict_cov F G Q Pss)); split.
     - exact: Pss_fix.
     - exact: Pss_pd.
     - by [].
@@ -1353,7 +1353,7 @@ Section DARE.
     $P_pss = F_p dot P_pss dot F_p† + K_p dot R dot K_p† + G dot Q dot G†$. где:
     - P_pss = predict_cov Pss = F Pss F† + GQG†
       (предсказательная ss-ковариация),
-    - Kf = kalman_gain P_pss (усиление фильтра),
+    - Kf = filter_gain P_pss (усиление фильтра),
     - Kp = F ⋅ Kf (предсказательное усиление),
     - Fp = F - Kp ⋅ H (замкнутый контур в предикторной форме).
 
@@ -1512,12 +1512,12 @@ Section DARE.
                   (kf_P (kf_run st0 us ys k) - Pss0)) < eps) &
           (forall eps : ℂ, eps > 0 ->
             exists N : nat, forall k, (N <= k)%N ->
-              \tr ((kalman_gain H R
+              \tr ((filter_gain H R
                       (predict_cov F G Q (kf_P (kf_run st0 us ys k))) -
-                    kalman_gain H R (predict_cov F G Q Pss0))^t* *m
-                  (kalman_gain H R
+                    filter_gain H R (predict_cov F G Q Pss0))^t* *m
+                  (filter_gain H R
                       (predict_cov F G Q (kf_P (kf_run st0 us ys k))) -
-                    kalman_gain H R (predict_cov F G Q Pss0))) < eps)].
+                    filter_gain H R (predict_cov F G Q Pss0))) < eps)].
   Proof.
     move=> psd0.
     have [Pss0 [HPfix [HPpd Hconv]]] := dare_stabilizing_sol_frob.

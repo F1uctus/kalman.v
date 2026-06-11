@@ -250,7 +250,7 @@ Section KalmanNoiseModel.
   Corollary model_unbiased u y Ps :
     (forall j ω, y j ω = H *m x_true F G 0 model_w u j ω + model_v j ω) ->
     forall k,
-      Exp model_μ (err F G H Q R 0 model_w u y Ps k) = 0.
+      Exp model_μ (x_err F G H Q R 0 model_w u y Ps k) = 0.
   Proof.
     move=> Hzm.
     apply: unbiased.
@@ -258,7 +258,7 @@ Section KalmanNoiseModel.
     - exact: model_v_zero.
     - exact: Hzm.
     - rewrite (eq_Exp (Y := fun _ : model_Ω => 0)) ?Exp_zero // => ω.
-      by rewrite /err /= subrr.
+      by rewrite /x_err /= subrr.
   Qed.
 
 End KalmanNoiseModel.

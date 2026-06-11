@@ -114,7 +114,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
-  Local Notation kalman_gain := (riccati_def.kalman_gain conjC H R).
+  Local Notation filter_gain := (riccati_def.filter_gain conjC H R).
 
   (*
     Обновление состояния.
@@ -125,7 +125,7 @@ Section KalmanFilter.
   *)
   Definition update_state (P_pred : 'M[ℂ]_n)
       (x_pred : 'cV[ℂ]_n) (y : 'cV[ℂ]_p) : 'cV[ℂ]_n :=
-    let K := kalman_gain P_pred in
+    let K := filter_gain P_pred in
     x_pred + K *m (y - H *m x_pred).
 
   (*
@@ -174,7 +174,7 @@ Section KalmanFilter.
     $tilde(x)_(k|k) = x_k - hat(x)_(k|k)$, разность истинного состояния и
     апостериорной оценки.
   *)
-  Definition err u y Ps k : Ω -> 'cV[ℂ]_n :=
+  Definition x_err u y Ps k : Ω -> 'cV[ℂ]_n :=
     fun ω => x_true u k ω - x_hat u y Ps k ω.
 
   (*
@@ -213,17 +213,17 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
-  Lemma err_recursion u y Ps k ω :
+  Lemma x_err_recursion u y Ps k ω :
     (forall j ω', y j ω' = H *m x_true u j ω' + v j ω') ->
-    err u y Ps k.+1 ω =
-      F *m err u y Ps k ω + G *m w k.+1 ω -
-      kalman_gain (predict_cov (Ps k)) *m
-        (H *m F *m err u y Ps k ω + H *m G *m w k.+1 ω + v k.+1 ω).
+    x_err u y Ps k.+1 ω =
+      F *m x_err u y Ps k ω + G *m w k.+1 ω -
+      filter_gain (predict_cov (Ps k)) *m
+        (H *m F *m x_err u y Ps k ω + H *m G *m w k.+1 ω + v k.+1 ω).
   Proof.
     move=> Hzm.
-    rewrite /err /= /update_state /predict_state.
+    rewrite /x_err /= /update_state /predict_state.
     rewrite (Hzm k.+1 ω) /=.
-    set Kk := kalman_gain (predict_cov (Ps k)).
+    set Kk := filter_gain (predict_cov (Ps k)).
     set xt := x_true u k ω.
     set xh := x_hat u y Ps k ω.
     (*
@@ -252,8 +252,8 @@ Section KalmanFilter.
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
   Lemma Exp_predict_innov_zero u y Ps k :
-    𝔼 (err u y Ps k) = 0 ->
-    𝔼 (fun ω => H *m F *m err u y Ps k ω
+    𝔼 (x_err u y Ps k) = 0 ->
+    𝔼 (fun ω => H *m F *m x_err u y Ps k ω
                 + H *m G *m w k.+1 ω + v k.+1 ω) = 0.
   Proof.
     move=> H0.
@@ -273,18 +273,18 @@ Section KalmanFilter.
   *)
   Theorem unbiased u y Ps :
     (forall j ω, y j ω = H *m x_true u j ω + v j ω) ->
-    𝔼 (err u y Ps 0) = 0 ->
-    forall k, 𝔼 (err u y Ps k) = 0.
+    𝔼 (x_err u y Ps 0) = 0 ->
+    forall k, 𝔼 (x_err u y Ps k) = 0.
   Proof.
     move=> Hzm E0; elim=> [//|k IH].
-    have stepE : 𝔼 (err u y Ps k.+1) =
-        𝔼 (fun ω => F *m err u y Ps k ω + G *m w k.+1 ω -
-           kalman_gain (predict_cov (Ps k)) *m
-             (H *m F *m err u y Ps k ω + H *m G *m w k.+1 ω + v k.+1 ω)).
-      by apply: eq_Exp => ω; exact: err_recursion.
+    have stepE : 𝔼 (x_err u y Ps k.+1) =
+        𝔼 (fun ω => F *m x_err u y Ps k ω + G *m w k.+1 ω -
+           filter_gain (predict_cov (Ps k)) *m
+             (H *m F *m x_err u y Ps k ω + H *m G *m w k.+1 ω + v k.+1 ω)).
+      by apply: eq_Exp => ω; exact: x_err_recursion.
     rewrite stepE Exp_sub Exp_add (Exp_mulmx_l F) IH mulmx0 add0r.
     rewrite (Exp_mulmx_l G) Exp_w_zero mulmx0 add0r.
-    by rewrite (Exp_mulmx_l (kalman_gain _)) (Exp_predict_innov_zero IH)
+    by rewrite (Exp_mulmx_l (filter_gain _)) (Exp_predict_innov_zero IH)
        mulmx0 oppr0.
   Qed.
 
@@ -292,7 +292,7 @@ Section KalmanFilter.
     Положительная определённость инновационной ковариации.
 
     Если $P_(k|k-1) succ.eq 0$, то $"innov_cov" P_(k|k-1) succ 0$, откуда
-    существует $S^(-1)$.
+    существует $R_(e,k)^(-1)$.
 
     - @kailath2000[§ 9.5 "An Important Special Assumption: R"].
   *)
@@ -325,7 +325,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.5.3 "Existence"].
   *)
-  Lemma innov_cov_inv (P_pred : 'M[ℂ]_n) :
+  Corollary innov_cov_inv (P_pred : 'M[ℂ]_n) :
     psd P_pred -> innov_cov P_pred \in unitmx.
   Proof.
     move=> psdP.
@@ -341,9 +341,9 @@ Section KalmanFilter.
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"].
   *)
   Definition joseph_form (P_pred : 'M[ℂ]_n) : 'M[ℂ]_n :=
-    let K := kalman_gain P_pred in
-    let ImKH := 1%:M - K *m H in
-    ImKH *m P_pred *m ImKH^t* + K *m R *m K^t*.
+    let K := filter_gain P_pred in
+    let EmKH := 1%:M - K *m H in
+    EmKH *m P_pred *m EmKH^t* + K *m R *m K^t*.
 
   (*
     Эквивалентность формы Джозефа стандартной.
@@ -359,9 +359,9 @@ Section KalmanFilter.
   Proof.
     move=> psdP.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
-    set K := kalman_gain P_pred.
+    set K := filter_gain P_pred.
     have KS : K *m innov_cov P_pred = P_pred *m H^t*.
-      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
+      by rewrite /K filter_gainE -mulmxA mulVmx // mulmx1.
     have hE : K *m H *m P_pred *m H^t* + K *m R = P_pred *m H^t*.
       by move: KS; rewrite innov_covE mulmxDr !mulmxA.
     have KR : K *m R = (1%:M - K *m H) *m P_pred *m H^t*.
@@ -386,10 +386,10 @@ Section KalmanFilter.
   Proof.
     move=> psdP.
     rewrite /joseph_form.
-    set K := kalman_gain P_pred.
-    set ImKH := 1%:M - K *m H.
+    set K := filter_gain P_pred.
+    set EmKH := 1%:M - K *m H.
     apply: psd_add.
-    - exact: psd_lcongr ImKH psdP.
+    - exact: psd_lcongr EmKH psdP.
     - exact: psd_lcongr K (pd_psd R_pd).
   Qed.
 
@@ -420,9 +420,9 @@ Section KalmanFilter.
   Proof.
     move=> psdP.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
-    set K := kalman_gain P_pred.
+    set K := filter_gain P_pred.
     have KS : K *m innov_cov P_pred = P_pred *m H^t*.
-      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
+      by rewrite /K filter_gainE -mulmxA mulVmx // mulmx1.
     have Psym : P_pred = P_pred^t* := psdP.1.
     have Ssym : innov_cov P_pred = (innov_cov P_pred)^t*
       := (innov_cov_pd psdP).1.
@@ -449,10 +449,10 @@ Section KalmanFilter.
     pd P_pred ->
     update_cov P_pred *m (invmx P_pred + H^t* *m invmx R *m H) = 1%:M.
   (*
-    Доказательство чисто алгебраическое: используется уже выведенная связь
-    $K R = (E - K H) P H†$ и обратимость $P$, $R$, $S$. Это даёт основу для
-    строго убывающей версии итерации Риккати без обращения к спектральной
-    теореме.
+    Подставляем $"update_cov" P = (E_n - K H) P$ и раскрываем произведение:
+    слагаемое с $P^(-1)$ равно $E_n - K H$. Из $K R_e = P H†$ (определение
+    усиления) и $R_e = H P H† + R$ следует $K R = (E_n - K H) P H†$, поэтому
+    слагаемое с $H† R^(-1) H$ равно $K R R^(-1) H = K H$; сумма равна $E_n$.
   *)
   Proof.
     move=> Ppd.
@@ -460,9 +460,9 @@ Section KalmanFilter.
     have Punit : P_pred \in unitmx := pd_unit Ppd.
     have Runit : R \in unitmx := pd_unit R_pd.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
-    set K := kalman_gain P_pred.
+    set K := filter_gain P_pred.
     have KS : K *m innov_cov P_pred = P_pred *m H^t*.
-      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
+      by rewrite /K filter_gainE -mulmxA mulVmx // mulmx1.
     have hE : K *m H *m P_pred *m H^t* + K *m R = P_pred *m H^t*.
       by move: KS; rewrite innov_covE mulmxDr !mulmxA.
     have KR : K *m R = (1%:M - K *m H) *m P_pred *m H^t*.
@@ -495,7 +495,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.5, Theorem 9.5.1 "Standard and Information Forms"].
   *)
-  Lemma update_cov_inverse (P_pred : 'M[ℂ]_n) :
+  Corollary update_cov_inverse (P_pred : 'M[ℂ]_n) :
     pd P_pred ->
     invmx (update_cov P_pred) = invmx P_pred + H^t* *m invmx R *m H.
   Proof.
@@ -512,7 +512,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.5.3 "Existence"].
   *)
-  Lemma update_cov_pd (P_pred : 'M[ℂ]_n) :
+  Corollary update_cov_pd (P_pred : 'M[ℂ]_n) :
     pd P_pred -> pd (update_cov P_pred).
   Proof.
     move=> Ppd.
@@ -544,12 +544,12 @@ Section KalmanFilter.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
     have hSpd : pd (innov_cov P_pred) := innov_cov_pd psdP.
     have hSinv_psd : psd (invmx (innov_cov P_pred)) := pd_psd (pd_inv hSpd).
-    set K := kalman_gain P_pred.
+    set K := filter_gain P_pred.
     have eq1 : P_pred - update_cov P_pred = K *m H *m P_pred.
       by rewrite !update_covE -/K mulmxBl mul1mx opprB addrC subrK.
     have eq2 : K *m H *m P_pred =
               (H *m P_pred)^t* *m invmx (innov_cov P_pred) *m (H *m P_pred).
-      rewrite /K kalman_gainE trmxC_mul -psdP.1.
+      rewrite /K filter_gainE trmxC_mul -psdP.1.
       by rewrite !mulmxA.
     by rewrite eq1 eq2; exact: psd_congr (H *m P_pred) hSinv_psd.
   Qed.
@@ -568,8 +568,8 @@ Section KalmanFilter.
     Тождество выделения полного квадрата.
 
     При $P succ.eq 0$ выполнено
-    $"alt_update_cov"(K', P) = "update_cov" P + (K' - K) S (K' - K)†$, где $K$
-    обозначает оптимальное усиление Калмана, а $S$ инновационную ковариацию.
+    $"alt_update_cov"(K', P) = "update_cov" P + (K' - K) R_e (K' - K)†$, где
+    $K$ обозначает оптимальное усиление, а $R_e$ инновационную ковариацию.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
@@ -577,18 +577,18 @@ Section KalmanFilter.
     psd P_pred ->
     alt_update_cov K' P_pred =
       update_cov P_pred
-      + (K' - kalman_gain P_pred) *m innov_cov P_pred
-                                  *m (K' - kalman_gain P_pred)^t*.
+      + (K' - filter_gain P_pred) *m innov_cov P_pred
+                                  *m (K' - filter_gain P_pred)^t*.
   Proof.
     move=> psdP.
-    set K := kalman_gain P_pred.
+    set K := filter_gain P_pred.
     set S := innov_cov P_pred.
     set dK := K' - K.
     have Sunit : S \in unitmx := innov_cov_inv psdP.
     have Psym : P_pred = P_pred^t* := psdP.1.
     have Ssym : S = S^t* := (pd_psd (innov_cov_pd psdP)).1.
     have KS : K *m S = P_pred *m H^t*.
-      by rewrite /K kalman_gainE -mulmxA mulVmx // mulmx1.
+      by rewrite /K filter_gainE -mulmxA mulVmx // mulmx1.
     have HPeq : S *m K^t* = H *m P_pred.
       have := congr1 (fun M : 'M[ℂ]_(n, p) => M^t*) KS.
       by rewrite !trmxC_mul trmxCK -Psym -Ssym.
@@ -663,14 +663,14 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "The Innovations Recursions"].
   *)
-  Theorem kalman_gain_optimal (P_pred : 'M[ℂ]_n) (K' : 'M[ℂ]_(n, p)) :
+  Theorem filter_gain_optimal (P_pred : 'M[ℂ]_n) (K' : 'M[ℂ]_(n, p)) :
     psd P_pred ->
     \tr (update_cov P_pred) <= \tr (alt_update_cov K' P_pred).
   Proof.
     move=> psdP.
     rewrite (alt_update_cov_diff K' psdP) linearD /=.
     rewrite -[X in X <= _]addr0 lerD2l.
-    set dK := K' - kalman_gain P_pred.
+    set dK := K' - filter_gain P_pred.
     apply: psd_tr_ge0.
     exact: psd_lcongr dK (pd_psd (innov_cov_pd psdP)).
   Qed.
@@ -682,13 +682,13 @@ Section KalmanFilter.
 
     - @kailath2000[§ 3.3.1 "Orthogonality Condition"].
   *)
-  Theorem kalman_gain_normal_eq (P_pred : 'M[ℂ]_n) :
+  Theorem filter_gain_normal_eq (P_pred : 'M[ℂ]_n) :
     psd P_pred ->
-    kalman_gain P_pred *m innov_cov P_pred = P_pred *m H^t*.
+    filter_gain P_pred *m innov_cov P_pred = P_pred *m H^t*.
   Proof.
     move=> psdP.
     have Sunit : innov_cov P_pred \in unitmx := innov_cov_inv psdP.
-    by rewrite kalman_gainE -mulmxA mulVmx // mulmx1.
+    by rewrite filter_gainE -mulmxA mulVmx // mulmx1.
   Qed.
 
   (*
@@ -755,7 +755,7 @@ Section KalmanFilter.
     Схема доказательства: детектируемость `[F,H]` даёт стабилизирующее усиление,
     а оно - устойчивость по Шуру матрицы замкнутого контура.
 
-    См. `dare.dare_stabilizing_sol_frob`, `dare.kalman_gain_frob_cvgn`,
+    См. `dare.dare_stabilizing_sol_frob`, `dare.filter_gain_frob_cvgn`,
     `dare.riccati_frob_cvgn`.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1];
@@ -813,7 +813,7 @@ Section KalmanFilter.
 
     - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
   *)
-  Lemma kf_step_psd (st : kf_state) (u : 'cV[ℂ]_m) (y : 'cV[ℂ]_p) :
+  Theorem kf_step_psd (st : kf_state) (u : 'cV[ℂ]_m) (y : 'cV[ℂ]_p) :
     psd (kf_P st) -> psd (kf_P (kf_step st u y)).
   Proof.
     move=> hP.
@@ -835,7 +835,7 @@ End KalmanFilter.
 *)
 Notation predict_cov := (riccati_def.predict_cov conjC).
 Notation innov_cov := (riccati_def.innov_cov conjC).
-Notation kalman_gain := (riccati_def.kalman_gain conjC).
+Notation filter_gain := (riccati_def.filter_gain conjC).
 Notation update_cov := (riccati_def.update_cov conjC).
 Notation alt_update_cov := (riccati_def.alt_update_cov conjC).
 Notation riccati_step := (riccati_def.riccati_step conjC).

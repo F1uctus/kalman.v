@@ -42,21 +42,21 @@ Section GenericDefs.
   Definition innov_cov (P : 'M[R]_n) : 'M[R]_p :=
     H *m P *m map_mx conj H^T + Rm.
 
-  (* Усиление Калмана: $P H† S^(-1)$, где $S$ - инновационная ковариация. *)
-  Definition kalman_gain (P : 'M[R]_n) : 'M[R]_(n, p) :=
+  (* Фильтрующее усиление: $K_(f,k) = P H† R_(e,k)^(-1)$. *)
+  Definition filter_gain (P : 'M[R]_n) : 'M[R]_(n, p) :=
     P *m map_mx conj H^T *m invmx (innov_cov P).
 
   (* Обновление ковариации: $(E_n - K H) P$. *)
   Definition update_cov (P : 'M[R]_n) : 'M[R]_n :=
-    (1%:M - kalman_gain P *m H) *m P.
+    (1%:M - filter_gain P *m H) *m P.
 
   (*
     Шаг обновления с произвольным усилением $K_p$ в форме Джозефа:
     $(E_n - K_p H) P (E_n - K_p H)† + K_p R K_p†$.
   *)
   Definition alt_update_cov (Kp : 'M[R]_(n, p)) (P : 'M[R]_n) : 'M[R]_n :=
-    let ImKH := 1%:M - Kp *m H in
-    ImKH *m P *m map_mx conj ImKH^T + Kp *m Rm *m map_mx conj Kp^T.
+    let EmKH := 1%:M - Kp *m H in
+    EmKH *m P *m map_mx conj EmKH^T + Kp *m Rm *m map_mx conj Kp^T.
 
   (* Шаг итерации Риккати: обновление после предсказания. *)
   Definition riccati_step (P : 'M[R]_n) : 'M[R]_n :=
@@ -74,12 +74,12 @@ Section GenericDefs.
     innov_cov P = H *m P *m map_mx conj H^T + Rm.
   Proof. by []. Qed.
 
-  Lemma kalman_gainE (P : 'M[R]_n) :
-    kalman_gain P = P *m map_mx conj H^T *m invmx (innov_cov P).
+  Lemma filter_gainE (P : 'M[R]_n) :
+    filter_gain P = P *m map_mx conj H^T *m invmx (innov_cov P).
   Proof. by []. Qed.
 
   Lemma update_covE (P : 'M[R]_n) :
-    update_cov P = (1%:M - kalman_gain P *m H) *m P.
+    update_cov P = (1%:M - filter_gain P *m H) *m P.
   Proof. by []. Qed.
 
   Lemma alt_update_covE (Kp : 'M[R]_(n, p)) (P : 'M[R]_n) :
@@ -142,12 +142,12 @@ Section Gramians.
   Proof. by rewrite /ctrl_gram big_ord_recr. Qed.
 
   (*
-    Матрица замкнутого контура (предиктор) $F - F K_f H$, где $K_f$ - усиление
-    Калмана на предсказанной ковариации `predict_cov`.
+    Матрица замкнутого контура (предиктор) $F - F K_f H$, где $K_f$ обозначает
+    фильтрующее усиление на предсказанной ковариации `predict_cov`.
   *)
   Definition closed_loop (m n p : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
       (H : 'M[R]_(p, n)) (Q : 'M[R]_m) (Rm : 'M[R]_p)
       (P : 'M[R]_n) : 'M[R]_n :=
-    F - F *m kalman_gain conj H Rm (predict_cov conj F G Q P) *m H.
+    F - F *m filter_gain conj H Rm (predict_cov conj F G Q P) *m H.
 
 End Gramians.

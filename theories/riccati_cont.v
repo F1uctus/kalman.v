@@ -6,10 +6,10 @@
     (полиномы от элементов);
   - непрерывность `invmx` на `unitmx`
     (формула Крамера `invmx A = (\det A)^-1 *: \adj A`);
-  - непрерывность `predict_cov`, `innov_cov`, `kalman_gain`, `update_cov`,
+  - непрерывность `predict_cov`, `innov_cov`, `filter_gain`, `update_cov`,
     `riccati_step` на соответствующих областях.
 
-  Областью непрерывности `kalman_gain` и `update_cov` является открытое
+  Областью непрерывности `filter_gain` и `update_cov` является открытое
   множество `{ P | innov_cov P \in unitmx }`, которое содержит весь конус
   неотрицательно определённых матриц (по `innov_cov_inv`).
 *)
@@ -185,23 +185,23 @@ Section KalmanCont.
   Qed.
 
   (*
-    $"kalman_gain" P = P H† "invmx"("innov_cov" P)$. Непрерывен в точках, где
+    $"filter_gain" P = P H† "invmx"("innov_cov" P)$. Непрерывен в точках, где
     `innov_cov L \in unitmx`.
   *)
-  Local Notation kalman_gain := (riccati_def.kalman_gain conjC H R).
+  Local Notation filter_gain := (riccati_def.filter_gain conjC H R).
 
-  Lemma cvgn_kalman_gain (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
+  Lemma cvgn_filter_gain (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
     Pseq @ \oo --> L -> innov_cov L \in unitmx ->
-    (fun k => kalman_gain (Pseq k)) @ \oo --> kalman_gain L.
+    (fun k => filter_gain (Pseq k)) @ \oo --> filter_gain L.
   Proof.
     move=> HP Sunit.
-    rewrite kalman_gainE; under eq_cvg=> k do rewrite kalman_gainE.
+    rewrite filter_gainE; under eq_cvg=> k do rewrite filter_gainE.
     apply: cvgn_mulmx.
     - apply: cvgn_mulmx HP _; exact: cvg_cst.
     - exact: cvgn_invmx (cvgn_innov_cov HP) Sunit.
   Qed.
 
-  (* $"update_cov" P = (E - "kalman_gain" P H) P$. *)
+  (* $"update_cov" P = (E - "filter_gain" P H) P$. *)
   Local Notation update_cov := (riccati_def.update_cov conjC H R).
 
   Lemma cvgn_update_cov (Pseq : nat -> 'M[ℂ]_n) (L : 'M[ℂ]_n) :
@@ -213,7 +213,7 @@ Section KalmanCont.
     apply: cvgn_mulmx; last exact: HP.
     apply: cvgn_submx; first exact: cvg_cst.
     apply: cvgn_mulmx; last exact: cvg_cst.
-    exact: cvgn_kalman_gain HP Sunit.
+    exact: cvgn_filter_gain HP Sunit.
   Qed.
 
   (* $"riccati_step" P = "update_cov"("predict_cov" P)$. *)

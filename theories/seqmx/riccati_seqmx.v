@@ -59,13 +59,13 @@ Definition innov_cov_seqmx (sP : @seqmx C) : @seqmx C :=
     (@hmul_op _ _ _ p n p (@hmul_op _ _ _ p n n sH sP) (ctr_seqmx p n sH))
     sRm.
 
-Definition kalman_gain_seqmx (sP : @seqmx C) : @seqmx C :=
+  Definition filter_gain_seqmx (sP : @seqmx C) : @seqmx C :=
   @hmul_op _ _ _ n p p
     (@hmul_op _ _ _ n n p sP (ctr_seqmx p n sH))
     (cinv (innov_cov_seqmx sP)).
 
 Definition update_cov_seqmx (sP : @seqmx C) : @seqmx C :=
-  let K := kalman_gain_seqmx sP in
+    let K := filter_gain_seqmx sP in
   @hmul_op _ _ _ n n n
     (sub_seqmx (seqmx1 n) (@hmul_op _ _ _ n p n K sH)) sP.
 
@@ -75,9 +75,9 @@ Definition update_cov_seqmx (sP : @seqmx C) : @seqmx C :=
     `alt_update_cov`.
   *)
 Definition alt_update_cov_seqmx (sKp sP : @seqmx C) : @seqmx C :=
-  let ImKH := sub_seqmx (seqmx1 n) (@hmul_op _ _ _ n p n sKp sH) in
+    let EmKH := sub_seqmx (seqmx1 n) (@hmul_op _ _ _ n p n sKp sH) in
   add_seqmx
-    (@hmul_op _ _ _ n n n (@hmul_op _ _ _ n n n ImKH sP) (ctr_seqmx n n ImKH))
+      (@hmul_op _ _ _ n n n (@hmul_op _ _ _ n n n EmKH sP) (ctr_seqmx n n EmKH))
     (@hmul_op _ _ _ n p n (@hmul_op _ _ _ n p p sKp sRm) (ctr_seqmx n p sKp)).
 
   (*
@@ -179,13 +179,13 @@ Proof.
   exact: refines_apply.
 Qed.
 
-Lemma kalman_gain_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
+    Lemma filter_gain_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx p))
-        (kalman_gain conj H Rm P)
-    (kalman_gain_seqmx conj n p sH sRm cinv sP).
+        (filter_gain conj H Rm P)
+        (filter_gain_seqmx conj n p sH sRm cinv sP).
 Proof.
-      rewrite /kalman_gain /kalman_gain_seqmx.
+      rewrite /filter_gain /filter_gain_seqmx.
   have rinv := cinv_correct (innov_cov_seqmx_correct rP).
   exact: (refines_mulmx (refines_mulmx rP (refines_ctr_seqmx rH)) rinv).
 Qed.
@@ -197,7 +197,7 @@ Lemma update_cov_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (update_cov_seqmx conj n p sH sRm cinv sP).
 Proof.
       rewrite /update_cov /update_cov_seqmx.
-  have rK := kalman_gain_seqmx_correct rP.
+      have rK := filter_gain_seqmx_correct rP.
   have rKH := refines_mulmx rK rH.
   have r1 := Rseqmx_1 R (nat_Rxx n).
   have rsub := refines_addmx r1 (refines_oppmx rKH).
@@ -215,8 +215,8 @@ Proof.
       rewrite /alt_update_cov /alt_update_cov_seqmx.
   have rKpH := refines_mulmx rKp rH.
   have r1 := Rseqmx_1 R (nat_Rxx n).
-  have rImKH := refines_addmx r1 (refines_oppmx rKpH).
-  have rT1 := refines_mulmx (refines_mulmx rImKH rP) (refines_ctr_seqmx rImKH).
+      have rEmKH := refines_addmx r1 (refines_oppmx rKpH).
+      have rT1 := refines_mulmx (refines_mulmx rEmKH rP) (refines_ctr_seqmx rEmKH).
   have rT2 := refines_mulmx (refines_mulmx rKp rRm) (refines_ctr_seqmx rKp).
   exact: (refines_addmx rT1 rT2).
 Qed.
@@ -579,13 +579,13 @@ Section System.
     exact: refines_apply.
   Qed.
 
-  Lemma kalman_gain_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
+  Lemma filter_gain_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n p)
-      (kalman_gain conj H Rm P)
-      (kalman_gain_seqmx conjC n p sH sRm cinv sP).
+      (filter_gain conj H Rm P)
+      (filter_gain_seqmx conjC n p sH sRm cinv sP).
   Proof.
-    rewrite /kalman_gain /kalman_gain_seqmx.
+    rewrite /filter_gain /filter_gain_seqmx.
     have rinv := cinv_correct (innov_cov_seqmxC rP).
     exact: (refinesC_mulmx (refinesC_mulmx rP (refinesC_ctr rH)) rinv).
   Qed.
@@ -597,7 +597,7 @@ Section System.
       (update_cov_seqmx conjC n p sH sRm cinv sP).
   Proof.
     rewrite /update_cov /update_cov_seqmx.
-    have rK := kalman_gain_seqmxC rP.
+    have rK := filter_gain_seqmxC rP.
     have rKH := refinesC_mulmx rK rH.
     have r1 : refines (RC n n) 1%:M (seqmx1 n) by tc.
     have rsub := refinesC_addmx r1 (refinesC_oppmx rKH).

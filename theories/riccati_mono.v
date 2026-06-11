@@ -9,7 +9,7 @@
     неотрицательно определённых матриц. Доказывается через тождество
     оптимальности `alt_update_cov_diff`: update_cov(P1) <=
     alt_update_cov(K2, P1) <= alt_update_cov(K2, P2) = update_cov(P2), где
-    `K2 := kalman_gain(P2)`. Линейность `alt_update_cov` в `P` даёт среднее
+    `K2 := filter_gain(P2)`. Линейность `alt_update_cov` в `P` даёт среднее
     неравенство.
   - `riccati_step_mono` - комбинация двух монотонностей; монотонна на конусе
     неотрицательно определённых матриц.
@@ -82,21 +82,22 @@ Section RiccatiMonotone.
     Для любого усиления $K'$ разность
     $"alt_update_cov" K' P_2 - "alt_update_cov" K' P_1 = (E - K' H)(P_2 - P_1)(E - K' H)†$
     неотрицательно определена, то есть $"alt_update_cov" K' (dot)$ монотонен по
-    $P$. Положив $K_2 := "kalman_gain" P_2$, имеем
+    $P$. Положив $K_2 := "filter_gain" P_2$, имеем
     $"alt_update_cov" K_2 P_2 = "update_cov" P_2$
-    (член $(K_2 - K_2) S_2 (K_2 - K_2)†$ исчезает) и
+    (член $(K_2 - K_2) R_(e,2) (K_2 - K_2)†$ исчезает) и
     $"update_cov" P_1 prec.eq "alt_update_cov" K_2 P_1$
-    (член $(K_2 - K_1) S_1 (K_2 - K_1)†$ неотрицательно определён).
+    (член $(K_2 - K_1) R_(e,1) (K_2 - K_1)†$ неотрицательно определён); здесь
+    $K_i$ и $R_(e,i)$ обозначают усиление и инновационную ковариацию для $P_i$.
     Транзитивностью $"update_cov" P_1 prec.eq "update_cov" P_2$.
   *)
   Proof.
     move=> psd1 psd2 hLe.
-    set K2 := kalman_gain H R P2.
+    set K2 := filter_gain H R P2.
     (* Шаг 1: update_cov P1 <= alt_update_cov K2 P1 *)
     have alt_P1_eq : alt_update_cov H R K2 P1 =
         update_cov H R P1
-        + (K2 - kalman_gain H R P1) *m innov_cov H R P1
-                                    *m (K2 - kalman_gain H R P1)^t*
+        + (K2 - filter_gain H R P1) *m innov_cov H R P1
+                                    *m (K2 - filter_gain H R P1)^t*
       := alt_update_cov_diff H R_pd K2 psd1.
     have step1 : psd_le (update_cov H R P1) (alt_update_cov H R K2 P1).
       rewrite /psd_le alt_P1_eq addrAC subrr add0r.
@@ -110,7 +111,7 @@ Section RiccatiMonotone.
       by [].
     (*
       Шаг 3: alt_update_cov K2 P1 <= alt_update_cov K2 P2 (линейно в P).
-      Доказываем через `psd_le_congr` (конгруэнтность сохраняет порядок Лёвнера)
+      Доказываем через `psd_le_congr` (конгруэнция сохраняет порядок Лёвнера)
       и `psd_le_add2l` (сдвиг на константу).
     *)
     have step3 : psd_le (alt_update_cov H R K2 P1) (alt_update_cov H R K2 P2).

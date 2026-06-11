@@ -417,7 +417,10 @@
 
 // Thin wrappers binding `rocq-doc` to the great-theorems environments. The `.v`
 // file is the single source of truth: title, description, citations, statement,
-// proof sketch and proof body are all pulled from the named declaration.
+// proof sketch and proof body are all pulled from the named declaration. Each
+// wrapper accepts only the matching Rocq keywords (`kinds`), so a declaration
+// whose `.v` keyword disagrees with the environment used in the paper raises
+// a compile error instead of silently rendering under the wrong heading.
 #let rocq-theorem(source, name, ..rest) = rocq-doc(
   source,
   name,
@@ -425,6 +428,7 @@
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
   kind: "Теорема",
+  kinds: ("Theorem",),
   ..rest,
 )
 #let rocq-lemma(source, name, ..rest) = rocq-doc(
@@ -434,6 +438,7 @@
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
   kind: "Лемма",
+  kinds: ("Lemma",),
   ..rest,
 )
 #let rocq-statement-block(source, name, ..rest) = rocq-doc(
@@ -452,6 +457,7 @@
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
   kind: "Следствие",
+  kinds: ("Corollary",),
   counted: false,
   ..rest,
 )
@@ -462,6 +468,7 @@
   sketch-env: proofsketch,
   scope: rocq-eval-scope,
   kind: "Определение",
+  kinds: ("Definition", "Fixpoint", "Record"),
   ..rest,
 )
 

@@ -188,14 +188,22 @@
   "Axiom",
 )
 
-// Locate a declaration by its bare `name` (no kind keyword). Returns the line
-// index and the matched kind keyword. Panics if the declaration is absent.
-#let rocq-locate(lines, name) = {
+// Locate a declaration by its bare `name` (no kind keyword). `kinds` narrows
+// the accepted keywords (default: any of `rocq-decl-kinds`), so a wrapper that
+// renders, say, a corollary fails loudly when the `.v` source says `Lemma`:
+// the keyword in the source and the environment in the paper must agree.
+// Returns the line index and the matched kind keyword. Panics if absent.
+#let rocq-locate(lines, name, kinds: none) = {
+  let ks = if kinds == none { rocq-decl-kinds } else { kinds }
   let decl-re = regex(
-    "^\\s*(" + rocq-decl-kinds.join("|") + ")\\s+" + name + "\\b",
+    "^\\s*(" + ks.join("|") + ")\\s+" + name + "\\b",
   )
   let hit = lines.enumerate().find(((i, l)) => l.match(decl-re) != none)
-  if hit == none { panic("rocq-doc: no declaration `" + name + "`") }
+  if hit == none {
+    panic(
+      "rocq-doc: no declaration `" + name + "` of kind " + ks.join("/"),
+    )
+  }
   (idx: hit.at(0), kind: hit.at(1).match(decl-re).captures.at(0))
 }
 

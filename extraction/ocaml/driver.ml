@@ -26,8 +26,8 @@ let step ~m ~n ~p ~cinv sF sG sH sQ sR sP =
 let predict_cov ~m ~n sF sG sQ sP =
   R.predict_cov_seqmx q0 qadd qmul conj m n sF sG sQ sP
 
-let kalman_gain ~n ~p ~cinv sH sR sPpred =
-  R.kalman_gain_seqmx q0 qadd qmul conj n p sH sR cinv sPpred
+let filter_gain ~n ~p ~cinv sH sR sPpred =
+  R.filter_gain_seqmx q0 qadd qmul conj n p sH sR cinv sPpred
 
 let mpow ~n sA k = R.mpow_seqmx q0 q1 qadd qmul n sA k
 
@@ -367,7 +367,7 @@ let qscale c (s : mat) : mat = List.map (List.map (qmul c)) s
 let gen_orthogonality ~kss path =
   let pss = iter kss dare_step sys_P0 in
   let p_pred = predict_cov ~m:1 ~n:2 sys_F sys_G sys_Q pss in
-  let k = kalman_gain ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R p_pred in
+  let k = filter_gain ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R p_pred in
   let s = innov_cov ~n:2 ~p:1 sys_H sys_R p_pred in
   let p_opt = update_cov ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R p_pred in
   let tr_opt = trace2 (mf p_opt) in
