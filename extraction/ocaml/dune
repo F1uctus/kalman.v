@@ -6,7 +6,9 @@
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
            mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
            mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
-           Kalman Bignums Stdlib))
+           Kalman Bignums Stdlib infotheo mathcomp.ssreflect
+           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
+           Interval Flocq Coquelicot))
 (executable
  (name driver)
  (libraries zarith yojson)

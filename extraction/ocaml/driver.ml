@@ -262,61 +262,40 @@ let gen_schur ~kmax ~kss path =
   |> Yojson.Basic.to_file path
 
 
-let rng = ref 123456789
-let nextf () =
-  rng := (1103515245 * !rng + 12345) land 0x3FFFFFFF;
-  float_of_int !rng /. float_of_int 0x40000000
-
-let gauss () =
-  let u1 = nextf () and u2 = nextf () in
-  sqrt (-2. *. log (max 1e-12 u1)) *. cos (2. *. Float.pi *. u2)
-
-let fF = mf sys_F and fG = mf sys_G and fH = mf sys_H
-let sigma_w = sqrt (qf (qget sys_Q 0 0))
-let sigma_v = sqrt (qf (qget sys_R 0 0))
-
-let matvec m v =
-  Array.map (fun row -> Array.fold_left ( +. ) 0.
-    (Array.mapi (fun j x -> x *. v.(j)) row)) m
-
-let kr_P0 = [ [ qof_int 2; q0 ]; [ q0; qof_int 2 ] ]
-
+(* The whole run (true trajectory, measurements, estimates, covariances) is
+   the extracted verified program theories/seqmx/kalman_sim.v: the noises come
+   from the four-point model of theories/noise.v and the sample path is the
+   Lehmer generator defined inside Rocq. No PRNG and no simulation logic lives
+   in OCaml; this function only converts the extracted exact rationals to JSON
+   floats (the sqrt for the sigma band is presentation only). The first row is
+   the initial state and carries no measurement. *)
 let gen_kalman_run ~kmax path =
-  rng := 123456789;
-  let pcur = ref kr_P0 in
-  let xt = ref [| 1.; 1. |] in
-  let xe = ref [| 0.; 0. |] in
-  let steps = ref [] in
-  for k = 0 to kmax do
-    let ppred = predict_cov ~m:1 ~n:2 sys_F sys_G sys_Q !pcur in
-    let kk = mf (kalman_gain ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R ppred) in
-    let meas = (matvec fH !xt).(0) +. sigma_v *. gauss () in
-    let xpred = matvec fF !xe in
-    let innov = meas -. (matvec fH xpred).(0) in
-    let xe' = Array.mapi (fun i x -> x +. kk.(i).(0) *. innov) xpred in
-    xe := xe';
-    let pfilt = step ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R !pcur in
-    let pf = mf pfilt in
-    steps :=
-      jobj
-        [
-          ("k", jint k);
-          ("x_true", jvec !xt);
-          ("x_est", jvec !xe);
-          ("meas", jfloat meas);
-          ("pos_sigma", jfloat (sqrt pf.(0).(0)));
-          ("ellipse", jellipse (ellipse2 pf));
-        ]
-      :: !steps;
-    pcur := pfilt;
-    let w = sigma_w *. gauss () in
-    let drive = Array.map (fun row -> row.(0) *. w) fG in
-    xt := Array.mapi (fun i x -> x +. drive.(i)) (matvec fF !xt)
-  done;
+  let rows =
+    R.kalman_sim_run q0 q1 qopp qadd qmul qinv conj (cinv ~n:1) kmax
+  in
+  let steps =
+    List.mapi
+      (fun k (((xt, y), xe), p) ->
+        let base =
+          [
+            ("k", jint k);
+            ("x_true", jvec [| qf (qget xt 0 0); qf (qget xt 1 0) |]);
+            ("x_est", jvec [| qf (qget xe 0 0); qf (qget xe 1 0) |]);
+            ("pos_sigma", jfloat (sqrt (qf (qget p 0 0))));
+          ]
+        in
+        let meas =
+          match y with
+          | [] -> []
+          | _ -> [ ("meas", jfloat (qf (qget y 0 0))) ]
+        in
+        jobj (base @ meas))
+      rows
+  in
   jobj
     [
       ("system", jsystem);
-      ("steps", `List (List.rev !steps));
+      ("steps", `List steps);
     ]
   |> Yojson.Basic.to_file path
 
@@ -511,7 +490,7 @@ let () =
   gen_dare ~kmax:36 ~kss:200 (Filename.concat dir "dare_convergence.json");
   gen_gramian ~n:2 ~kmax:5 (Filename.concat dir "gramian.json");
   gen_schur ~kmax:30 ~kss:200 (Filename.concat dir "schur_stability.json");
-  gen_kalman_run ~kmax:39 (Filename.concat dir "kalman_run.json");
+  gen_kalman_run ~kmax:40 (Filename.concat dir "kalman_run.json");
   gen_duality (Filename.concat dir "duality_spectral.json");
   gen_orthogonality ~kss:200 (Filename.concat dir "orthogonality.json");
   gen_lyapunov ~kmax:36 ~kss:200 (Filename.concat dir "lyapunov.json");
