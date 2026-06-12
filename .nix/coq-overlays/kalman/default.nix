@@ -12,6 +12,7 @@
   mathcomp-classical,
   mathcomp-reals,
   mathcomp-analysis,
+  mathcomp-infotheo,
   bignums,
   coqeal,
   version ? ../../../.,
@@ -34,6 +35,7 @@ mkCoqDerivation {
     mathcomp-classical
     mathcomp-reals
     mathcomp-analysis
+    mathcomp-infotheo
     bignums
     coqeal
   ];
