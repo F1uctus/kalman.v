@@ -35,10 +35,10 @@ Local Open Scope proba_scope.
 
 Section Expectation.
 
-  Variable ℂ : numDomainType.
+  Variable K : numDomainType.
 
   (* Конечное вероятностное пространство: носитель Ω и распределение μ. *)
-  Variables (Ω : finType) (μ : fdist ℂ Ω).
+  Variables (Ω : finType) (μ : fdist K Ω).
 
   (*
     Математическое ожидание случайной матрицы.
@@ -46,16 +46,16 @@ Section Expectation.
     Формула повторяет определение `Ex` из infotheo для случайных величин со
     значениями в модуле: $EE X = sum_(ω in Ω) μ(ω) dot X(ω)$.
   *)
-  Definition Exp r c (X : Ω -> 'M[ℂ]_(r, c)) : 'M[ℂ]_(r, c) :=
+  Definition Exp r c (X : Ω -> 'M[K]_(r, c)) : 'M[K]_(r, c) :=
     \sum_(ω in Ω) μ ω *: X ω.
 
   (* Конгруэнтность по поточечному равенству случайных величин. *)
-  Lemma eq_Exp r c (X Y : Ω -> 'M[ℂ]_(r, c)) :
+  Lemma eq_Exp r c (X Y : Ω -> 'M[K]_(r, c)) :
     X =1 Y -> Exp X = Exp Y.
   Proof. by move=> XY; apply: eq_bigr => ω _; rewrite XY. Qed.
 
   (* Аддитивность; доказательство дословно как `E_add_RV` в infotheo. *)
-  Lemma Exp_add r c (X Y : Ω -> 'M[ℂ]_(r, c)) :
+  Lemma Exp_add r c (X Y : Ω -> 'M[K]_(r, c)) :
     Exp (fun ω => X ω + Y ω) = Exp X + Exp Y.
   Proof.
     rewrite /Exp -big_split /=.
@@ -63,7 +63,7 @@ Section Expectation.
   Qed.
 
   (* Однородность; доказательство дословно как `E_scale_RV` в infotheo. *)
-  Lemma Exp_scale r c (a : ℂ) (X : Ω -> 'M[ℂ]_(r, c)) :
+  Lemma Exp_scale r c (a : K) (X : Ω -> 'M[K]_(r, c)) :
     Exp (fun ω => a *: X ω) = a *: Exp X.
   Proof.
     rewrite /Exp scaler_sumr.
@@ -71,8 +71,8 @@ Section Expectation.
   Qed.
 
   (* Вынос постоянной матрицы из-под знака ожидания слева. *)
-  Lemma Exp_mulmx_l r c s (A : 'M[ℂ]_(r, c))
-      (X : Ω -> 'M[ℂ]_(c, s)) :
+  Lemma Exp_mulmx_l r c s (A : 'M[K]_(r, c))
+      (X : Ω -> 'M[K]_(c, s)) :
     Exp (fun ω => A *m X ω) = A *m Exp X.
   Proof.
     rewrite /Exp mulmx_sumr.
@@ -85,22 +85,22 @@ Section Expectation.
     Единственное место, где используется полная масса распределения
     (`FDist.f1`: $sum_ω μ(ω) = 1$); ср. `E_const_RV` в infotheo.
   *)
-  Lemma Exp_const r c (M : 'M[ℂ]_(r, c)) : Exp (fun _ => M) = M.
+  Lemma Exp_const r c (M : 'M[K]_(r, c)) : Exp (fun _ => M) = M.
   Proof. by rewrite /Exp -scaler_suml FDist.f1 scale1r. Qed.
 
   (* Производные тождества. *)
 
-  Lemma Exp_zero r c : Exp (fun _ => 0 : 'M[ℂ]_(r, c)) = 0.
+  Lemma Exp_zero r c : Exp (fun _ => 0 : 'M[K]_(r, c)) = 0.
   Proof. exact: Exp_const. Qed.
 
-  Lemma Exp_opp r c (X : Ω -> 'M[ℂ]_(r, c)) :
+  Lemma Exp_opp r c (X : Ω -> 'M[K]_(r, c)) :
     Exp (fun ω => - X ω) = - Exp X.
   Proof.
     rewrite /Exp -sumrN.
     by apply: eq_bigr => ω _; rewrite scalerN.
   Qed.
 
-  Lemma Exp_sub r c (X Y : Ω -> 'M[ℂ]_(r, c)) :
+  Lemma Exp_sub r c (X Y : Ω -> 'M[K]_(r, c)) :
     Exp (fun ω => X ω - Y ω) = Exp X - Exp Y.
   Proof.
     by rewrite (Exp_add X (fun ω => - Y ω)) Exp_opp.
@@ -113,14 +113,14 @@ End Expectation.
   само не становится; объявляем неявность вручную, чтобы пользоваться леммами
   при локальном обозначении 𝔼 := Exp μ.
 *)
-Arguments eq_Exp {ℂ Ω μ r c X Y}.
-Arguments Exp_add {ℂ Ω μ r c} X Y.
-Arguments Exp_scale {ℂ Ω μ r c} a X.
-Arguments Exp_mulmx_l {ℂ Ω μ r c s} A X.
-Arguments Exp_const {ℂ Ω μ r c} M.
-Arguments Exp_zero {ℂ Ω μ r c}.
-Arguments Exp_opp {ℂ Ω μ r c} X.
-Arguments Exp_sub {ℂ Ω μ r c} X Y.
+Arguments eq_Exp {K Ω μ r c X Y}.
+Arguments Exp_add {K Ω μ r c} X Y.
+Arguments Exp_scale {K Ω μ r c} a X.
+Arguments Exp_mulmx_l {K Ω μ r c s} A X.
+Arguments Exp_const {K Ω μ r c} M.
+Arguments Exp_zero {K Ω μ r c}.
+Arguments Exp_opp {K Ω μ r c} X.
+Arguments Exp_sub {K Ω μ r c} X Y.
 
 Section ExpectationInfotheo.
 

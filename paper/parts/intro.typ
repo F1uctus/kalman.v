@@ -170,18 +170,19 @@ Components (MathComp) @mahboubi2021, Infotheo @affeldt2014, CoqQuantum (CoqQ)
 == Математическое ожидание <sec:exp-algebra>
 
 Предположения модели о шуме и доказательство несмещённости (см. раздел
-@sec:unbiased) опираются на оператор математического ожидания $EE$: сумму
-значений случайной матрицы с весами конечного распределения `fdist` из
-библиотеки infotheo @affeldt2014 (формула её оператора `Ex`, записанная в
-`expectation.v` над `numDomainType`). Линейность и производные тождества
-доказаны леммами:
+@sec:unbiased) опираются на оператор математического ожидания
+$EE : (Omega -> KK^(r,c)) -> KK^(r,c)$: взвешенную сумму значений случайной
+матрицы, где весами исходов являются вероятности из дискретного распределения
+типа `fdist` (из библиотеки infotheo @affeldt2014) над упорядоченным
+нормированным целостным кольцом $KK$. Здесь $Omega$ -- пространство элементарных
+исходов.
 
+#rocq-snippet("expectation.v", "Definition Exp ")
 #rocq-snippet("expectation.v", "Lemma Exp_add ")
 #rocq-snippet("expectation.v", "Lemma Exp_scale ")
 #rocq-snippet("expectation.v", "Lemma Exp_mulmx_l ")
 #rocq-snippet("expectation.v", "Lemma Exp_zero ")
 #rocq-snippet("expectation.v", "Lemma Exp_opp ")
-#rocq-snippet("expectation.v", "Lemma Exp_sub ")
 
 #pagebreak()
 
