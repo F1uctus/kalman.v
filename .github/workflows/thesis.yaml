@@ -11,7 +11,70 @@ permissions:
   contents: write
 
 jobs:
+  layout-lint:
+    runs-on: ubuntu-latest
+    outputs:
+      reprint: ${{ steps.lint.outputs.reprint }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install poppler-utils (pdftotext)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Install typst-djvu (@local)
+        run: |
+          mkdir -p paper/packages/local/djvu
+          rm -rf paper/packages/local/djvu/0.1.0
+          git clone --depth 1 --branch v0.1.0 \
+            https://github.com/F1uctus/typst-djvu \
+            paper/packages/local/djvu/0.1.0
+
+      - name: Install touying-unn-itmm (@local)
+        run: |
+          mkdir -p paper/packages/local/unn-itmm
+          rm -rf paper/packages/local/unn-itmm/0.2.1
+          git clone --depth 1 --branch v0.2.1 \
+            https://github.com/F1uctus/touying-unn-itmm \
+            paper/packages/local/unn-itmm/0.2.1
+
+      - uses: typst-community/setup-typst@v4
+        with:
+          typst-version: '0.14.2'
+
+      - name: Download plint
+        run: |
+          curl -fsSL \
+            https://github.com/F1uctus/plint/releases/latest/download/plint-linux-x86_64 \
+            -o plint
+          chmod +x plint
+
+      # Сравнивает раскладку проверяемого коммита с печатным (git-base в
+      # paper/plint.toml) и собирает перечень страниц для перепечатки в вывод
+      # reprint. Код возврата 3 (сдвиг числа страниц или содержания страницы 2)
+      # роняет сборку; накопленная перепечатка отдельных страниц (код 1)
+      # допускается.
+      - name: Lint print layout and collect reprint list
+        id: lint
+        run: |
+          set +e
+          out=$(./plint --git-check --config paper/plint.toml)
+          code=$?
+          set -e
+          printf '%s\n' "$out"
+          if [ "$code" != 0 ] && [ "$code" != 1 ]; then exit "$code"; fi
+          pages=$(printf '%s\n' "$out" | sed -n 's/^changed pages: //p')
+          {
+            echo "reprint<<PLINT_EOF"
+            if [ -n "$pages" ]; then
+              echo "Страницы для перепечатки: $pages"
+            fi
+            echo "PLINT_EOF"
+          } >> "$GITHUB_OUTPUT"
+
   release:
+    needs: layout-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -58,6 +121,7 @@ jobs:
         with:
           tag_name: thesis-${{ github.run_number }}
           name: Thesis PDF
+          body: ${{ needs.layout-lint.outputs.reprint }}
           files: |
             paper/thesis.pdf
             paper/slides.pdf

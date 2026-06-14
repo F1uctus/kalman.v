@@ -1,0 +1,24 @@
+# plint configuration for the thesis (paper/thesis.typ).
+# Run from the repository root: tools/thesis-lint/_build/default/bin/plint.exe
+
+# Project root, relative to this file (the repository root, one level up).
+root     = ".."
+document = "paper/thesis.typ"
+
+# Render command. {doc}, {out} and {root} are substituted by plint and the
+# command must write the PDF to {out}. The page layout is frozen for print, so
+# fonts come only from paper/fonts and the #assert page check is disabled.
+render   = "TYPST_PACKAGE_PATH=paper/packages typst compile {doc} {out} --root {root} --package-path paper/packages --font-path paper/fonts --ignore-system-fonts --input assert-pages=off"
+
+snapshot = "tools/thesis-lint/snapshot"
+
+watch-dirs    = ["paper"]
+watch-exts    = [".typ", ".json", ".bib"]
+watch-exclude = ["packages"]
+
+# Page 2 is the table of contents; its shift is reported as a hard error.
+critical-pages = [2]
+
+# Commit the printed snapshot is built from, used as the reference by
+# --git-check (e.g. in CI).
+git-base = "b169b00"
