@@ -236,7 +236,7 @@ Qed.
 
       Программа `iter k riccati_step_seqmx sP0` уточняет абстрактную итерацию
       `iter k riccati_step P0`, что позволяет вычислять конечные приближения к
-      установившейся ковариации $P_(s s)$ без обращения к пределу `mx_mono_lim`.
+      установившейся ковариации $P_ss$ без обращения к пределу `mx_mono_lim`.
     *)
 Lemma riccati_iter_seqmx_correct (k : nat) (P0 : 'M[R]_n) (sP0 : @seqmx R)
     (rP0 : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P0 sP0) :

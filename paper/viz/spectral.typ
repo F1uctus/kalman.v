@@ -20,14 +20,11 @@
 
 // A small square plot canvas on a fixed symmetric range, school-book axes.
 #let qf-plot(r, size: 3.1, body) = cetz.canvas(length: 1cm, {
-  // Двусторонние стрелки осей делают рамку холста симметричной относительно
-  // оси $x = 0$, поэтому подписи под панелями центрируются ровно по вертикальной
-  // оси (иначе односторонняя стрелка справа смещает центр вправо).
   cetz.draw.set-style(axes: (
     stroke: (dash: "dotted", paint: gray),
     tick: (stroke: gray + 0.5pt),
-    x: (mark: (start: "straight", end: "straight")),
-    y: (mark: (start: "straight", end: "straight")),
+    x: (mark: (end: "straight")),
+    y: (mark: (end: "straight")),
   ))
   cetz-plot.plot.plot(
     name: "p",
@@ -73,13 +70,17 @@
 
 #let panel-antitone(data) = {
   let a = data.antitone
-  let rel-ab = [#text(fill: red)[$A$] #h(0.15em) $prec.eq$ #h(0.15em) #text(
-      fill: green,
-    )[$B$]]
+  let rel-ab = [
+    #text(fill: red)[$A$]
+    $thick prec.eq thick$
+    #text(fill: green)[$B$]
+    $quad thick$
+  ]
   let rel-inv = [
-    #text(fill: green)[$B^(-1)$] #h(0.15em) $prec.eq$ #h(0.15em) #text(
-      fill: red,
-    )[$A^(-1)$]
+    #text(fill: green)[$B^(-1)$]
+    $thick prec.eq thick$
+    #text(fill: red)[$A^(-1)$]
+    $quad thick$
   ]
   grid(
     columns: (auto, auto),

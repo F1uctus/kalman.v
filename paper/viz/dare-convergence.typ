@@ -12,6 +12,7 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
+#import "../common/markup-shorthands.typ": *
 #import "ellipse.typ": add-ellipse
 #import "plotdata.typ": dare-convergence-path, load, points
 #import "style.typ": viz-canvas, viz-resolve
@@ -50,7 +51,7 @@
     name: "conv",
     size: (6, 5),
     x-label: text(size: st.label, $k$),
-    y-label: text(size: st.label, $norm(P_k - P_(s s))_F$),
+    y-label: text(size: st.label, $norm(P_k - P_ss)_F$),
     x-min: 0,
     x-max: kmax + 1,
     y-min: -13,
@@ -65,7 +66,12 @@
     y-grid: "both",
     axis-style: "scientific",
     legend: "inner-north-east",
-    legend-style: (stroke: none, fill: white, padding: 0.2, item: (spacing: 0.3)),
+    legend-style: (
+      stroke: none,
+      fill: white,
+      padding: 0.2,
+      item: (spacing: 0.3),
+    ),
     {
       cetz-plot.plot.add(
         fit-line,
@@ -86,50 +92,50 @@
 #let panel-ellipses(data, max-shown: 12, style: (:)) = {
   let st = viz-resolve(style)
   viz-canvas(st, cetz.canvas(length: 1cm, {
-  cetz.draw.set-style(axes: (
-    stroke: (dash: "dotted", paint: gray),
-    tick: (stroke: gray + 0.5pt),
-  ))
-  // Non-degenerate early iterates (skip P_0 = 0) that show the morphing.
-  let shown = data
-    .iterations
-    .filter(it => it.ellipse.a > 1e-6)
-    .slice(0, max-shown)
-  let n = calc.max(shown.len(), 2)
-  cetz-plot.plot.plot(
-    name: "ell",
-    size: (6, 6),
-    x-min: -1,
-    x-max: 1,
-    y-min: -1,
-    y-max: 1,
-    x-label: text(size: st.label, $x_1$),
-    y-label: text(size: st.label, $x_2$),
-    x-tick-step: 0.5,
-    y-tick-step: 0.5,
-    x-grid: "both",
-    y-grid: "both",
-    axis-style: "school-book",
-    {
-      for (i, it) in shown.enumerate() {
-        let frac = i / (n - 1)
-        let e = it.ellipse
+    cetz.draw.set-style(axes: (
+      stroke: (dash: "dotted", paint: gray),
+      tick: (stroke: gray + 0.5pt),
+    ))
+    // Non-degenerate early iterates (skip P_0 = 0) that show the morphing.
+    let shown = data
+      .iterations
+      .filter(it => it.ellipse.a > 1e-6)
+      .slice(0, max-shown)
+    let n = calc.max(shown.len(), 2)
+    cetz-plot.plot.plot(
+      name: "ell",
+      size: (6, 6),
+      x-min: -1,
+      x-max: 1,
+      y-min: -1,
+      y-max: 1,
+      x-label: text(size: st.label, $x_1$),
+      y-label: text(size: st.label, $x_2$),
+      x-tick-step: 0.5,
+      y-tick-step: 0.5,
+      x-grid: "both",
+      y-grid: "both",
+      axis-style: "school-book",
+      {
+        for (i, it) in shown.enumerate() {
+          let frac = i / (n - 1)
+          let e = it.ellipse
+          add-ellipse(
+            radii: (e.a, e.b),
+            rotation: e.angle_rad * 1rad,
+            stroke: luma((1 - frac) * 70%) + 0.8pt,
+          )
+        }
+        // Steady-state ellipse, emphasized.
+        let ess = data.Pss_ellipse
         add-ellipse(
-          radii: (e.a, e.b),
-          rotation: e.angle_rad * 1rad,
-          stroke: luma((1 - frac) * 70%) + 0.8pt,
+          radii: (ess.a, ess.b),
+          rotation: ess.angle_rad * 1rad,
+          stroke: red + 1.3pt,
+          show-radii: true,
         )
-      }
-      // Steady-state ellipse, emphasized.
-      let ess = data.Pss_ellipse
-      add-ellipse(
-        radii: (ess.a, ess.b),
-        rotation: ess.angle_rad * 1rad,
-        stroke: red + 1.3pt,
-        show-radii: true,
-      )
-    },
-  )
+      },
+    )
   }))
 }
 
@@ -143,14 +149,14 @@
     stack(
       spacing: 0.6em,
       panel-convergence(data, st),
-      align(center, text(size: st.subcaption)[(а) геометрическая сходимость
-        по норме Фробениуса]),
+      align(center, text(size: st.subcaption)[(а) геометрическая сходимость по
+        норме Фробениуса]),
     ),
     stack(
       spacing: 0.6em,
       panel-ellipses(data, style: style),
       align(center, text(size: st.subcaption)[(б) эллипсы ковариации
-        $P_k -> P_(s s)$]),
+        $P_k -> P_ss$]),
     ),
   )
 }

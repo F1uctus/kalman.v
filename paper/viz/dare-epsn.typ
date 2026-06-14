@@ -20,6 +20,7 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
+#import "../common/markup-shorthands.typ": *
 #import "frames.typ": frame-strip
 #import "plotdata.typ": dare-convergence-path, load
 #import "style.typ": viz-canvas, viz-resolve
@@ -66,7 +67,7 @@
       name: "p",
       size: (4, 3.4),
       x-label: text(size: st.label, $k$),
-      y-label: text(size: st.label, $norm(P_k - P_(s s))_F^2$),
+      y-label: text(size: st.label, $norm(P_k - P_ss)_F^2$),
       x-min: 0,
       x-max: epsn-xmax,
       y-min: epsn-ymin,

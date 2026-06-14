@@ -15,6 +15,7 @@
 // Data: paper/data/dare_convergence.json (each iteration's 2x2 matrix P).
 
 #import "@preview/cetz:0.5.2"
+#import "../common/markup-shorthands.typ": *
 #import "proj3.typ": default-view, proj
 #import "plotdata.typ": dare-convergence-path, load
 #import "style.typ": viz-canvas, viz-resolve
@@ -114,7 +115,7 @@
   cetz.draw.circle(P(q), radius: 0.09, fill: red, stroke: none)
   cetz.draw.content(
     P(q),
-    text(size: st.label, fill: red)[$P_(s s)$],
+    text(size: st.label, fill: red)[$P_ss$],
     anchor: "west",
     padding: 0.16,
   )
@@ -133,75 +134,78 @@
 // radius trace/2, so P_ss lands strictly inside the rank-1 rim, well off every
 // axis. The early iterates start near the rim (nearly rank-1) and move inward as
 // the covariance becomes positive definite.
-#let cone-crosssection(data, st, s: 6.5) = viz-canvas(st, cetz.canvas(length: 1cm, {
-  let proj2 = P => (
-    P.at(0).at(1) * s,
-    (P.at(0).at(0) - P.at(1).at(1)) / 2 * s,
-  )
-  let r-ss = trace-of(data.Pss) / 2 * s
-
-  // a couple of faint inner cross-sections (smaller traces) + the bold rim
-  for f in (0.4, 0.68) {
-    cetz.draw.circle(
-      (0, 0),
-      radius: r-ss * f,
-      stroke: gray.lighten(55%) + 0.5pt,
+#let cone-crosssection(data, st, s: 6.5) = viz-canvas(st, cetz.canvas(
+  length: 1cm,
+  {
+    let proj2 = P => (
+      P.at(0).at(1) * s,
+      (P.at(0).at(0) - P.at(1).at(1)) / 2 * s,
     )
-  }
-  cetz.draw.circle((0, 0), radius: r-ss, stroke: gray.lighten(5%) + 1pt)
-  cetz.draw.content(
-    (r-ss * calc.cos(35deg), r-ss * calc.sin(35deg)),
-    text(size: st.annot, fill: gray.darken(20%))[ранг 1],
-    anchor: "south-west",
-    padding: 0.05,
-  )
+    let r-ss = trace-of(data.Pss) / 2 * s
 
-  // axes through the centre (scalar matrices)
-  let aL = r-ss * 1.4
-  cetz.draw.line((-aL, 0), (aL, 0), mark: (end: ">"), stroke: black + 0.5pt)
-  cetz.draw.content(
-    (aL, 0),
-    text(size: st.label)[$P_(1 2)$],
-    anchor: "west",
-    padding: 0.1,
-  )
-  cetz.draw.line((0, -aL), (0, aL), mark: (end: ">"), stroke: black + 0.5pt)
-  cetz.draw.content(
-    (0, aL),
-    text(size: st.annot)[$(P_(1 1) - P_(2 2)) \/ 2$],
-    anchor: "south",
-    padding: 0.1,
-  )
-
-  // trajectory in the cross-section plane
-  let pts = data.iterations.map(it => proj2(it.P))
-  let n = pts.len()
-  for i in range(n - 1) {
-    cetz.draw.line(
-      pts.at(i),
-      pts.at(i + 1),
-      stroke: traj-color(i / (n - 1)) + 1.1pt,
+    // a couple of faint inner cross-sections (smaller traces) + the bold rim
+    for f in (0.4, 0.68) {
+      cetz.draw.circle(
+        (0, 0),
+        radius: r-ss * f,
+        stroke: gray.lighten(55%) + 0.5pt,
+      )
+    }
+    cetz.draw.circle((0, 0), radius: r-ss, stroke: gray.lighten(5%) + 1pt)
+    cetz.draw.content(
+      (r-ss * calc.cos(35deg), r-ss * calc.sin(35deg)),
+      text(size: st.annot, fill: gray.darken(20%))[ранг 1],
+      anchor: "south-west",
+      padding: 0.05,
     )
-  }
-  for (i, p) in pts.enumerate() {
-    cetz.draw.circle(
-      p,
-      radius: 0.05,
-      fill: traj-color(i / (n - 1)),
-      stroke: none,
-    )
-  }
 
-  // P_ss (red)
-  let qp = proj2(data.Pss)
-  cetz.draw.circle(qp, radius: 0.09, fill: red, stroke: none)
-  cetz.draw.content(
-    qp,
-    text(size: st.label, fill: red)[$P_(s s)$],
-    anchor: "west",
-    padding: 0.14,
-  )
-}))
+    // axes through the centre (scalar matrices)
+    let aL = r-ss * 1.4
+    cetz.draw.line((-aL, 0), (aL, 0), mark: (end: ">"), stroke: black + 0.5pt)
+    cetz.draw.content(
+      (aL, 0),
+      text(size: st.label)[$P_(1 2)$],
+      anchor: "west",
+      padding: 0.1,
+    )
+    cetz.draw.line((0, -aL), (0, aL), mark: (end: ">"), stroke: black + 0.5pt)
+    cetz.draw.content(
+      (0, aL),
+      text(size: st.annot)[$(P_(1 1) - P_(2 2)) \/ 2$],
+      anchor: "south",
+      padding: 0.1,
+    )
+
+    // trajectory in the cross-section plane
+    let pts = data.iterations.map(it => proj2(it.P))
+    let n = pts.len()
+    for i in range(n - 1) {
+      cetz.draw.line(
+        pts.at(i),
+        pts.at(i + 1),
+        stroke: traj-color(i / (n - 1)) + 1.1pt,
+      )
+    }
+    for (i, p) in pts.enumerate() {
+      cetz.draw.circle(
+        p,
+        radius: 0.05,
+        fill: traj-color(i / (n - 1)),
+        stroke: none,
+      )
+    }
+
+    // P_ss (red)
+    let qp = proj2(data.Pss)
+    cetz.draw.circle(qp, radius: 0.09, fill: red, stroke: none)
+    cetz.draw.content(
+      qp,
+      text(size: st.label, fill: red)[$P_ss$],
+      anchor: "west",
+      padding: 0.14,
+    )
+  },
+))
 
 // `dir: ttb` stacks the panels vertically (used on slides).
 #let dare-cone-figure(data: dare-cone-data, style: (:), dir: ltr) = {
@@ -215,8 +219,8 @@
     stack(
       spacing: 0.6em,
       cone-crosssection(data, st),
-      align(center, text(size: st.subcaption)[(б) сечение ортогонально
-        оси следа]),
+      align(center, text(size: st.subcaption)[(б) сечение ортогонально оси
+        следа]),
     ),
   )
   if dir == ttb {
