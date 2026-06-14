@@ -19,6 +19,12 @@ watch-exclude = ["packages"]
 # Page 2 is the table of contents; its shift is reported as a hard error.
 critical-pages = [2]
 
+# Treat below-threshold typographic differences as unchanged: fold math italic
+# vs upright (and the rest of the Mathematical Alphanumeric Symbols) to base
+# letters, and ignore spaces and tabs. A page reprint is not warranted for these.
+fold-math        = true
+ignore-whitespace = true
+
 # Commit the printed snapshot is built from, used as the reference by
 # --git-check (e.g. in CI).
 git-base = "b169b00"
