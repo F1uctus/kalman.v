@@ -282,21 +282,21 @@ $bold(v)_k in CC^p$ являются (векторными) случайными
 
 Все предположения выше можно удобно представить одной формулой:
 $
-  EE vec(bold(w)_k, bold(v)_k, bold(x)_0) (bold(w)_j^*, bold(v)_j^*, bold(x)_0^*, 1)
+  EE vec(bold(w)_k, bold(v)_k, bold(x)_0) mat(bold(w)_j^*, bold(v)_j^*, bold(x)_0^*, 1)
   = lr(
     (#table(
-        columns: 3,
+        columns: 4,
         stroke: none,
         align: center + horizon,
-        table.cell(rowspan: 2, $display(
+        table.cell(rowspan: 2, colspan: 2, $display(
           mat(
             Q, S;
             S^*, R
           ) delta_(j k)
         )$),
         $0$, $0$,
-        $0$, [0],
-        $0$, $Pi_0$, $0$,
+        $0$, $0$,
+        $quad 0$, $0 thick thick thick quad$, $Pi_0$, $0$,
       ))
   ),
   quad "где" quad
