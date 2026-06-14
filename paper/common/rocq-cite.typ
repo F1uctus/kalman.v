@@ -222,7 +222,7 @@
 }
 
 // Render `module.name`. Default (cite) mode: one live bibliography link per
-// source, `; `-joined, carrying the locator and (when found) the printed page;
+// source, `, `-joined, carrying the locator and (when found) the printed page;
 // the Rocq name is not printed inline as the adjacent code block already shows
 // it. The `.code` / `.num` suffixes select the cross-reference modes above.
 #let rocq-cite-render(t) = {
@@ -238,13 +238,15 @@
         label(source.key),
         supplement: supplement-text(source, resolve-page(source)),
       ))
-      .join("; ")
+      .join(", ")
   }
 }
 
-// Render every citation in `module.name`'s doc comment as a `; `-joined run of
-// live bibliography links (the same shape as `rocq-cite-render`), for inline use
-// at the end of a prose description. Empty when the comment has no citation.
+// Render the citation(s) in `module.name`'s doc comment as a `, `-joined run of
+// live bibliography links, for inline use at the end of a prose description.
+// Each link carries its locator and (when found) the printed page. The doc
+// comment lists the sources as separate `- @key[...]` bullets; they render as
+// one comma-separated trailing reference. `none` when there is no citation.
 #let rocq-cite-list(module, name) = {
   let data = rocq-cite-data-opt(module, name)
   if data.sources.len() == 0 { return none }
@@ -254,7 +256,7 @@
       label(source.key),
       supplement: supplement-text(source, resolve-page(source)),
     ))
-    .join("; ")
+    .join(", ")
 }
 
 // `show ref` hook for the template: intercept `@module.name`, pass through the

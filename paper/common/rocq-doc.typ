@@ -74,7 +74,8 @@
 // piece of prose from the file so the `.v` is the single source of truth. The
 // rendered order is:
 //   1. prose description (doc comment above the declaration);
-//   2. citation list (trailing `- @key[...]` bullets, inline, `; `-joined);
+//   2. citation(s) (trailing `- @key[...]` bullets): a single source is an
+//      inline trailing reference, two or more render as a bullet list;
 //   3. statement signature listing (raw codly, no proof);
 //   4. proof sketch (the comment between the statement and `Proof.`);
 //   5. optionally the proof body `Proof. ... Qed.`.

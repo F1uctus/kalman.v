@@ -211,7 +211,7 @@ Section KalmanFilter.
     Для измерения $y_j = H x_j + v_j$ ошибка удовлетворяет
     $tilde(x)_(k+1) = F tilde(x)_k + G w_(k+1) - K_k (H F tilde(x)_k + H G w_(k+1) + v_(k+1))$.
 
-    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
+    - @kailath2000[§ 9.3 "Recursions for Predicted and Filtered State Estimators"].
   *)
   Lemma x_err_recursion u y Ps k ω :
     (forall j ω', y j ω' = H *m x_true u j ω' + v j ω') ->
@@ -249,7 +249,7 @@ Section KalmanFilter.
     Если $EE tilde(x)_k = 0$, то и
     $EE(H F tilde(x)_k + H G w_(k+1) + v_(k+1)) = 0$.
 
-    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
+    - @kailath2000[§ 3.2.4 "Nonzero-Mean Values and Centering"].
   *)
   Lemma Exp_predict_innov_zero u y Ps k :
     𝔼 (x_err u y Ps k) = 0 ->
@@ -269,7 +269,7 @@ Section KalmanFilter.
     При нулевом начальном среднем ошибки $EE tilde(x)_k = 0$ выполнено для всех
     $k$.
 
-    - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
+    - @kailath2000[§ 3.2.4 "Nonzero-Mean Values and Centering"].
   *)
   Theorem unbiased u y Ps :
     (forall j ω, y j ω = H *m x_true u j ω + v j ω) ->

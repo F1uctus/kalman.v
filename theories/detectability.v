@@ -120,7 +120,8 @@ Section Detectability.
     Существует коррекция по выходу $K$, делающая замкнутый контур $F - K H$
     устойчивым по Шуру.
 
-    - @kailath2000[App. C, § C.4 "Observability"]; @wonham1985[§ 2.2, Thm 2.2].
+    - @kailath2000[App. C, § C.4 "Observability"];
+    - @wonham1985[§ 2.2, Theorem 2.2].
   *)
   Definition detectable_stabilizing : Prop :=
     exists K : 'M[ℂ]_(n, p), spec_rad_lt1 (F - K *m H).
@@ -220,7 +221,8 @@ Section Stabilizability.
     Существует обратная связь по состоянию K, делающая замкнутый контур
     $F - G K$ устойчивым по Шуру.
 
-    - @kailath2000[App. C, § C.3]; @wonham1985[§ 2.2, Thm 2.2].
+    - @kailath2000[App. C, § C.3];
+    - @wonham1985[§ 2.2, Theorem 2.2].
   *)
   Definition stabilizable_stabilizing : Prop :=
     exists K : 'M[ℂ]_(m, n), spec_rad_lt1 (F - G *m K).
@@ -304,7 +306,8 @@ End SchurStableTrivialDet.
   полное доказательство (через наблюдаемую форму) в mathcomp отсутствует,
   поэтому результат принят как аксиома.
 
-  - @kailath2000[App. C, § C.4 "Observability"]; @wonham1985[§ 2.2, Thm 2.2].
+  - @kailath2000[App. C, § C.4 "Observability"];
+  - @wonham1985[§ 2.2, Theorem 2.2].
 *)
 Axiom pole_placement_detect :
   forall (ℂ : numClosedFieldType) (n p : nat)
@@ -315,7 +318,8 @@ Axiom pole_placement_detect :
   Двойственное направление для стабилизируемости
   (назначение полюсов через обратную связь по состоянию).
 
-  - @kailath2000[App. C, § C.3]; @wonham1985[§ 2.2, Thm 2.2].
+  - @kailath2000[App. C, § C.3]
+  - @wonham1985[§ 2.2, Theorem 2.2].
 *)
 Axiom pole_placement_stab :
   forall (ℂ : numClosedFieldType) (m n : nat)
@@ -346,7 +350,8 @@ Qed.
   Детектируемость пары $(F, H)$ даёт усиление $K_0$, делающее апостериорный
   замкнутый контур $(E - K_0 H) F$ устойчивым по Шуру.
 
-  - @kailath2000[App. C, § C.4 "Observability"]; @wonham1985[§ 2.2, Thm 2.2].
+  - @kailath2000[App. C, § C.4 "Observability"]
+  - @wonham1985[§ 2.2, Theorem 2.2].
 *)
 Lemma detectable_stabilizing_filter (ℂ : numClosedFieldType) (n p : nat)
     (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)) :
