@@ -17,6 +17,54 @@
 #let rocq-syntax = to-sublime-syntax("/paper/assets/rocq.tmLanguage.json")
 #let rocq-src(p) = read("/theories/" + p)
 
+// Live statistics of the formalization
+// сounted at compile time from the sources.
+
+// Module names from the `(modules ...)` stanza of `dune` file. Names like `seqmx/riccati_seqmx` are kept verbatim
+// (rocq-src resolves them under `/theories/`).
+#let rocq-theory-modules() = {
+  let dune = read("/theories/dune")
+  let m = dune.match(regex("(?s)\\(modules\\s+(.*?)\\)"))
+  if m == none { () } else {
+    m.captures.at(0).split(regex("\\s+")).filter(s => s != "")
+  }
+}
+
+// Drop every `(* ... *)` comment from a source string. Comments are not nested
+// in this corpus and the `†` convention keeps `*)` out of comment bodies, so a
+// non-greedy strip is exact.
+#let rocq-strip-comments(src) = src.replace(regex("(?s)\\(\\*.*?\\*\\)"), "")
+
+// Real Rocq lines of a single `.v` file: non-blank lines outside comments.
+#let rocq-file-loc(source) = {
+  let body = rocq-strip-comments(rocq-src(source))
+  body.split("\n").filter(l => l.trim() != "").len()
+}
+
+// Total real lines across all theory modules listed in `dune` file.
+#let rocq-theory-loc() = {
+  let per-file = rocq-theory-modules().map(m => rocq-file-loc(m + ".v"))
+  per-file.sum(default: 0)
+}
+
+// `rocq-theory-loc()` rounded down to thousands and rendered as a lower bound,
+// e.g. `>7000`.
+#let rocq-theory-loc-bound() = (
+  ">" + str(calc.floor(rocq-theory-loc() / 1000) * 1000)
+)
+
+// Occurrences of `Admitted`/`Aborted` across the theory sources, outside
+// comments.
+#let rocq-admitted-re = regex("\\b(Admitted|Aborted)\\b")
+#let rocq-theory-admitted() = {
+  let per-file = rocq-theory-modules().map(m => rocq-strip-comments(rocq-src(
+    m + ".v",
+  ))
+    .matches(rocq-admitted-re)
+    .len())
+  per-file.sum(default: 0)
+}
+
 #let rocq-badge-color = rgb("#FF540A")
 
 // Codly language badge: show file name instead of "rocq" lang id.

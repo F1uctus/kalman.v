@@ -32,9 +32,11 @@
     - Детектируемость даёт равномерную верхнюю границу траектории: решение
       уравнения Ляпунова с фиксированным стабилизирующим усилением
   ],
-  align(center + horizon, slide-fig(riccati-monotone-figure(
-    style: slide-viz,
-  ))),
+  align(center + horizon, slide-fig(
+    riccati-monotone-figure(
+      style: slide-viz,
+    ),
+  )),
 )
 
 == Результат 4: решение ДАУР
@@ -50,7 +52,7 @@
     $
 
     - Предел существует и решает ДАУР (`dare_psd_sol`)
-    - Управляемость пары $(F, G Q G^*)$ даёт $P_(s s) succ 0$ (`Pss_pd`)
+    - Управляемость пары $(F, G Q G^*)$ даёт $P_ss succ 0$ (`Pss_pd`)
     - Решение единственно среди положительно определённых (`Pss_unique_pd`)
     - Итог: `dare_stabilizing_sol`
   ],
@@ -73,7 +75,13 @@
       начального состояния становятся пренебрежимо малы
   ],
   align(center + horizon, slide-fig(schur-stability-figure(
-    style: (..slide-viz, label: 18pt, tick: 13pt, legend: 14pt, subcaption: 15pt),
+    style: (
+      ..slide-viz,
+      label: 18pt,
+      tick: 13pt,
+      legend: 14pt,
+      subcaption: 15pt,
+    ),
     dir: ttb,
   ))),
 )
@@ -90,10 +98,10 @@
       $
         forall epsilon > 0 thick exists N(epsilon):
         quad
-        norm(P_k - P_(s s))_F < epsilon
+        norm(P_k - P_ss)_F < epsilon
       $
       при $k >= N(epsilon)$; то же для усиления
-      $K_k -> K_(s s)$
+      $K_k -> K_ss$
     - Свойство перенесено на ковариацию работающего фильтра над любыми потоками
       входов и измерений
   ],

@@ -1,34 +1,13 @@
 #import "@local/djvu:0.1.0": djvu-find, djvu-pages
 #import "rocq.typ": (
   rocq-comment-start-before, rocq-decl-kinds, rocq-raw-inline, rocq-src,
+  rocq-theory-modules,
 )
 
-// TODO: Обновить при добавлении/удалении файлов в theories/.
-#let rocq-stems = (
-  "dare",
-  "detectability",
-  "duality",
-  "expectation",
-  "gramian_infty",
-  "kalman",
-  "lyap_inv",
-  "lyapunov",
-  "mxdefinite",
-  "mxfrob",
-  "mxherm",
-  "mxhermform",
-  "mxloewner",
-  "mxmonotone",
-  "mxnotation",
-  "mxtopo",
-  "obsv_bound",
-  "riccati_cont",
-  "riccati_mono",
-  "riccati_seqmx",
-  "riccati_unique",
-  "spec_rad",
-  "spectral",
-)
+// Theory-file stems, derived live from the `(modules ...)` stanza of
+// `theories/dune`. A citation target names the bare file stem, so any
+// directory prefix (e.g. `seqmx/`) is dropped.
+#let rocq-stems = rocq-theory-modules().map(m => m.split("/").last())
 
 // `@module.name` is a Rocq citation iff the part before the first dot is a
 // theory-file stem; everything else (figure/section/eq refs, `@bibkey`) is left
