@@ -9,6 +9,7 @@
 #let kalman = "kalman"
 #let frob = "frob"
 #let sq = "2"
+#let lyap_sol = "lyap_sol"
 #let Herm = "Herm"
 #let hat(it) = math.accent(it, math.hat, size: 1.1em)
 #let est(x) = $hat(bold(#x))$

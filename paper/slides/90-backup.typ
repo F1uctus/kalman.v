@@ -2,7 +2,7 @@
 #import "../viz/spectral.typ": spectral-figure
 #import "../viz/duality-spectral.typ": duality-spectral-figure
 
-== Резерв: информационная форма
+== Информационная форма
 
 #set text(size: 16pt)
 
@@ -13,7 +13,7 @@
 
 #slide-snippet("kalman.v", "update_cov_information_form")
 
-== Резерв: антимонотонность обращения
+== Антимонотонность обращения
 
 #set text(size: 16pt)
 
@@ -29,7 +29,7 @@
   align(center + horizon, slide-fig(spectral-figure())),
 )
 
-== Резерв: спектральное зеркало двойственности
+== Спектральное зеркало двойственности
 
 #set text(size: 15pt)
 
@@ -40,7 +40,7 @@
 Спектры замкнутых контуров наблюдателя и регулятора совпадают: двойственность
 переносит устойчивость между задачами оценивания и управления.
 
-== Резерв: скалярный пример ДАУР
+== Скалярный пример ДАУР
 
 #set text(size: 16pt)
 
@@ -53,7 +53,7 @@
 
 #slide-snippet("seqmx/riccati_seqmx.v", "ex_two_val", proof: true)
 
-== Резерв: ограничения извлечения
+== Ограничения извлечения
 
 #set text(size: 16pt)
 
@@ -67,7 +67,7 @@
 - Подход через CoqEAL не зависит от внешнего экстрактора и даёт формализованное
   соответствие спецификации и кода
 
-== Резерв: соответствие теорем и файлов
+== Соответствие теорем и файлов
 
 #set text(size: 11pt)
 
@@ -77,17 +77,18 @@
   stroke: unn-colors.panel + 1pt,
   fill: (x, y) => if y == 0 { unn-colors.panel-light },
   table.header([Свойство], [Утверждение], [Файл]),
-  [Инвариант шага фильтра], [`kf_step_psd`], [`kalman.v`],
-  [Несмещённость], [`unbiased`], [`kalman.v`],
-  [Оптимальность усиления], [`filter_gain_optimal`], [`kalman.v`],
-  [Грамиан и наблюдаемость], [`obsv_gram_pd_of_observable`], [`obsv_bound.v`],
-  [Двойственность], [`stabilizable_dual`, `ctrl_gram_dual`], [`duality.v`],
-  [Уравнение Ляпунова], [`lyap_sol`, `lyap_sol_unique`], [`lyapunov.v`],
-  [Решение ДАУР], [`dare_stabilizing_sol`, `Pss_unique_pd`], [`dare.v`],
-  [Устойчивость контура], [`Fp_schur`], [`dare.v`],
-  [Сходимость фильтра], [`kalman_filter_frob_cvgn`], [`dare.v`],
-  [Уточнения CoqEAL], [`riccati_iter_seqmx_correct`], [`riccati_seqmx.v`],
-  [Обращение матрицы], [`fl_inv_correct`], [`faddeev.v`],
+  [Инвариант шага фильтра], `kf_step_psd`, `kalman.v`,
+  [Несмещённость], `unbiased`, `kalman.v`,
+  [Оптимальность усиления], `filter_gain_optimal`, `kalman.v`,
+  [Грамиан и наблюдаемость], `obsv_gram_pd_of_observable`, `obsv_bound.v`,
+  [Двойственность], `stabilizable_dual`, `ctrl_gram_dual`,
+  `duality.v`, [Уравнение Ляпунова], `lyap_sol`,
+  `lyap_sol_unique`, `lyapunov.v`, [Решение ДАУР],
+  `dare_stabilizing_sol`, `Pss_unique_pd`, `dare.v`,
+  [Устойчивость контура], `Fp_schur`, `dare.v`,
+  [Сходимость фильтра], `kalman_filter_frob_cvgn`, `dare.v`,
+  [Уточнения CoqEAL], `riccati_iter_seqmx_correct`, `riccati_seqmx.v`,
+  [Обращение матрицы], `fl_inv_correct`, `faddeev.v`,
 )
 
 Профиль аксиом ключевых теорем: три аксиомы модуля `boolp` библиотеки mathcomp и
