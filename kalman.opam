@@ -8,12 +8,17 @@ version: "dev"
 homepage: "https://github.com/F1uctus/kalman.v"
 dev-repo: "git+https://github.com/F1uctus/kalman.v.git"
 bug-reports: "https://github.com/F1uctus/kalman.v/issues"
-license: "CECILL-B"
+license: "GPL-3.0-or-later"
 
-synopsis: "Kalman filter implementation using Rocq, MathComp, and CoqEAL"
+synopsis: "Kalman filter formalization using Rocq, MathComp, Infotheo, CoqEAL, and CoqQ-adapted linear algebra"
 description: """
-Formalization of Kalman filter properties using the Mathematical Components
-library and it's extraction using CoqEAL and refinements."""
+Formalization of Kalman filter properties in Rocq using Mathematical
+Components (MathComp), Infotheo, Coq Efficient Algebra Library (CoqEAL), and
+proof techniques adapted from CoqQ (Coq-Quantum). The noise model and matrix
+expectation operator build on Infotheo finite distributions; positive
+definiteness and monotonicity lemmas adapt CoqQ Hermitian matrix algebra;
+executable seqmx programs are linked to the abstract specification through
+CoqEAL refinements."""
 
 build: ["dune" "build" "-p" name "-j" jobs]
 depends: [
@@ -33,6 +38,8 @@ depends: [
   "rocq-mathcomp-classical" {>= "1.16.0"}
   "rocq-mathcomp-reals" {>= "1.16.0"}
   "rocq-mathcomp-analysis" {>= "1.16.0"}
+  "coq-mathcomp-zify" {>= "1.6.0"}
+  "coq-infotheo" {>= "0.9.7"}
   "rocq-bignums" {>= "9.0.0+rocq9.1"}
   "coq-coqeal" {>= "2.1.1"}
 ]

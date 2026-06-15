@@ -11,11 +11,17 @@ dune: true
 branch: main
 
 synopsis: >-
-  Kalman filter implementation using Rocq, MathComp, and CoqEAL
+  Kalman filter formalization using Rocq, MathComp, Infotheo, CoqEAL, and
+  CoqQ-adapted linear algebra
 
 description: |-
-  Formalization of Kalman filter properties using the Mathematical Components
-  library and it's extraction using CoqEAL and refinements.
+  Formalization of Kalman filter properties in Rocq using Mathematical
+  Components (MathComp), Infotheo, Coq Efficient Algebra Library (CoqEAL), and
+  proof techniques adapted from CoqQ (Coq-Quantum). The noise model and matrix
+  expectation operator build on Infotheo finite distributions; positive
+  definiteness and monotonicity lemmas adapt CoqQ Hermitian matrix algebra;
+  executable seqmx programs are linked to the abstract specification through
+  CoqEAL refinements.
 
 authors:
   - name: Ilya I. Nikitin
@@ -29,11 +35,11 @@ opam-file-maintainer: ilya.i.nikitin@proton.me
 opam-file-version: dev
 
 license:
-  fullname: CeCILL-B
-  identifier: CECILL-B
+  fullname: GNU General Public License v3.0 or later
+  identifier: GPL-3.0-or-later
 
 supported_coq_versions:
-  text: Rocq 9.0 - 9.1 (MathComp 2.5.0; 9.2 pending math-comp release)
+  text: Rocq 9.0 - 9.1 (MathComp 2.5.0)
   opam: '{>= "9.0" & < "9.2~"}'
 
 dependencies:
@@ -108,10 +114,20 @@ dependencies:
     description: |-
       [MathComp analysis](https://github.com/math-comp/analysis) 1.16.0 or later
   - opam:
+      name: coq-mathcomp-zify
+      version: '{>= "1.6.0"}'
+    description: |-
+      [MathComp zify](https://github.com/math-comp/zify) micromega tactics for MathComp
+  - opam:
+      name: coq-infotheo
+      version: '{>= "0.9.7"}'
+    description: |-
+      [Infotheo](https://github.com/affeldt-aist/infotheo) finite distributions and expectation
+  - opam:
       name: rocq-bignums
       version: '{>= "9.0.0+rocq9.1"}'
     description: |-
-      [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution in `riccati_seqmx`
+      [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution
   - opam:
       name: coq-coqeal
       version: '{>= "2.1.1"}'

@@ -12,15 +12,20 @@ Follow the instructions on https://github.com/coq-community/templates to regener
 
 
 
-Formalization of Kalman filter properties using the Mathematical Components
-library and it's extraction using CoqEAL and refinements.
+Formalization of Kalman filter properties in Rocq using Mathematical
+Components (MathComp), Infotheo, Coq Efficient Algebra Library (CoqEAL), and
+proof techniques adapted from CoqQ (Coq-Quantum). The noise model and matrix
+expectation operator build on Infotheo finite distributions; positive
+definiteness and monotonicity lemmas adapt CoqQ Hermitian matrix algebra;
+executable seqmx programs are linked to the abstract specification through
+CoqEAL refinements.
 
 ## Meta
 
 - Author(s):
   - Ilya I. Nikitin
-- License: [CeCILL-B](LICENSE)
-- Compatible Rocq/Coq versions: Rocq 9.0 - 9.1 (MathComp 2.5.0; 9.2 pending math-comp release)
+- License: [GNU General Public License v3.0 or later](LICENSE)
+- Compatible Rocq/Coq versions: Rocq 9.0 - 9.1 (MathComp 2.5.0)
 - Additional dependencies:
   - [Dune](https://dune.build) 3.21+
   - [Rocq-Elpi](https://github.com/LPCIC/coq-elpi) (HB plugin backend)
@@ -36,7 +41,9 @@ library and it's extraction using CoqEAL and refinements.
   - [MathComp analysis](https://github.com/math-comp/analysis) classical library
   - [MathComp analysis](https://github.com/math-comp/analysis) reals library
   - [MathComp analysis](https://github.com/math-comp/analysis) 1.16.0 or later
-  - [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution in `riccati_seqmx`
+  - [MathComp zify](https://github.com/math-comp/zify) micromega tactics for MathComp
+  - [Infotheo](https://github.com/affeldt-aist/infotheo) finite distributions and expectation
+  - [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution
   - [CoqEAL](https://github.com/coq-community/coqeal) refinements for seqmx extraction
   - [Dune](https://dune.build) 3.6 or later
 - Rocq/Coq namespace: `Kalman`

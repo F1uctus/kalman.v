@@ -47,6 +47,6 @@ mkCoqDerivation {
 
   meta = {
     description = "Kalman filter implementation using Rocq, MathComp, and CoqEAL";
-    license = lib.licenses.cecill-b;
+    license = lib.licenses.gpl3Plus;
   };
 }
