@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // Single source for math/identifier shorthands used in thesis math, scope-math
 // previews, and `rocq-eval` (via `dictionary(markup-shorthands)` in preamble.typ).
 #let eps = math.epsilon

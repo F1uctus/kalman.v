@@ -1,3 +1,7 @@
+(*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+*)
 
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra ssrint.

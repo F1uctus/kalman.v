@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/duality-mirror.typ — the estimation/control duality dictionary.
 //
 // Two columns, one mirror. Every estimation object (left) has a control twin

@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/riccati-monotone.typ — Loewner monotonicity of the Riccati iteration.
 //
 // Reuses the covariance-ellipse panel and data of dare-convergence.typ. The

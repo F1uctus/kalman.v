@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/orthogonality.typ — the orthogonality principle behind Kalman-gain
 // optimality, as the classic projection diagram.
 //

@@ -1,4 +1,7 @@
 (*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+
   Конечная вероятностная модель шумов фильтра Калмана.
 
   Одношаговый шум: четырёхточечное симметричное распределение со значениями плюс

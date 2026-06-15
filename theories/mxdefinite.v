@@ -1,4 +1,7 @@
 (*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+
   Положительная и неотрицательная определённость над алг. замкнутым полем.
 
   Эрмитова матрица: $A = A†$

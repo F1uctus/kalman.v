@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #import "/paper/packages/local/textmate/0.1.0/lib.typ": to-sublime-syntax
 #import "@preview/codly:1.3.0"
 #import "./fonts.typ": tnr-font

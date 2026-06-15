@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/duality-spectral.typ — PBH spectral mirror of estimation/control duality.
 //
 // Data: paper/data/duality_spectral.json (extraction/ocaml/driver.exe, gen_duality).

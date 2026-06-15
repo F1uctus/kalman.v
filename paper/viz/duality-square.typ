@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/duality-square.typ — the duality of the gramians as a commuting square.
 //
 // Building the gramian commutes with dualizing: starting from (F, G, Q) one may

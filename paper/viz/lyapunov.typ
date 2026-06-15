@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/lyapunov.typ — the Lyapunov partial-sum convergence figure.
 //
 // Data: paper/data/lyapunov.json, emitted by extraction/ocaml/driver.exe

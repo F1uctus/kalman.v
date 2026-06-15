@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/frames.typ — small-multiples ("frame strip") helper.
 //
 // The static analogue of an interactive slider: render the same plot for a sweep

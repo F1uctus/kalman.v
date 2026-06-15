@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/kalman-run.typ — a Kalman filter run over synthetic data.
 //
 // Data: paper/data/kalman_run.json, emitted by extraction/ocaml/driver.exe. The

@@ -1,4 +1,7 @@
 (*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+
   Бесконечные грамианы наблюдаемости и управляемости.
 
   При сжатии по норме Фробениуса $"frob_sq" F < 1$ определены бесконечные

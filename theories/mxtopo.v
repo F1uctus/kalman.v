@@ -1,4 +1,7 @@
 (*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+
   Топологические свойства матриц и поэлементная сходимость.
 
   - Определяется сходимость последовательности матриц через сходимость по

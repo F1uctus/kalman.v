@@ -1,4 +1,7 @@
 (*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+
   Спектральная теорема для эрмитовых матриц над numClosedFieldType.
 
   Использует mathcomp.algebra.spectral.orthomx_spectralP: всякая эрмитова

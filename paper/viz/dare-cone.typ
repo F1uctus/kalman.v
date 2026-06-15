@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/dare-cone.typ — the PSD cone of 2x2 covariances, with the Riccati
 // trajectory climbing from the apex P_0 = 0 to the DARE fixed point P_ss.
 //

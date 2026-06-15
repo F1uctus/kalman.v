@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/ellipse.typ — generic ellipse drawing helpers for cetz-plot.
 //
 // Extracted from the loewner-order.typ prototype so several figures can share

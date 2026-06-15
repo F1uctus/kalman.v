@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #import "@preview/unify:0.8.1": *
 #import "@preview/codly:1.3.0": *
 #import "@preview/tablex:0.0.9": *

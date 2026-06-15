@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #import "@local/djvu:0.1.0": djvu-find, djvu-pages
 #import "rocq.typ": (
   rocq-comment-start-before, rocq-decl-kinds, rocq-raw-inline, rocq-src,

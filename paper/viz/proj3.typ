@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/proj3.typ — minimal axonometric 3D -> 2D projection for cetz canvases.
 //
 // A point is (x, y, z); the three unit axes map to fixed 2D screen vectors

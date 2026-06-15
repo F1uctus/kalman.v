@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #import "rocq.typ": (
   rocq-comment-text, rocq-doc-comment, rocq-locate, rocq-proof-sketch,
   rocq-proofbody-range, rocq-render-range, rocq-src, rocq-statement-range,

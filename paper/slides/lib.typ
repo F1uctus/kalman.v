@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // Общие между текстом и слайдами сокращения и подсветка Rocq.
 
 #import "@local/unn-itmm:0.2.1": *

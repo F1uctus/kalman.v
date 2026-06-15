@@ -1,4 +1,7 @@
 (*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+
   Норма Фробениуса для матриц над алгебраически замкнутым полем.
   $ norm(M)_F^2 = "tr" (M† dot M) \ = sum_(i,j) (M_(i j))† dot M_(i j) \ = sum_(i,j) |M_(i j)|^2 $
   Нужна для:

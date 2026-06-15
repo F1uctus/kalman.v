@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/observer-block.typ — оптимальный наблюдатель с обратной связью по
 // инновации, по мотивам Kailath, Sayed, Hassibi "Linear Estimation", Fig. 1.1
 // "The optimum transient observer". Верхний пунктирный контур воспроизводит

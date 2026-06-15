@@ -1,4 +1,7 @@
 (*
+  Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+  SPDX-License-Identifier: GPL-3.0-or-later
+
   Дискретное уравнение Ляпунова: $X = A dot X dot A† + Q$.
 
   Условия устойчивости и разрешимости:

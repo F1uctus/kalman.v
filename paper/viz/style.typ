@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/style.typ — shared text sizes for the main element groups of every viz
 // figure. The thesis renders with `viz-style` as is; the slides pass larger
 // overrides through the `style:` parameter of each figure (figures are scaled

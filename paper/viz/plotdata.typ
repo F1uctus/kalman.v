@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/plotdata.typ — load experiment JSON emitted by extraction/ocaml/driver.exe.
 //
 // Mirrors the read()/json() idiom already used in common/rocq.typ. Paths are

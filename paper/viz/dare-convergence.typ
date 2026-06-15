@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
 // viz/dare-convergence.typ — the DARE / Riccati convergence figure.
 //
 // Data: paper/data/dare_convergence.json, emitted by extraction/ocaml/driver.exe
