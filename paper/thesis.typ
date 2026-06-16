@@ -60,6 +60,26 @@
 //#import "./common/glossary.typ": glossary-entries
 //#print-glossary(glossary-entries)
 
+// Остальные источники из external.bib, не упомянутые в тексте напрямую.
+// form: none помещает запись в список литературы без видимой ссылки и
+// сохраняет нумерацию уже процитированных источников.
+#{
+  cite(<welch2006>, form: none)
+  cite(<affeldt2023>, form: none)
+  cite(<nuaa2022>, form: none)
+  cite(<mathcomp2022>, form: none)
+  cite(<stoorvogel1994>, form: none)
+  cite(<mo2015>, form: none)
+  cite(<mathlib2021>, form: none)
+  cite(<wikipedia2026>, form: none)
+  cite(<bernard2017>, form: none)
+  cite(<balonin2015>, form: none)
+}
+
+// Сжать межстрочный интервал списка литературы, чтобы все источники
+// поместились на одной странице печатной раскладки.
+#show bibliography: set par(spacing: 0.6em, leading: 0.8em)
+
 #bibliography(
   title: "Список литературы",
   ("./common/external.bib", "./common/author.bib"),
