@@ -66,7 +66,6 @@
 #{
   cite(<welch2006>, form: none)
   cite(<affeldt2023>, form: none)
-  cite(<nuaa2022>, form: none)
   cite(<mathcomp2022>, form: none)
   cite(<stoorvogel1994>, form: none)
   cite(<mo2015>, form: none)
@@ -75,10 +74,6 @@
   cite(<bernard2017>, form: none)
   cite(<balonin2015>, form: none)
 }
-
-// Сжать межстрочный интервал списка литературы, чтобы все источники
-// поместились на одной странице печатной раскладки.
-#show bibliography: set par(spacing: 0.6em, leading: 0.8em)
 
 #bibliography(
   title: "Список литературы",
