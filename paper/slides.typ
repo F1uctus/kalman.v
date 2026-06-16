@@ -15,7 +15,7 @@
   specialty: [01.03.01 Математика],
   program: [Общий профиль],
   // TODO: Уточнить дату защиты перед печатью.
-  date: datetime(year: 2026, month: 6, day: 19),
+  date: datetime(year: 2026, month: 6, day: 18),
 ))
 
 #show: codly-init.with()

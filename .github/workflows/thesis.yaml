@@ -39,7 +39,7 @@ jobs:
             https://github.com/F1uctus/touying-unn-itmm \
             paper/packages/local/unn-itmm/0.2.1
 
-      - uses: typst-community/setup-typst@v4
+      - uses: typst-community/setup-typst@v5
         with:
           typst-version: '0.14.2'
 
@@ -96,7 +96,7 @@ jobs:
             paper/packages/local/unn-itmm/0.2.1
 
       # Версия typst фиксируется: раскладка страниц зависит от версии.
-      - uses: typst-community/setup-typst@v4
+      - uses: typst-community/setup-typst@v5
         with:
           typst-version: '0.14.2'
 
@@ -116,7 +116,7 @@ jobs:
             --package-path paper/packages --font-path paper/fonts \
             --ignore-system-fonts
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         if: github.event_name != 'pull_request'
         with:
           tag_name: thesis-${{ github.run_number }}
