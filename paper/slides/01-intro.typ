@@ -21,8 +21,8 @@
 #grid(
   columns: (1fr, 1fr, 1fr),
   stat(
-    [#rocq-theory-modules().len()],
-    [файлов теории на #Rocq],
+    [#rocq-theory-statements()],
+    [определений и утверждений],
     value-size: 30pt,
   ),
   stat([#rocq-theory-loc-bound()], [строк формализации], value-size: 30pt),

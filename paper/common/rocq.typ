@@ -68,6 +68,22 @@
   per-file.sum(default: 0)
 }
 
+// Declarations across the theory sources, outside comments: `Definition`
+// (определения) together with `Lemma`/`Theorem`/`Corollary` (утверждения).
+// The keyword is anchored to the start of a line, so occurrences inside other
+// identifiers or notations are not counted.
+#let rocq-statement-re = regex(
+  "(?m)^\\s*(Definition|Lemma|Theorem|Corollary)\\b",
+)
+#let rocq-theory-statements() = {
+  let per-file = rocq-theory-modules().map(m => rocq-strip-comments(rocq-src(
+    m + ".v",
+  ))
+    .matches(rocq-statement-re)
+    .len())
+  per-file.sum(default: 0)
+}
+
 #let rocq-badge-color = rgb("#FF540A")
 
 // Codly language badge: show file name instead of "rocq" lang id.
