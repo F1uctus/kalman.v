@@ -3,7 +3,7 @@ name: Thesis PDF
 on:
   workflow_dispatch:
   push:
-    branches: [main, typst]
+    branches: [main]
     tags: [thesis-*]
     paths: [paper/**, theories/**, references/**, .github/workflows/thesis.yaml]
 
