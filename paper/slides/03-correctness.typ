@@ -2,26 +2,91 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "lib.typ": *
+#import "../slides-speech.typ": note
 #import "../viz/orthogonality.typ": orthogonality-figure
+#import "@preview/pinit:0.2.2": absolute-place, simple-arrow
+
+// Подчёркивание термина, подсветку фрагмента формулы и прямую стрелку между ними
+// строим по позициям невидимых меток "<key>-src/-start/-end". Подсветку рисуем
+// до формулы, поэтому она ложится под чёрный шрифт; стрелку после, поэтому она
+// поверх. Ключ key различает два пояснения: pred (предсказание) и upd
+// (обновление в форме Джозефа).
+#let ul(body) = underline(stroke: 0.6pt + unn-colors.accent-blue, offset: 2pt, body)
+#let pos-mark(name) = [#metadata(none)#label(name)]
+
+#let _hl-box(key) = {
+  let qa = query(label(key + "-start"))
+  let qb = query(label(key + "-end"))
+  if qa.len() == 0 or qb.len() == 0 { return none }
+  let em = text.size
+  let pa = qa.first().location().position()
+  let pb = qb.first().location().position()
+  (
+    x0: pa.x - 0.22 * em,
+    x1: pb.x + 0.12 * em,
+    top: pa.y - 0.86 * em,
+    height: 1.45 * em,
+  )
+}
+
+#let hl(key) = context {
+  let b = _hl-box(key)
+  if b != none {
+    absolute-place(dx: b.x0, dy: b.top, rect(
+      width: b.x1 - b.x0,
+      height: b.height,
+      fill: unn-colors.orange.transparentize(60%),
+      radius: 3pt,
+    ))
+  }
+}
+
+#let hl-arrow(key) = context {
+  let b = _hl-box(key)
+  let qs = query(label(key + "-src"))
+  if b != none and qs.len() > 0 {
+    let em = text.size
+    let ps = qs.first().location().position()
+    // Вертикальная стрелка вниз; x удерживаем в пределах подсветки.
+    let x = calc.max(b.x0 + 0.3 * em, calc.min(b.x1 - 0.3 * em, ps.x))
+    absolute-place(simple-arrow(
+      fill: unn-colors.accent-blue,
+      thickness: 1.4pt,
+      start: (x, ps.y + 6pt),
+      end: (x, b.top),
+    ))
+  }
+}
 
 == Результат 1: корректность шага
 
 #set text(size: 16pt)
 
-Полный шаг: предсказание, затем обновление в форме Джозефа,
+Полный шаг:
+#ul[предск#pos-mark("pred-src")азание],
+затем
+#ul[обновление в #pos-mark("upd-src")форме Джозефа],
+#hl("pred")
+#hl("upd")
 $
-  P_(k+1|k) = F P_(k|k) F^* + G Q G^*,
+  #pos-mark("pred-start") P_(k+1|k) = F P_(k|k) F^* + G Q G^* #pos-mark("pred-end") ,
   quad
-  P_(k|k) = (E - K H) P_(k|k-1) (E - K H)^* + K R K^*.
+  #pos-mark("upd-start") P_(k|k) = (E - K H) P_(k|k-1) (E - K H)^* + K R K^* #pos-mark("upd-end") .
 $
+
+#hl-arrow("pred")
+#hl-arrow("upd")
 
 - Инновационная ковариация $R_(e,k) = H P_(k|k-1) H^* + R$ положительно
   определена при $R succ 0$ (`innov_cov_pd`), отсюда обратима
-- Форма Джозефа сохраняет неотрицательную определённость ковариации:
+- Полный шаг фильтра в форме Джозефа сохраняет неотрицательную определённость
+  ковариации:
 
 #v(2pt)
 
 #slide-snippet("kalman.v", "kf_step_psd")
+
+#note("r1-step")
 
 == Результат 2: несмещённость
 
@@ -38,6 +103,8 @@ $
 на каждом шаге, причём при произвольном усилении наблюдателя:
 
 #slide-snippet("kalman.v", "unbiased", size: 12pt)
+
+#note("r2-unbiased")
 
 == Результат 2: оптимальность
 
@@ -59,3 +126,5 @@ $
     style: (label: 11pt, annot: 10pt),
   ))),
 )
+
+#note("r2-optimal")

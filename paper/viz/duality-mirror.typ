@@ -15,11 +15,14 @@
 
 // Lemma names deliberately keep their fixed 10pt size: they are the theorem
 // identifiers, not labels, and stay recognizable at every figure scale.
-#let duality-mirror-figure(style: (:)) = {
+// `xcol` — the column centre distance from the mirror axis. Крупные подписи
+// (например, на слайде) шире, поэтому колонки раздвигают, чтобы остриё стрелки
+// не задевало текст; по умолчанию сохранена раскладка тезиса.
+#let duality-mirror-figure(style: (:), xcol: 3.7) = {
   let st = viz-resolve(style)
   viz-canvas(st, cetz.canvas(length: 1.4cm, {
-    let xLc = -3.7 // left (estimation) column centre
-    let xRc = 3.7 // right (control) column centre
+    let xLc = -xcol // left (estimation) column centre
+    let xRc = xcol // right (control) column centre
     let ax = 0.0 // mirror axis
     let agap = 2.0 // half-width of the transpose arrows
     let ytop = 1.55

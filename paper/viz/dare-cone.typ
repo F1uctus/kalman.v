@@ -210,30 +210,35 @@
   },
 ))
 
-// `dir: ttb` stacks the panels vertically (used on slides).
-#let dare-cone-figure(data: dare-cone-data, style: (:), dir: ltr) = {
+// `dir: ttb` stacks the panels vertically (used on slides). `panels` selects the
+// sub-figures by key ("a" — конус, "b" — сечение); по умолчанию обе. При выборе
+// одной буквенная подпись (а)/(б) опускается: различать нечего, поэтому рисунок
+// выводится без подписи и на слайде показывается крупно.
+#let dare-cone-figure(
+  data: dare-cone-data,
+  style: (:),
+  dir: ltr,
+  panels: ("a", "b"),
+) = {
   let st = viz-resolve(style)
-  let panels = (
-    stack(
-      spacing: 0.6em,
-      cone-3d(data, st),
-      align(center, text(size: st.subcaption)[(а) конус и подъём траектории]),
-    ),
-    stack(
-      spacing: 0.6em,
-      cone-crosssection(data, st),
-      align(center, text(size: st.subcaption)[(б) сечение ортогонально оси
-        следа]),
-    ),
-  )
-  if dir == ttb {
-    grid(columns: (auto,), row-gutter: 1.2em, align: center, ..panels)
+  let make(key) = if key == "a" {
+    (body: cone-3d(data, st), caption: [(а) конус и подъём траектории])
   } else {
-    grid(
-      columns: (auto, auto),
-      column-gutter: 2em,
-      align: horizon,
-      ..panels,
-    )
+    (body: cone-crosssection(data, st), caption: [(б) сечение ортогонально оси
+      следа])
+  }
+  let chosen = panels.map(make)
+  if chosen.len() == 1 {
+    return chosen.first().body
+  }
+  let items = chosen.map(p => stack(
+    spacing: 0.6em,
+    p.body,
+    align(center, text(size: st.subcaption, p.caption)),
+  ))
+  if dir == ttb {
+    grid(columns: (auto,), row-gutter: 1.2em, align: center, ..items)
+  } else {
+    grid(columns: (auto, auto), column-gutter: 2em, align: horizon, ..items)
   }
 }

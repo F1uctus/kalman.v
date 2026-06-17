@@ -320,6 +320,7 @@
     "матричнозначную",
     "Минковского",
     "наддиагональный",
+    "невырождена",
     "Невырожденность",
     "некореллированы",
     "немонотонность",
@@ -367,7 +368,9 @@
   ],
   "editor.glyphMargin": false,
   "editor.minimap.enabled": false,
-  "editor.rulers": [80],
+  "editor.rulers": [
+    80
+  ],
   "emeraldwalk.runonsave": {
     "commands": [
       {
@@ -411,8 +414,14 @@
   "vsrocq.goals.auto": true,
   "vsrocq.path": "./_opam/bin/vsrocqtop",
   "vsrocq.proof.mode": 1,
-  "scopeMath.languages": ["rocq", "coq", "coqc"],
-  "scopeMath.scopes": ["comment"],
+  "scopeMath.languages": [
+    "rocq",
+    "coq",
+    "coqc"
+  ],
+  "scopeMath.scopes": [
+    "comment"
+  ],
   "scopeMath.engine.default": "typst",
   "scopeMath.engine.byLanguage": {
     "rocq": "typst",

@@ -6,6 +6,7 @@
 //     paper/slides.pdf --root . --package-path paper/packages
 
 #import "slides/lib.typ": *
+#import "slides-speech.typ": note
 
 #show: unn-theme.with(config-info(
   title: [Формальная верификация фильтра Калмана и его свойств],
@@ -24,6 +25,8 @@
 
 #title-slide()
 
+#note("title")
+
 #include "slides/01-intro.typ"
 #include "slides/02-model.typ"
 #include "slides/03-correctness.typ"
@@ -36,6 +39,8 @@
   contact: [github.com/F1uctus/kalman.v],
   qr: "https://github.com/F1uctus/kalman.v",
 )
+
+#note("thanks")
 
 // Резервные слайды.
 #show: appendix

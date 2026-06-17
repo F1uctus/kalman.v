@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "lib.typ": *
+#import "../slides-speech.typ": note
 
 == Выводы
 
@@ -26,6 +27,8 @@
 Перспективы: фильтры на пространствах Крейна, непрерывный фильтр Калмана-Бьюси,
 численная устойчивость, нелинейные расширения.
 
+#note("concl")
+
 == Литература
 
 #set text(size: 14pt)
@@ -43,3 +46,5 @@
   Languages. 2023. Vol. 7, POPL. P. 833--865.
 + Dénès M., Mörtberg A., Siles V. A Refinement-Based Approach to Computational
   Algebra in Coq \/\/ Interactive Theorem Proving. 2012. P. 83--98.
+
+#note("refs")

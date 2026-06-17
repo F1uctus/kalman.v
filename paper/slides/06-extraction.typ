@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "lib.typ": *
+#import "../slides-speech.typ": note
 #import "../viz/kalman-run.typ": kalman-run-figure
 
 == Результат 5: извлечение исполняемого кода
@@ -32,6 +33,8 @@
   text-fill: unn-colors.primary,
 ))
 
+#note("r5-extract")
+
 == Эксперимент
 
 #set text(size: 15pt)
@@ -45,3 +48,5 @@
 Прогон извлечённого фильтра: все данные, включая шумы (четырёхточечная модель,
 генератор Лемера внутри Rocq), построены извлечённой программой; вхождение
 ошибки в коридор $plus.minus 2 sigma_k$ формализовано в виде отдельной леммы.
+
+#note("r5-exp")

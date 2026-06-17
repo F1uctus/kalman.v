@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "lib.typ": *
+#import "../slides-speech.typ": note
 #import "../viz/observer-block.typ": observer-block-figure
 
 == Модель
@@ -32,6 +33,8 @@
   ))),
 )
 
+#note("model")
+
 == Метод
 
 #set text(size: 16pt)
@@ -48,3 +51,5 @@
 #v(4pt)
 
 Далее: пять групп формализованных результатов (записаны аналогично).
+
+#note("method")

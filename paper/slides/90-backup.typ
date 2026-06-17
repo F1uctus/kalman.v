@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "lib.typ": *
+#import "../slides-speech.typ": note
 #import "../viz/spectral.typ": spectral-figure
 #import "../viz/duality-spectral.typ": duality-spectral-figure
 
@@ -15,6 +16,8 @@
 #v(4pt)
 
 #slide-snippet("kalman.v", "update_cov_information_form")
+
+#note("backup-info")
 
 == Антимонотонность обращения
 
@@ -32,6 +35,8 @@
   align(center + horizon, slide-fig(spectral-figure())),
 )
 
+#note("backup-antimono")
+
 == Двойственность
 
 #set text(size: 15pt)
@@ -42,6 +47,8 @@
 
 Спектры замкнутых контуров наблюдателя и регулятора совпадают: двойственность
 переносит устойчивость между задачами оценивания и управления.
+
+#note("backup-duality")
 
 == Пример ДАУР
 
@@ -56,6 +63,8 @@
 
 #slide-snippet("seqmx/riccati_seqmx.v", "ex_two_val", proof: true)
 
+#note("backup-dare-ex")
+
 == Ограничения извлечения
 
 #set text(size: 16pt)
@@ -69,6 +78,8 @@
   функций: настройка на этапе вызова
 - Подход через CoqEAL не зависит от внешнего экстрактора и даёт формализованное
   соответствие спецификации и кода
+
+#note("backup-limits")
 
 == Соответствие теорем и файлов
 
@@ -96,3 +107,5 @@
 
 Профиль аксиом ключевых теорем: три аксиомы модуля `boolp` библиотеки mathcomp и
 назначение полюсов (`pole_placement_detect`).
+
+#note("backup-table")

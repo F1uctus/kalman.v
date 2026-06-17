@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "lib.typ": *
+#import "../slides-speech.typ": note
 #import "../viz/lyapunov.typ": lyapunov-figure
 #import "../viz/riccati-monotone.typ": riccati-monotone-figure
 #import "../viz/dare-cone.typ": dare-cone-figure
@@ -15,15 +16,20 @@
 #two-col(
   columns: (1fr, 280pt),
   [
-    - Сходимость матриц по норме Фробениуса; монотонная ограниченная
-      последовательность эрмитовых матриц сходится (`mx_mono_cvgn`)
+    - Матрицы образуют конечномерное нормированное пространство; его топология
+      не зависит от выбора нормы, и сходимость в ней равносильна покомпонентной
+      и сходимости по норме Фробениуса (`mxcvgnP`)
+    - Монотонная ограниченная последовательность эрмитовых матриц сходится в
+      этой топологии (`mx_mono_cvgn`)
     - Дискретное уравнение Ляпунова $X = A X A^* + Q$ решается в виде степенного
       ряда (`lyap_sol`); решение единственно при устойчивости $A$
   ],
   align(center + horizon, slide-fig(lyapunov-figure(style: slide-viz))),
 )
 
-== Результат 4: монотонность Риккати
+#note("r4-topo")
+
+== Результат 4: монотонность итерации Риккати
 
 #set text(size: 16pt)
 
@@ -42,6 +48,8 @@
   )),
 )
 
+#note("r4-mono")
+
 == Результат 4: решение ДАУР
 
 #set text(size: 16pt)
@@ -59,11 +67,12 @@
     - Решение единственно среди положительно определённых (`Pss_unique_pd`)
     - Итог: `dare_stabilizing_sol`
   ],
-  align(center + horizon, slide-fig(dare-cone-figure(
-    style: slide-viz,
-    dir: ttb,
-  ))),
+  align(center + horizon, slide-fig(
+    dare-cone-figure(style: slide-viz, panels: ("a",)),
+  )),
 )
+
+#note("r4-dare")
 
 == Результат 4: устойчивость контура
 
@@ -88,6 +97,8 @@
     dir: ttb,
   ))),
 )
+
+#note("r4-schur")
 
 == Результат 4: количественная сходимость
 
@@ -114,3 +125,5 @@
     exponents: (-2, -6),
   ))),
 )
+
+#note("r4-epsn")

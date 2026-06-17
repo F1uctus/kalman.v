@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "lib.typ": *
+#import "../slides-speech.typ": note
 
 == Введение
 
@@ -34,6 +35,8 @@
   ),
 )
 
+#note("intro")
+
 == Цель и задачи
 
 #set text(size: 15pt)
@@ -56,3 +59,5 @@
 #v(8pt)
 
 #results-progress()
+
+#note("goals")
