@@ -5,7 +5,7 @@
 // инновации, по мотивам Kailath, Sayed, Hassibi "Linear Estimation", Fig. 1.1
 // "The optimum transient observer". Верхний пунктирный контур воспроизводит
 // модель в пространстве состояний, нижний повторяет её детерминированную часть
-// и корректируется инновацией через усиление K_{p,k}. Схема без данных,
+// и корректируется инновацией через усиление K_{f,k}. Схема без данных,
 // нарисована примитивами cetz.
 
 #import "@preview/cetz:0.5.2"
@@ -48,7 +48,7 @@
   let tap(cx, cy) = circle((cx, cy), radius: 0.045, fill: tap-fill, stroke: none)
 
   // ===== верхний контур: модель системы =====================================
-  rect((-6.0, 0.55), (5.4, 3.6), stroke: boxst)
+  rect((-6.0, 0.55), (4.8, 3.6), stroke: boxst)
   if show-region-labels {
     content(
       (-0.3, 3.6),
@@ -86,9 +86,9 @@
   content((2.9, 3.2), lbl($bold(v)_k$))
   line((2.9, 2.95), (2.9, 2.36), stroke: wire, mark: mk)
   adder(2.9, 2.2)
-  line((3.06, 2.2), (5.9, 2.2), stroke: wire, mark: mk)
+  line((3.06, 2.2), (5.1, 2.2), stroke: wire, mark: mk)
   tap(4.5, 2.2)
-  content((6.1, 2.2), anchor: "west", lbl($bold(y)_k$))
+  content((5.3, 2.2), anchor: "west", lbl($bold(y)_k$))
 
   // обратная связь динамики F
   line((0.1, 2.2), (0.1, 1.0), stroke: wire)
@@ -98,7 +98,7 @@
   line((-2.5, 1.0), (-2.5, 2.04), stroke: wire, mark: mk)
 
   // ===== нижний контур: наблюдатель ==========================================
-  rect((-6.0, -4.9), (5.4, -0.6), stroke: boxst)
+  rect((-6.0, -4.9), (4.8, -0.6), stroke: boxst)
   if show-region-labels {
     content(
       (-0.3, -4.9),
@@ -122,19 +122,19 @@
   tap(0.1, -1.5)
   content((0.1, -1.22), lbl($hat(x)_k$))
   blk(1.5, -1.5, 0.8, 0.6, $H$)
-  line((1.9, -1.5), (2.74, -1.5), stroke: wire, mark: mk)
-  content((2.3, -1.24), lbl($hat(y)_k$))
+  line((1.9, -1.5), (3.44, -1.5), stroke: wire, mark: mk)
+  content((2.67, -1.24), lbl($hat(y)_k$))
 
   // инновация: e_k = y_k - ŷ_k
   line((4.5, 2.2), (4.5, -1.5), stroke: wire)
-  line((4.5, -1.5), (3.06, -1.5), stroke: wire, mark: mk)
-  adder(2.9, -1.5)
-  content((2.55, -1.26), lbl($-$))
+  line((4.5, -1.5), (3.76, -1.5), stroke: wire, mark: mk)
+  adder(3.6, -1.5)
+  content((3.25, -1.26), lbl($-$))
 
-  line((2.9, -1.66), (2.9, -3.9), stroke: wire)
-  content((3.14, -2.7), anchor: "west", lbl($e_k$))
-  line((2.9, -3.9), (1.0, -3.9), stroke: wire, mark: mk)
-  blk(0.4, -3.9, 1.2, 0.6, $K_(p,k)$)
+  line((3.6, -1.66), (3.6, -3.9), stroke: wire)
+  content((3.84, -2.7), anchor: "west", lbl($e_k$))
+  line((3.6, -3.9), (1.0, -3.9), stroke: wire, mark: mk)
+  blk(0.4, -3.9, 1.2, 0.6, $K_(f,k)$)
   line((-0.2, -3.9), (-3.1, -3.9), stroke: wire)
   line((-3.1, -3.9), (-3.1, -1.86), stroke: wire)
   line((-3.1, -1.86), (-2.62, -1.61), stroke: wire, mark: mk)

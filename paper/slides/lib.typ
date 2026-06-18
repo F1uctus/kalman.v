@@ -66,3 +66,5 @@
     display-icon: false,
   )
 ]
+
+#show list.item: it => it

@@ -1,6 +1,14 @@
+(* Run the extracted, verified seqmx programs (theories/seqmx/*.v) over zarith
+   Q.t and write the thesis figures' paper/data/*.json.
+
+   The exact linear algebra is the extracted code; this driver only wires the Q
+   coefficient dictionary, converts results to float for the (inherently float)
+   derived presentation quantities (eigenvalues, ellipse axes, norms, distances),
+   runs the seeded Kalman simulation, and serialises with yojson. *)
 
 module R = Riccati
 
+(* ---- exact rational coefficient dictionary (zarith analogue of bigQ) ---- *)
 let q0 = Q.zero
 let q1 = Q.one
 let qopp = Q.neg
@@ -14,12 +22,14 @@ type mat = Q.t list list
 (* General-p inverse: the extracted Faddeev-LeVerrier method. *)
 let cinv ~n s = R.cinv_fl q0 q1 qopp qadd qmul qinv n s
 
+(* n x n identity in the seqmx (list-of-rows) representation. *)
 let ident n : mat =
   List.init n (fun i -> List.init n (fun j -> if i = j then q1 else q0))
 
 let qsub a b = qadd a (qopp b)
 let msub (p : mat) (q : mat) : mat = List.map2 (List.map2 qsub) p q
 
+(* ---- thin wrappers around the extracted seqmx programs ---- *)
 let step ~m ~n ~p ~cinv sF sG sH sQ sR sP =
   R.riccati_step_seqmx q0 q1 qopp qadd qmul conj m n p sF sG sH sQ sR cinv sP
 
@@ -37,6 +47,11 @@ let obsv_gram ~n ~p sF sH sW k =
 let ctrl_gram ~n ~m sF sG sQ k =
   R.ctrl_gram_seqmx q0 q1 qadd qmul conj n m sF sG sQ k
 
+(* lyap_partial F W k = sum_{j<k} F^j W (F†)^j, computed by reusing the extracted
+   controllability gramian with G = I_n, Q = W. By gramian_infty.ctrl_gram_eq_partial
+   ctrl_gram F G Q k = lyap_partial F (G Q G†) k, so with G = I_n the program
+   computes lyap_partial F (I W I†) k = lyap_partial F W k exactly. No new theory
+   or extraction: the linear algebra stays in the verified seqmx core. *)
 let lyap_partial ~n sF sW k = ctrl_gram ~n ~m:n sF (ident n) sW k
 
 let closed_loop ~m ~n ~p ~cinv sF sG sH sQ sR sP =
@@ -53,10 +68,12 @@ let alt_update_cov ~n ~p sH sR sKp sP =
 
 let rec iter k f x = if k <= 0 then x else iter (k - 1) f (f x)
 
+(* ---- conversions and derived float quantities ---- *)
 let qf = Q.to_float
 let mf m = Array.of_list (List.map (fun r -> Array.of_list (List.map qf r)) m)
 let qget g i j = List.nth (List.nth g i) j
 
+(* symmetric 2x2: eigenvalues and the covariance ellipse (semi-axes sqrt(eig)) *)
 let eig2 p =
   let a = p.(0).(0) and b = p.(0).(1) and c = p.(1).(1) in
   let tr = a +. c and d = sqrt (((a -. c) /. 2.) ** 2. +. b *. b) in
@@ -67,11 +84,15 @@ let ellipse2 p =
   let a = p.(0).(0) and b = p.(0).(1) in
   (sqrt (max 0. l1), sqrt (max 0. l2), atan2 (l1 -. a) b)
 
+(* PD 2x2: the quadratic-form level set {x : x^t P x = 1} (semi-axes 1/sqrt(eig),
+   same eigenbasis angle as ellipse2). This is the Loewner-order convention:
+   A <= B <=> the level ellipse of B is inside that of A. *)
 let qform_ellipse2 p =
   let l1, l2 = eig2 p in
   let a = p.(0).(0) and b = p.(0).(1) in
   (1. /. sqrt l1, 1. /. sqrt l2, atan2 (l1 -. a) b)
 
+(* general (possibly non-symmetric) 2x2 spectrum, complex eigenvalues allowed *)
 let eig2_general m =
   let a = m.(0).(0) and b = m.(0).(1) and c = m.(1).(0) and d = m.(1).(1) in
   let tr = a +. d and det = a *. d -. b *. c in
@@ -104,11 +125,13 @@ let frob_dist p q =
 
 let trace2 p = p.(0).(0) +. p.(1).(1)
 
+(* exact PD test for a 2x2 symmetric rational matrix (Sylvester) *)
 let pd_exact g =
   let a = qget g 0 0 and b = qget g 0 1 and c = qget g 1 0 and d = qget g 1 1 in
   let det = qadd (qmul a d) (qopp (qmul b c)) in
   Q.sign a > 0 && Q.sign det > 0
 
+(* ---- yojson helpers ---- *)
 let jfloat x = `Float x
 let jint n = `Int n
 let jvec a = `List (Array.to_list (Array.map jfloat a))
@@ -120,11 +143,13 @@ let jellipse (a, b, ang) =
 let qof_int = Q.of_int
 let qfrac a b = Q.make (Z.of_int a) (Z.of_int b)
 
+(* exact PSD test for a 2x2 symmetric rational matrix (nonneg principal minors) *)
 let psd_exact g =
   let a = qget g 0 0 and b = qget g 0 1 and c = qget g 1 0 and d = qget g 1 1 in
   let det = qadd (qmul a d) (qopp (qmul b c)) in
   Q.sign a >= 0 && Q.sign d >= 0 && Q.sign det >= 0
 
+(* ================= DARE / Riccati convergence ================= *)
 
 let sys_F = [ [ q1; q1 ]; [ q0; q1 ] ]
 let sys_G = [ [ qfrac 1 2 ]; [ q1 ] ]
@@ -182,6 +207,7 @@ let gen_dare ~kmax ~kss path =
     ]
   |> Yojson.Basic.to_file path
 
+(* ================= observability / controllability gramians ================= *)
 
 let gram_F = [ [ qfrac 4 5; qfrac 3 10 ]; [ q0; qfrac 1 2 ] ]
 let gram_W = cinv ~n:1 [ [ q1 ] ] (* weight = invmx R, R = I *)
@@ -235,6 +261,7 @@ let gen_gramian ~n ~kmax path =
     ]
   |> Yojson.Basic.to_file path
 
+(* ================= Schur stability of the closed loop ================= *)
 
 let gen_schur ~kmax ~kss path =
   let pss_q = iter kss dare_step sys_P0 in
@@ -261,7 +288,7 @@ let gen_schur ~kmax ~kss path =
     ]
   |> Yojson.Basic.to_file path
 
-
+(* ================= synthetic Kalman run ================= *)
 (* The whole run (true trajectory, measurements, estimates, covariances) is
    the extracted verified program theories/seqmx/kalman_sim.v: the noises come
    from the four-point model of theories/noise.v and the sample path is the
@@ -299,6 +326,63 @@ let gen_kalman_run ~kmax path =
     ]
   |> Yojson.Basic.to_file path
 
+(* ================= synthetic Kalman run in 3D (helix) ================= *)
+(* Three-dimensional position tracking, the spatial analogue of gen_kalman_run.
+   The whole run is the extracted verified program theories/seqmx/kalman_sim.v
+   (kalman_sim3_run): a 6D state (x, vx, y, vy, z, vz) whose velocity rotates in
+   the x-y plane (Pythagorean angle cos = 4/5, sin = 3/5) while position
+   integrates it and z is constant-velocity, so the true trajectory is a helix.
+   Three positions are measured, so the p x p innovation covariance is 3 x 3 and
+   the run exercises the extracted general Faddeev-LeVerrier inverse (cinv ~n:3).
+   The seed R.sim3_seed is the verified one of sim3_run_in_band. This function
+   only converts the extracted exact rationals to JSON floats (the sqrt for the
+   sigma band is presentation only). The first row carries no measurement. *)
+let jsystem3 = jobj [ ("n", jint 6); ("m", jint 3); ("p", jint 3) ]
+
+let gen_kalman_run_3d ~kmax path =
+  let rows =
+    R.kalman_sim3_run q0 q1 qopp qadd qmul qinv conj (cinv ~n:3) R.sim3_seed kmax
+  in
+  (* the three positions live at state indices 0, 2, 4 *)
+  let pos s = jvec [| qf (qget s 0 0); qf (qget s 2 0); qf (qget s 4 0) |] in
+  let steps =
+    List.mapi
+      (fun k (((xt, y), xe), p) ->
+        let base =
+          [
+            ("k", jint k);
+            ("true", pos xt);
+            ("est", pos xe);
+            ( "sigma",
+              jvec
+                [|
+                  sqrt (qf (qget p 0 0));
+                  sqrt (qf (qget p 2 2));
+                  sqrt (qf (qget p 4 4));
+                |] );
+          ]
+        in
+        let meas =
+          match y with
+          | [] -> []
+          | _ ->
+              [
+                ( "meas",
+                  jvec [| qf (qget y 0 0); qf (qget y 1 0); qf (qget y 2 0) |] );
+              ]
+        in
+        jobj (base @ meas))
+      rows
+  in
+  jobj [ ("system", jsystem3); ("steps", `List steps) ]
+  |> Yojson.Basic.to_file path
+
+(* ============== estimation/control duality (PBH spectral mirror) =========== *)
+(* A didactic 2x2 system with real spectrum. For each eigenmode the PBH
+   criterion tests whether it is seen by the output (detectability, H v != 0)
+   and reached by the input (stabilizability, w G != 0). The dual system
+   (F^T, output G^T, input H^T) is computed independently; theories/duality.v
+   (stabilizable_dual, controllable_dual) guarantees the two verdicts swap. *)
 
 let dl_F = [| [| 1.2; 0. |]; [| 0.; 0.5 |] |]
 let dl_H = [| [| 1.; 0. |] |] (* output 1x2 *)
@@ -326,6 +410,7 @@ let vm_f v m =
 
 let vnorm_f v = sqrt (Array.fold_left (fun a x -> a +. (x *. x)) 0. v)
 
+(* right eigenvector of a real-spectrum 2x2 for eigenvalue lam *)
 let reig2 m lam =
   let a = m.(0).(0) and b = m.(0).(1) and c = m.(1).(0) and d = m.(1).(1) in
   let v1 = [| b; lam -. a |] in
@@ -333,6 +418,7 @@ let reig2 m lam =
   let n = vnorm_f v in
   Array.map (fun x -> x /. n) v
 
+(* left eigenvector of m = right eigenvector of m^T *)
 let leig2 m lam = reig2 (tr_f m) lam
 
 let dl_mode m hout gin (re, im) =
@@ -361,6 +447,15 @@ let gen_duality path =
     ]
   |> Yojson.Basic.to_file path
 
+(* ============ orthogonality principle / Kalman-gain optimality ============ *)
+(* For the steady predicted covariance P_pred = predict_cov(P_ss), the Kalman
+   gain K minimises the trace of the posterior covariance update_cov P_pred;
+   every other gain K' yields the Joseph-form alt_update_cov K' P_pred whose
+   trace is not smaller (kalman.filter_gain_optimal). All matrices are produced
+   by the extracted seqmx programs (theories/seqmx/riccati_seqmx.v:
+   filter_gain_seqmx / update_cov_seqmx / alt_update_cov_seqmx); the driver only
+   takes traces for the figure. K' = 0 is the estimator that ignores the new
+   measurement, so its posterior is exactly the predicted covariance P_pred. *)
 
 let qscale c (s : mat) : mat = List.map (List.map (qmul c)) s
 
@@ -395,6 +490,16 @@ let gen_orthogonality ~kss path =
     ]
   |> Yojson.Basic.to_file path
 
+(* ================= Lyapunov partial-sum convergence ================= *)
+(* lyap_partial A W N = sum_{k<N} A^k W (A†)^k rises monotonically (Loewner) to
+   the Lyapunov solution lyap_sol A W = X solving X = A X A† + W
+   (theories/lyapunov.v: lyap_partial, lyap_partial_mono, lyap_partial_psd; the
+   limit lyap_sol and gramian_infty.ctrl_gram_infty = lyap_sol F (G Q G†)). The
+   exact matrices are the extracted controllability gramian ctrl_gram_seqmx run
+   with G = I_2, Q = W, which equals lyap_partial by ctrl_gram_eq_partial; the
+   driver only takes float distances / ellipse axes for the figure. A is the
+   Schur-stable gram_F (frob_sq A = 49/50 < 1), W = I_2 is positive definite;
+   lyap_sol is approximated by the partial sum at large kss. *)
 
 let lyap_A = gram_F
 let lyap_W = ident 2
@@ -424,8 +529,10 @@ let gen_lyapunov ~kmax ~kss path =
   for n_ = 0 to kmax do
     let cur_q = if n_ = 0 then !prev_q else lyap_step n_ in
     let cur = mf cur_q in
+    (* self-check: the Loewner increment P_(N+1) - P_N is PSD (lyap_partial_mono) *)
     let nxt_q = lyap_step (n_ + 1) in
     assert (psd_exact (msub nxt_q cur_q));
+    (* self-check: the Frobenius distance to the limit is non-increasing *)
     let fd = frob_dist cur pss in
     assert (fd <= !prev_fd +. 1e-12);
     prev_fd := fd;
@@ -444,6 +551,15 @@ let gen_lyapunov ~kmax ~kss path =
     ]
   |> Yojson.Basic.to_file path
 
+(* ============ antitone inverse on the PD cone ============ *)
+(* Antitone inverse (spectral.pd_inv_antimono): A <= B (both PD) implies
+   B^-1 <= A^-1, so under inversion the quadratic-form level-ellipse
+   {x : x^t* M x = 1} (semi-axes 1/sqrt(eig) along the eigenvectors) reverses its
+   containment and the principal axes swap. The matrices and their inverses are
+   the extracted, verified core (cinv_fl = invmx by cinv_fl_correct); the driver
+   self-checks A <= B and B^-1 <= A^-1 on the exact rationals and emits only the
+   float eigenvalues / ellipse axes. A, B share the 45-degree eigenbasis for a
+   clean picture; the lemma itself is general. *)
 
 let spec_A = [ [ qfrac 5 2; qfrac 3 2 ]; [ qfrac 3 2; qfrac 5 2 ] ] (* eig 4, 1 *)
 let spec_B = [ [ qfrac 13 2; qfrac 5 2 ]; [ qfrac 5 2; qfrac 13 2 ] ] (* eig 9, 4 *)
@@ -478,6 +594,7 @@ let gen_spectral path =
     ]
   |> Yojson.Basic.to_file path
 
+(* ================= entry point ================= *)
 
 let () =
   (* self-test: scalar DARE iterate 2 from P0 = 1 is 13/16 *)
@@ -491,6 +608,7 @@ let () =
   gen_gramian ~n:2 ~kmax:5 (Filename.concat dir "gramian.json");
   gen_schur ~kmax:30 ~kss:200 (Filename.concat dir "schur_stability.json");
   gen_kalman_run ~kmax:40 (Filename.concat dir "kalman_run.json");
+  gen_kalman_run_3d ~kmax:30 (Filename.concat dir "kalman_run_3d.json");
   gen_duality (Filename.concat dir "duality_spectral.json");
   gen_orthogonality ~kss:200 (Filename.concat dir "orthogonality.json");
   gen_lyapunov ~kmax:36 ~kss:200 (Filename.concat dir "lyapunov.json");

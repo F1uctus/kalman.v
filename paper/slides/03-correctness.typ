@@ -11,7 +11,11 @@
 // до формулы, поэтому она ложится под чёрный шрифт; стрелку после, поэтому она
 // поверх. Ключ key различает два пояснения: pred (предсказание) и upd
 // (обновление в форме Джозефа).
-#let ul(body) = underline(stroke: 0.6pt + unn-colors.accent-blue, offset: 2pt, body)
+#let ul(body) = underline(
+  stroke: 0.6pt + unn-colors.accent-blue,
+  offset: 2pt,
+  body,
+)
 #let pos-mark(name) = [#metadata(none)#label(name)]
 
 #let _hl-box(key) = {
@@ -58,72 +62,95 @@
   }
 }
 
-== Результат 1: корректность шага
+== 1. Определение шага фильтра и его корректность
 
-#set text(size: 16pt)
+#set text(size: 15pt)
 
-Полный шаг:
-#ul[предск#pos-mark("pred-src")азание],
-затем
-#ul[обновление в #pos-mark("upd-src")форме Джозефа],
+_Эрмитова конгруэнция по матрице $M$_: $P |-> M P M^*$.
+
+Полный шаг: #ul[предска#pos-mark("pred-src")зание], затем #ul[обновление (в
+  числен#pos-mark("upd-src")но устойчивой _форме Джозефа_)],
 #hl("pred")
 #hl("upd")
 $
   #pos-mark("pred-start") P_(k+1|k) = F P_(k|k) F^* + G Q G^* #pos-mark("pred-end") ,
   quad
-  #pos-mark("upd-start") P_(k|k) = (E - K H) P_(k|k-1) (E - K H)^* + K R K^* #pos-mark("upd-end") .
+  #pos-mark("upd-start") P_(k|k) = (E_n - K H) P_(k|k-1) (E_n - K H)^* + K R K^* #pos-mark("upd-end") .
 $
 
 #hl-arrow("pred")
 #hl-arrow("upd")
 
-- Инновационная ковариация $R_(e,k) = H P_(k|k-1) H^* + R$ положительно
-  определена при $R succ 0$ (`innov_cov_pd`), отсюда обратима
-- Полный шаг фильтра в форме Джозефа сохраняет неотрицательную определённость
-  ковариации:
+- Инновационная ковариация $R_(e,k) = H P_(k|k-1) H^* + R succ 0$ при
+  $R succ 0$, а значит обратима.
 
-#v(2pt)
+- Полный шаг фильтра сохраняет неотрицательную определённость ковариации:
+
+$
+  // hat(bold(x))_(k+1|k) = F hat(bold(x))_(k|k) + G bold(u)_k,
+  // quad hat(bold(x))_(k+1|k+1)
+  // = hat(bold(x))_(k+1|k) + K (bold(y)_(k+1) - H hat(bold(x))_(k+1|k)),
+  // \
+  P_(k|k) succ.eq 0
+  thick => thick
+  P_(k+1|k+1) = (E_n - K H) P_(k+1|k) (E_n - K H)^* + K R K^* succ.eq 0,
+  thick "где" K = P_(k|k-1) H† R_(e,k)^(-1).
+$
 
 #slide-snippet("kalman.v", "kf_step_psd")
 
 #note("r1-step")
 
-== Результат 2: несмещённость
+== 2.1. Несмещённость ошибки оценивания
 
 #set text(size: 16pt)
 
-Рекурсия ошибки $err(x) = bold(x) - est(x)$ (управление сокращается):
+Рекурсия ошибки оценки $err(x) = bold(x) - est(x)$ (слагаемое с вектором
+управления сокращается):
 $
   err(x)_(k+1|k) = F err(x)_(k|k) + G bold(w)_(k+1),
   quad
-  err(x)_(k+1|k+1) = err(x)_(k+1|k) - K_(f,k+1) e_(k+1).
+  err(x)_(k+1|k+1) = err(x)_(k+1|k) - K_(f,k+1) e_(k+1),
+  quad "где"
+  quad e_(k+1) = bold(y)_(k+1) - H hat(bold(x))_(k+1|k), \
+  quad K_(f,k+1) = P_(k+1|k) H^* R_(e,k+1)^(-1),
+  quad R_(e,k+1) = H P_(k+1|k) H^* + R.
 $
 
-При шумах с нулевым средним и $EE err(x)_0 = 0$ среднее ошибки остаётся нулевым
-на каждом шаге, причём при произвольном усилении наблюдателя:
+При возмущениях с нулевым средним и $EE err(x)_0 = 0$ среднее значение ошибки
+остаётся $=0$ на каждом шаге, причём при любой послед. ${P_(k|k)}$, а значит и
+при любом усилении $K$:
 
-#slide-snippet("kalman.v", "unbiased", size: 12pt)
+#slide-snippet("kalman.v", "unbiased")
 
 #note("r2-unbiased")
 
-== Результат 2: оптимальность
+== 2.2. Оптимальность матрицы $K_(f,k)$ (усиления Калмана)
 
-#set text(size: 16pt)
+#set text(size: 14pt)
 
 #two-col(
-  columns: (1fr, 300pt),
+  columns: (1fr, 250pt),
   [
-    - `filter_gain_optimal`: усиление Калмана минимизирует след апостериорной
-      ковариации среди всех усилений; доказательство ведётся выделением полного
-      квадрата
-    - `filter_gain_normal_eq`: стационарное условие
-      $
-        K_k R_(e,k) = P_(k|k-1) H^*
-      $
-      выражает ортогональность ошибки и инновации
+    #set text(hyphenate: true)
+    - $""
+      forall K: P_(k|k)(K) = K R_(e,k) K^* - K H P_(k|k-1) - P_(k|k-1) H^* K^*
+      + P_(k|k-1).$
+      Выделение полного квадрата по $K$ (аналог
+      $a x^2 - 2 b x = a (x - b/a)^2 - b^2/a$, здесь $a = R_(e,k)$):
+      $ P_(k|k)(K) = (K - K_(f,k)) R_(e,k) (K - K_(f,k))^* + P_(k|k)(K_(f,k)). $
+      Квадрат $succ.eq 0$ и $= 0$ лишь при
+      $K = K_(f,k) = P_(k|k-1) H^* R_(e,k)^(-1)$; усиление Калмана минимизирует
+      ковариацию (а с ней и след).
+
+    - Условие стационарности $K_k R_(e,k) = P_(k|k-1) H^*$ равносильно
+      $EE[err(x)_(k|k) e_k^*] = 0$: ошибка не коррелирует с инновацией. Это
+      означает, что из наблюдения извлечено всё что можно, а оценка $hat(x)$
+      есть ортогональная проекция состояния $x$ на подпространство наблюдений
+      $cal(Y)$.
   ],
   align(center + horizon, slide-fig(orthogonality-figure(
-    style: (label: 11pt, annot: 10pt),
+    style: (label: 14pt, annot: 14pt),
   ))),
 )
 

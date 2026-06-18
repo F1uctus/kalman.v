@@ -66,10 +66,10 @@
     ).map(P)
     line(..floor, close: true, fill: luma(94%), stroke: luma(70%) + 0.5pt)
     content(
-      P((-m, 0.35, 0)),
+      P((X / 2, -0.8 * m, 0)),
       text(size: st.label)[$cal(Y) = "span" {y_k}$],
-      anchor: "east",
-      padding: 0.12,
+      anchor: "north",
+      padding: 0.16,
     )
 
     // --- sub-optimal error e' = x − x̂' for K' = 0 (ignore measurement) ---
@@ -121,7 +121,7 @@
     content(
       P(O),
       text(size: st.label, fill: luma(30%))[$hat(x)' = 0$],
-      anchor: "north",
+      anchor: "east",
       padding: 0.16,
     )
     circle(P(xhat), radius: 0.06, fill: black, stroke: none)

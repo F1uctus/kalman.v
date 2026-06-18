@@ -5,19 +5,8 @@
 #import "../slides-speech.typ": note
 #import "../viz/spectral.typ": spectral-figure
 #import "../viz/duality-spectral.typ": duality-spectral-figure
-
-== Информационная форма
-
-#set text(size: 16pt)
-
-- Обновление ковариации допускает запись через обратные матрицы (информационная
-  форма); из неё немедленно следует обратимость апостериорной ковариации
-
-#v(4pt)
-
-#slide-snippet("kalman.v", "update_cov_information_form")
-
-#note("backup-info")
+#import "../viz/schur-stability.typ": schur-stability-figure
+#import "../viz/dare-epsn.typ": dare-epsn-figure
 
 == Антимонотонность обращения
 
@@ -36,6 +25,60 @@
 )
 
 #note("backup-antimono")
+
+== 4. Устойчивость контура
+
+#set text(size: 16pt)
+
+#two-col(
+  columns: (1fr, 280pt),
+  [
+    - Замкнутый контур $F_p = F - K_p H$ устойчив по Шуру: спектр строго внутри
+      единичного круга (`Fp_schur`)
+    - Отсюда нормы степеней $F_p^k$ убывают геометрически, и возмущения
+      начального состояния становятся пренебрежимо малы
+  ],
+  align(center + horizon, slide-fig(schur-stability-figure(
+    style: (
+      ..slide-viz,
+      label: 18pt,
+      tick: 13pt,
+      legend: 14pt,
+      subcaption: 15pt,
+    ),
+    dir: ttb,
+  ))),
+)
+
+#note("r4-schur")
+
+== 4. Количественная сходимость
+
+#set text(size: 16pt)
+
+#two-col(
+  columns: (1fr, 280pt),
+  [
+    - Глобальная сходимость из любого неотрицательно определённого $P_0$
+    - Форма $epsilon$--$N$ по норме Фробениуса (`kalman_filter_frob_cvgn`):
+      $
+        forall epsilon > 0 thick exists N(epsilon):
+        quad
+        norm(P_k - P_ss)_F < epsilon
+      $
+      при $k >= N(epsilon)$; то же для усиления
+      $K_k -> K_ss$
+    - Свойство перенесено на ковариацию работающего фильтра над любыми потоками
+      входов и измерений
+  ],
+  align(center + horizon, slide-fig(dare-epsn-figure(
+    style: (..slide-viz, label: 16pt, tick: 13pt, subcaption: 14pt),
+    dir: ttb,
+    exponents: (-2, -6),
+  ))),
+)
+
+#note("r4-epsn")
 
 == Двойственность
 
@@ -64,6 +107,19 @@
 #slide-snippet("seqmx/riccati_seqmx.v", "ex_two_val", proof: true)
 
 #note("backup-dare-ex")
+
+== Информационная форма
+
+#set text(size: 16pt)
+
+- Обновление ковариации допускает запись через обратные матрицы (информационная
+  форма); из неё немедленно следует обратимость апостериорной ковариации
+
+#v(4pt)
+
+#slide-snippet("kalman.v", "update_cov_information_form")
+
+#note("backup-info")
 
 == Ограничения извлечения
 

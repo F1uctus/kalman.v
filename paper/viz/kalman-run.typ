@@ -167,7 +167,7 @@
   if dir == ltr {
     grid(
       columns: (auto, auto),
-      column-gutter: 1.2em,
+      column-gutter: 0em,
       align: bottom,
       panel-a, panel-b,
     )

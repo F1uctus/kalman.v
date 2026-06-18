@@ -6,51 +6,39 @@
 #import "../viz/lyapunov.typ": lyapunov-figure
 #import "../viz/riccati-monotone.typ": riccati-monotone-figure
 #import "../viz/dare-cone.typ": dare-cone-figure
-#import "../viz/schur-stability.typ": schur-stability-figure
-#import "../viz/dare-epsn.typ": dare-epsn-figure
 
-== Результат 4: топология и пределы
+== 4.1. Топология, пределы и монотонность
 
-#set text(size: 16pt)
+#set text(size: 13pt)
 
 #two-col(
-  columns: (1fr, 280pt),
+  columns: (1fr, 225pt),
   [
-    - Матрицы образуют конечномерное нормированное пространство; его топология
-      не зависит от выбора нормы, и сходимость в ней равносильна покомпонентной
-      и сходимости по норме Фробениуса (`mxcvgnP`)
-    - Монотонная ограниченная последовательность эрмитовых матриц сходится в
-      этой топологии (`mx_mono_cvgn`)
-    - Дискретное уравнение Ляпунова $X = A X A^* + Q$ решается в виде степенного
-      ряда (`lyap_sol`); решение единственно при устойчивости $A$
+    - Матрицы образуют конечномерное нормированное пространство: топология не
+      зависит от нормы, сходимость равносильна сходимости по норме Фробениуса.
+
+
+    - Монотонная ограниченная последовательность эрмитовых матриц сходится.
+
+    - Дискретное уравнение Ляпунова $X = A X A^* + Q$ решается степенным рядом;
+      решение единственно при устойчивой $A$.
+
+    - Итерация уравнения из $P_0 = 0$ не убывает в порядке Лёвнера.
+
+    - Детектируемость даёт равномерную мажоранту траектории: решение уравнения
+      Ляпунова при фиксированном стабилизирующем усилении.
   ],
-  align(center + horizon, slide-fig(lyapunov-figure(style: slide-viz))),
-)
-
-#note("r4-topo")
-
-== Результат 4: монотонность итерации Риккати
-
-#set text(size: 16pt)
-
-#two-col(
-  columns: (1fr, 280pt),
-  [
-    - Итерация Риккати из $P_0 = 0$ монотонно не убывает в порядке Лёвнера
-      (`riccati_iter0_mono`)
-    - Детектируемость даёт равномерную верхнюю границу траектории: решение
-      уравнения Ляпунова с фиксированным стабилизирующим усилением
-  ],
-  align(center + horizon, slide-fig(
-    riccati-monotone-figure(
-      style: slide-viz,
-    ),
+  align(center + horizon, stack(
+    spacing: 8pt,
+    slide-fig(lyapunov-figure(style: slide-viz), max-h: 100pt),
+    slide-fig(riccati-monotone-figure(style: slide-viz), max-h: 100pt),
   )),
 )
 
+#note("r4-topo")
 #note("r4-mono")
 
-== Результат 4: решение ДАУР
+== 4.2. Решение ДАУР
 
 #set text(size: 16pt)
 
@@ -73,57 +61,3 @@
 )
 
 #note("r4-dare")
-
-== Результат 4: устойчивость контура
-
-#set text(size: 16pt)
-
-#two-col(
-  columns: (1fr, 280pt),
-  [
-    - Замкнутый контур $F_p = F - K_p H$ устойчив по Шуру: спектр строго внутри
-      единичного круга (`Fp_schur`)
-    - Отсюда нормы степеней $F_p^k$ убывают геометрически, и возмущения
-      начального состояния становятся пренебрежимо малы
-  ],
-  align(center + horizon, slide-fig(schur-stability-figure(
-    style: (
-      ..slide-viz,
-      label: 18pt,
-      tick: 13pt,
-      legend: 14pt,
-      subcaption: 15pt,
-    ),
-    dir: ttb,
-  ))),
-)
-
-#note("r4-schur")
-
-== Результат 4: количественная сходимость
-
-#set text(size: 16pt)
-
-#two-col(
-  columns: (1fr, 280pt),
-  [
-    - Глобальная сходимость из любого неотрицательно определённого $P_0$
-    - Форма $epsilon$--$N$ по норме Фробениуса (`kalman_filter_frob_cvgn`):
-      $
-        forall epsilon > 0 thick exists N(epsilon):
-        quad
-        norm(P_k - P_ss)_F < epsilon
-      $
-      при $k >= N(epsilon)$; то же для усиления
-      $K_k -> K_ss$
-    - Свойство перенесено на ковариацию работающего фильтра над любыми потоками
-      входов и измерений
-  ],
-  align(center + horizon, slide-fig(dare-epsn-figure(
-    style: (..slide-viz, label: 16pt, tick: 13pt, subcaption: 14pt),
-    dir: ttb,
-    exponents: (-2, -6),
-  ))),
-)
-
-#note("r4-epsn")

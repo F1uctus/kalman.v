@@ -94,7 +94,7 @@
 }
 
 // Top labels k = 1 … kmax; the k = n column (where PD switches on) is emphasized.
-#let gram-top-labels(data, st) = range(1, data.kmax + 1).map(k => if (
+#let gram-top-labels(data, st, kmax) = range(1, kmax + 1).map(k => if (
   k == data.n
 ) {
   text(size: st.label, weight: "bold")[$k = #k = n$]
@@ -102,11 +102,16 @@
   text(size: st.label)[$k = #k$]
 })
 
-#let gramian-figure(data: gramian-data, style: (:)) = {
+// `kmax` caps how many k-columns are shown (default: all available).
+#let gramian-figure(data: gramian-data, style: (:), kmax: none) = {
   let st = viz-resolve(style)
+  let kshow = if kmax == none { data.kmax } else { calc.min(kmax, data.kmax) }
   frame-grid(
-    data.cases.map(c => (label: gram-row-label(c, st), items: c.frames)),
+    data.cases.map(c => (
+      label: gram-row-label(c, st),
+      items: c.frames.slice(0, kshow),
+    )),
     it => gram-frame(it),
-    top-labels: gram-top-labels(data, st),
+    top-labels: gram-top-labels(data, st, kshow),
   )
 }

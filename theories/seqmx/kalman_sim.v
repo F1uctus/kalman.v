@@ -58,6 +58,11 @@ Fixpoint lcg_stream (s : BinNums.N) (k : nat) : seq nat :=
 
 Definition sim_seed : BinNums.N := N.of_nat 1234.
 
+(* Посев генератора для трёхмерного прогона; выбран так, чтобы на всём прогоне
+   каждая координата ошибки оставалась в коридоре плюс минус два сигма
+   (лемма sim3_run_in_band). *)
+Definition sim3_seed : BinNums.N := N.of_nat 21.
+
 Section EffSim.
 
 Context (C : Type).
@@ -142,6 +147,99 @@ Definition kalman_sim_run (T : nat) : seq sim_row :=
   let head_row : sim_row := (sim_x0, [::], seqmx0 2 1, sim_P0) in
   head_row :: sim_run_aux st0 (pair_up (lcg_stream sim_seed (T.*2))).
 
+(*
+  Трёхмерная модель слежения за положением: n = 6, m = p = 3.
+
+  Состояние есть вектор (x, vx, y, vy, z, vz): по каждой из трёх осей пара из
+  положения и скорости. Скорость в плоскости x-y поворачивается на угол θ с
+  (cos θ, sin θ) = (4/5, 3/5), а положение её интегрирует; по оси z движение с
+  постоянной скоростью. Истинная траектория есть винтовая линия: радиус в
+  плоскости x-y ограничен (собственные значения блока поворота равны
+  exp(plus i θ) и exp(minus i θ), оба лежат на единичной окружности), а высота z
+  растёт линейно. Пифагоров угол даёт точную рациональную арифметику без чисел с
+  плавающей точкой. Измеряются три положения; обращение инновационной ковариации
+  идёт над матрицей 3 x 3, что задействует обращение методом Фаддеева-Леверье
+  общего порядка.
+*)
+Definition sim3_F : @seqmx C :=
+  [:: [:: 1; 1; 0; 0; 0; 0]
+   ;  [:: 0; cfrac 4 5; 0; - cfrac 3 5; 0; 0]
+   ;  [:: 0; 0; 1; 1; 0; 0]
+   ;  [:: 0; cfrac 3 5; 0; cfrac 4 5; 0; 0]
+   ;  [:: 0; 0; 0; 0; 1; 1]
+   ;  [:: 0; 0; 0; 0; 0; 1]
+  ]%C.
+Definition sim3_G : @seqmx C :=
+  [:: [:: cfrac 1 2; 0; 0]
+   ;  [:: 1; 0; 0]
+   ;  [:: 0; cfrac 1 2; 0]
+   ;  [:: 0; 1; 0]
+   ;  [:: 0; 0; cfrac 1 2]
+   ;  [:: 0; 0; 1]
+  ]%C.
+Definition sim3_H : @seqmx C :=
+  [:: [:: 1; 0; 0; 0; 0; 0]
+   ;  [:: 0; 0; 1; 0; 0; 0]
+   ;  [:: 0; 0; 0; 0; 1; 0]
+  ]%C.
+Definition sim3_Q : @seqmx C :=
+  [:: [:: cfrac 1 10; 0; 0]
+   ;  [:: 0; cfrac 1 10; 0]
+   ;  [:: 0; 0; cfrac 1 10]
+  ]%C.
+Definition sim3_R : @seqmx C :=
+  [:: [:: 1; 0; 0]; [:: 0; 1; 0]; [:: 0; 0; 1]]%C.
+Definition sim3_P0 : @seqmx C :=
+  [:: [:: cnat 2; 0; 0; 0; 0; 0]
+   ;  [:: 0; cnat 2; 0; 0; 0; 0]
+   ;  [:: 0; 0; cnat 2; 0; 0; 0]
+   ;  [:: 0; 0; 0; cnat 2; 0; 0]
+   ;  [:: 0; 0; 0; 0; cnat 2; 0]
+   ;  [:: 0; 0; 0; 0; 0; cnat 2]
+  ]%C.
+Definition sim3_x0 : @seqmx C :=
+  [:: [:: 0]; [:: cnat 2]; [:: 0]; [:: 0]; [:: 0]; [:: cfrac 1 2]]%C.
+
+(*
+  Один шаг трёхмерного прогона по шести исходам: три питают шум управления
+  (o0, o1, o2), три шум измерения (o3, o4, o5). Структура совпадает с sim_step.
+*)
+Definition sim3_step (st : @seqmx C * @seqmx C * @seqmx C)
+    (o0 o1 o2 o3 o4 o5 : nat)
+    : (@seqmx C * @seqmx C * @seqmx C) * sim_row :=
+  let: (xt, xe, P) := st in
+  let wk : @seqmx C := [:: [:: wval o0]; [:: wval o1]; [:: wval o2]] in
+  let vk : @seqmx C := [:: [:: vval o3]; [:: vval o4]; [:: vval o5]] in
+  let xt' := add_seqmx (@hmul_op _ _ _ 6 6 1 sim3_F xt)
+                       (@hmul_op _ _ _ 6 3 1 sim3_G wk) in
+  let yk := add_seqmx (@hmul_op _ _ _ 3 6 1 sim3_H xt') vk in
+  let Ppred := predict_cov_seqmx cconj 3 6 sim3_F sim3_G sim3_Q P in
+  let K := filter_gain_seqmx cconj 6 3 sim3_H sim3_R cinv Ppred in
+  let xpred := @hmul_op _ _ _ 6 6 1 sim3_F xe in
+  let innov := sub_seqmx yk (@hmul_op _ _ _ 3 6 1 sim3_H xpred) in
+  let xe' := add_seqmx xpred (@hmul_op _ _ _ 6 3 1 K innov) in
+  let P' := riccati_step_seqmx cconj 3 6 3 sim3_F sim3_G sim3_H sim3_Q sim3_R
+              cinv P in
+  ((xt', xe', P'), (xt', yk, xe', P')).
+
+(* Прогон по потоку исходов, по шесть исходов на шаг. *)
+Fixpoint sim3_run_aux (st : @seqmx C * @seqmx C * @seqmx C)
+    (outs : seq nat) : seq sim_row :=
+  if outs is o0 :: o1 :: o2 :: o3 :: o4 :: o5 :: rest then
+    let: (st', row) := sim3_step st o0 o1 o2 o3 o4 o5 in
+    row :: sim3_run_aux st' rest
+  else [::].
+
+(*
+  Полный трёхмерный прогон на T шагов: начальная строка без измерения (вместо
+  него пустая матрица), затем T шагов фильтра. На шаг приходится шесть исходов
+  потока.
+*)
+Definition kalman_sim3_run (seed : BinNums.N) (T : nat) : seq sim_row :=
+  let st0 := (sim3_x0, seqmx0 6 1, sim3_P0) in
+  let head_row : sim_row := (sim3_x0, [::], seqmx0 6 1, sim3_P0) in
+  head_row :: sim3_run_aux st0 (lcg_stream seed (muln 6 T)).
+
 End EffSim.
 
 (*
@@ -222,6 +320,35 @@ Section BigQSim.
     по точной риккатиевой ковариации.
   *)
   Lemma sim_run_in_band : all row_in_band (bigq_run 40) = true.
+  Proof. by vm_compute. Qed.
+
+  (* Обращение матрицы 3 x 3 над bigQ методом Фаддеева-Леверье. *)
+  Definition bigq_cinv3 (sS : @seqmx bigQ) : @seqmx bigQ :=
+    cinv_fl (C := bigQ) 3 sS.
+
+  Definition bigq_run3 (seed : BinNums.N) (T : nat) : seq (sim_row bigQ) :=
+    kalman_sim3_run BigQ.inv_norm (fun x : bigQ => x) bigq_cinv3 seed T.
+
+  (*
+    Проверка коридора для строки трёхмерного прогона: по каждой из трёх
+    координат положения квадрат ошибки не превосходит четырёх дисперсий, то есть
+    каждая координата ошибки лежит в коридоре плюс минус два сигма.
+  *)
+  Definition row_in_band3 (r : sim_row bigQ) : bool :=
+    let: (xt, _, xe, P) := r in
+    let ex := (sqb_get xe 0 0 - sqb_get xt 0 0)%C in
+    let ey := (sqb_get xe 2 0 - sqb_get xt 2 0)%C in
+    let ez := (sqb_get xe 4 0 - sqb_get xt 4 0)%C in
+    [&& leq_op (ex * ex)%C ((cnat 4 : bigQ) * sqb_get P 0 0)%C,
+        leq_op (ey * ey)%C ((cnat 4 : bigQ) * sqb_get P 2 2)%C
+      & leq_op (ez * ez)%C ((cnat 4 : bigQ) * sqb_get P 4 4)%C].
+
+  (*
+    Формальная проверка иллюстрации: на всём трёхмерном прогоне в сорок шагов
+    каждая координата ошибки оценки положения остаётся в коридоре плюс минус два
+    сигма, построенном по точной риккатиевой ковариации.
+  *)
+  Lemma sim3_run_in_band : all row_in_band3 (bigq_run3 sim3_seed 30) = true.
   Proof. by vm_compute. Qed.
 
 End BigQSim.

@@ -45,7 +45,7 @@ Section GenericDefs.
   Definition innov_cov (P : 'M[R]_n) : 'M[R]_p :=
     H *m P *m map_mx conj H^T + Rm.
 
-  (* Фильтрующее усиление: $K_(f,k) = P H† R_(e,k)^(-1)$. *)
+  (* Усиление фильтра: $K_(f,k) = P H† R_(e,k)^(-1)$. *)
   Definition filter_gain (P : 'M[R]_n) : 'M[R]_(n, p) :=
     P *m map_mx conj H^T *m invmx (innov_cov P).
 
@@ -61,7 +61,10 @@ Section GenericDefs.
     let EmKH := 1%:M - Kp *m H in
     EmKH *m P *m map_mx conj EmKH^T + Kp *m Rm *m map_mx conj Kp^T.
 
-  (* Шаг итерации Риккати: обновление после предсказания. *)
+  (*
+    Шаг итерации Риккати: $P_(k+1|k+1) = "riccati_step"(P_(k|k))$, где
+    $"riccati_step" := (P |-> (E_n - K H) P) ∘ (P |-> F P F† + G Q G†)$.
+  *)
   Definition riccati_step (P : 'M[R]_n) : 'M[R]_n :=
     update_cov (predict_cov P).
 

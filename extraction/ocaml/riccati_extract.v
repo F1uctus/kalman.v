@@ -1,4 +1,12 @@
+(*
+  Извлечение доказанной seqmx-программы шага Риккати в OCaml.
 
+  Извлекается обобщённый терм `riccati_step_seqmx` (слой операций CoqEAL):
+  коэффициентный тип и кольцевые операции - параметры словаря, поэтому в коде
+  программы нет `Obj.magic`, а коэффициент подставляется в OCaml (zarith `Q.t`,
+  вычислимый аналог `bigQ`). Это тот же терм, который над `bigQ` доказанно
+  уточняет спецификацию (`riccati_seqmx.riccati_iter_seqmxC`).
+*)
 Set Warnings "-all".
 From Kalman.seqmx Require Import riccati_seqmx experiments kalman_sim.
 Require Extraction.
@@ -28,4 +36,4 @@ Extraction "riccati.ml"
   riccati_step_seqmx predict_cov_seqmx innov_cov_seqmx filter_gain_seqmx
   update_cov_seqmx alt_update_cov_seqmx ctr_seqmx cinv_fl
   mpow_seqmx obsv_gram_seqmx ctrl_gram_seqmx closed_loop_seqmx
-  kalman_sim_run.
+  kalman_sim_run kalman_sim3_run sim3_seed.
