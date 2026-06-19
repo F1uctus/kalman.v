@@ -3,7 +3,7 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 
   Норма Фробениуса для матриц над алгебраически замкнутым полем.
-  $ norm(M)_F^2 = "tr" (M† dot M) \ = sum_(i,j) (M_(i j))† dot M_(i j) \ = sum_(i,j) |M_(i j)|^2 $
+  $norm(M)_F^2 = "tr" (M† M) = sum_(i,j) (M_(i j))† M_(i j) = sum_(i,j) |M_(i j)|^2$
   Нужна для:
   - Метрики на матрицах (через $norm(A - B)_F^2$);
   - Монотонной сходимости неотрицательно определённых последовательностей;
@@ -213,15 +213,15 @@ Section Frob.
 
   (*
     Мажоранта следа сопряжения неотрицательно определённой матрицы:
-    $tr (F M Fconj) <= frob_sq F * tr M при psd M$.
+    $tr (F M F†) <= frob_sq F * tr M$ при $M succ.eq 0$.
   *)
   Lemma tr_conj_frob_le n m (Fm : 'M[ℂ]_(n, m)) (M : 'M[ℂ]_m) :
     psd M -> \tr (Fm *m M *m Fm^t*) <= frob_sq Fm * \tr M.
   (*
     Спектральное разложение $M = U diag(l) U†, l_i >= 0$; для
     $W := (F U)† (F U)$ (неотрицательно определена) получаем
-    $tr (F M F†) = ∑_i l_i W_ii <= ∑_i l_i (tr W) = (tr W)(∑_i l_i) = frob_sq F * tr M$,
-    где $W_ii <= tr W$ ($W$ неотрицательно определена => диагональ <= след) и
+    $tr (F M F†) = ∑_i l_i W_(i i) <= ∑_i l_i (tr W) = (tr W)(∑_i l_i) = frob_sq F * tr M$,
+    где $W_(i i) <= tr W$ ($W$ неотрицательно определена => диагональ <= след) и
     $tr W = frob_sq F$. Это заменяет общую субмультипликативность Фробениуса:
     нужный частный случай выводится напрямую из спектральной теоремы.
   *)
@@ -229,21 +229,21 @@ Section Frob.
     move=> pM.
     have herm := psd_hermsym pM.
     have [U [l [hU [lreal Mdec]]]] := spectral_decomp herm.
-    have psdD : psd (diag_of l) by apply: (psd_spec_conj_inj hU); rewrite -Mdec.
-    have lnn := proj1 (psd_diag_iff_real lreal) psdD.
+    have psdD : psd (diag l) by apply: (psd_spec_conjK hU); rewrite -Mdec.
+    have lnn := proj1 (psd_diagE lreal) psdD.
     pose X := Fm *m U.
     pose W := X^t* *m X.
     have Wpsd : psd W := psd_frob X.
-    have trEq : \tr (Fm *m M *m Fm^t*) = \tr (diag_of l *m W).
+    have trEq : \tr (Fm *m M *m Fm^t*) = \tr (diag l *m W).
       rewrite Mdec.
-      rewrite (_ : Fm *m (U *m diag_of l *m U^t*) *m Fm^t*
-                = X *m diag_of l *m X^t*); last by rewrite /X trmxC_mul !mulmxA.
+      rewrite (_ : Fm *m (U *m diag l *m U^t*) *m Fm^t*
+                = X *m diag l *m X^t*); last by rewrite /X trmxC_mul !mulmxA.
       by rewrite mxtrace_mulC mulmxA -/W mxtrace_mulC.
     have trW : \tr W = frob_sq Fm.
       rewrite /W /X /frob_sq trmxC_mul mxtrace_mulC !mulmxA -[_ *m U *m U^t*]mulmxA.
       have /unitarymxP hUU := hU.
       by rewrite hUU mulmx1 mxtrace_mulC.
-    have trSum : \tr (diag_of l *m W) = \sum_(i < m) l i * W i i.
+    have trSum : \tr (diag l *m W) = \sum_(i < m) l i * W i i.
       rewrite /mxtrace; apply: eq_bigr=> i _.
       rewrite mxE (bigD1 i) //=.
       rewrite big1 ?addr0; last first.
@@ -280,8 +280,8 @@ Section Frob.
     move=> pM.
     have herm := psd_hermsym pM.
     have [U [l [hU [lreal Mdec]]]] := spectral_decomp herm.
-    have psdD : psd (diag_of l) by apply: (psd_spec_conj_inj hU); rewrite -Mdec.
-    have lnn := proj1 (psd_diag_iff_real lreal) psdD.
+    have psdD : psd (diag l) by apply: (psd_spec_conjK hU); rewrite -Mdec.
+    have lnn := proj1 (psd_diagE lreal) psdD.
     have trM_eq : \tr M = \sum_(i < n) l i.
       rewrite Mdec mxtrace_mulC mulmxA (unitary_mulV hU) mul1mx.
       by rewrite /mxtrace; apply: eq_bigr=> i _; rewrite !mxE eqxx.
@@ -289,10 +289,10 @@ Section Frob.
       rewrite /frob_sq.
       have Mhermt : M^t* = M by rewrite -(hermsym_eq herm).
       rewrite Mhermt Mdec.
-      have e1 : (U *m diag_of l *m U^t*) *m (U *m diag_of l *m U^t*)
-              = U *m (diag_of l *m diag_of l) *m U^t*.
-        by rewrite spec_conj_mul.
-      rewrite e1 diag_of_mul.
+      have e1 : (U *m diag l *m U^t*) *m (U *m diag l *m U^t*)
+              = U *m (diag l *m diag l) *m U^t*.
+        by rewrite spec_conjM.
+      rewrite e1 diagM.
       rewrite mxtrace_mulC mulmxA (unitary_mulV hU) mul1mx.
       rewrite /mxtrace; apply: eq_bigr=> i _.
       by rewrite !mxE eqxx /= -expr2.

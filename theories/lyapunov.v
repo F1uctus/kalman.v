@@ -491,7 +491,7 @@ Section LyapunovSolutionExistence.
             n P (lyap_bnd A Q) P_psd P_mono P_bnd).
   Qed.
 
-  (* Неподвижная точка: $lyap_sol = A * lyap_sol * A† + Q$. *)
+  (* Неподвижная точка: $lyap_sol = A lyap_sol A† + Q$. *)
 
   (*
     Сдвиг сходящейся последовательности (k -> k+1) тоже сходится к `lyap_sol`.
