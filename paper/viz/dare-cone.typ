@@ -90,7 +90,7 @@
   let n = pts.len()
 
   // a single drop line from P_ss to the P12 = 0 floor, for depth anchoring
-  let q = mat-to-xyz(data.Pss)
+  let q = mat-to-xyz(data.P_ss)
   cetz.draw.line(P(q), P((q.at(0), 0, q.at(2))), stroke: (
     paint: red.lighten(35%),
     dash: "dashed",
@@ -144,7 +144,7 @@
       P.at(0).at(1) * s,
       (P.at(0).at(0) - P.at(1).at(1)) / 2 * s,
     )
-    let r-ss = trace-of(data.Pss) / 2 * s
+    let r-ss = trace-of(data.P_ss) / 2 * s
 
     // a couple of faint inner cross-sections (smaller traces) + the bold rim
     for f in (0.4, 0.68) {
@@ -199,7 +199,7 @@
     }
 
     // P_ss (red)
-    let qp = proj2(data.Pss)
+    let qp = proj2(data.P_ss)
     cetz.draw.circle(qp, radius: 0.09, fill: red, stroke: none)
     cetz.draw.content(
       qp,
@@ -224,8 +224,10 @@
   let make(key) = if key == "a" {
     (body: cone-3d(data, st), caption: [(а) конус и подъём траектории])
   } else {
-    (body: cone-crosssection(data, st), caption: [(б) сечение ортогонально оси
-      следа])
+    (
+      body: cone-crosssection(data, st),
+      caption: [(б) сечение ортогонально оси следа],
+    )
   }
   let chosen = panels.map(make)
   if chosen.len() == 1 {

@@ -353,7 +353,7 @@ $K=0$ заведомо хуже оптимального усиления Кал
 `Pseq k := iter k riccati_step 0` и фиксирует усиление $K_0$ конструктивным
 выбором из детектируемости:
 
-#rocq-definition("dare.v", "K0")
+#rocq-definition("dare.v", "K_0")
 
 Апостериорный замкнутый контур $M_c$ и его весовая матрица $W_c$ записываются
 сокращениями:
@@ -378,9 +378,9 @@ $K_0$.
 
 #rocq-lemma("spec_rad.v", "lyap_partial_le_bnd_schur", proof: false)
 
-Сцепка двух оценок даёт равномерную мажоранту `Pbnd` всей траектории:
+Сцепка двух оценок даёт равномерную мажоранту `P_bnd` всей траектории:
 
-#rocq-definition("dare.v", "Pbnd")
+#rocq-definition("dare.v", "P_bnd")
 
 #rocq-lemma("dare.v", "Pseq_bnd", proof: false)
 
@@ -428,7 +428,7 @@ $K_0$.
 (@dare.dare_stabilizing_sol). Предел строится оператором `mx_mono_lim` из
 раздела @sec:mono-limits:
 
-#rocq-definition("dare.v", "Pss")
+#rocq-definition("dare.v", "P_ss")
 
 #remark[
   Здесь $P_ss$ есть неподвижная точка композиции предсказания и обновления, то
@@ -441,16 +441,16 @@ $K_0$.
 Сходимость траектории из нуля к $P_ss$ есть прямое применение теоремы о
 монотонной сходимости:
 
-#rocq-theorem("dare.v", "Pss_cvgn", proof: false)
+#rocq-theorem("dare.v", "P_ss_cvgn", proof: false)
 
 Предел наследует неотрицательную определённость членов траектории:
 
-#rocq-theorem("dare.v", "Pss_psd", proof: false)
+#rocq-theorem("dare.v", "P_ss_psd", proof: false)
 
 Непрерывность шага Риккати превращает предел в неподвижную точку, то есть в
 решение ДАУР:
 
-#rocq-theorem("dare.v", "Pss_fix", proof: false)
+#rocq-theorem("dare.v", "P_ss_fix", proof: false)
 
 Сводная теорема о существовании собирает три свойства вместе:
 
@@ -522,22 +522,22 @@ $K_0$.
 стабилизирующего усиления $L$ предел итерации с фиксированным $L$ задаётся
 уравнением Ляпунова, и $P_ss$ не превосходит его решения.
 
-#rocq-lemma("dare.v", "Pss_le_fixed_gain_lyap_sol", proof: false)
+#rocq-lemma("dare.v", "P_ss_le_fixed_gain_lyap_sol", proof: false)
 
 Дальнейший анализ ведётся в терминах замкнутого контура на неподвижной точке.
 Обозначим предсказанную стационарную ковариацию
 $P_pss = "predict_cov" thin P_ss$, стационарное фильтрующее усиление
 $K_f = "filter_gain" thin P_pss$, предсказательное усиление $K_p = F K_f$ и
 предикторную матрицу замкнутого контура $F_p = F - K_p H$. Подстановка
-неподвижной точки в шаг Риккати сворачивает ДАУР в уравнение Ляпунова для замкнутого
-контура:
+неподвижной точки в шаг Риккати сворачивает ДАУР в уравнение Ляпунова для
+замкнутого контура:
 
 #rocq-theorem("dare.v", "riccati_closed_loop_identity", proof: false)
 
 Это тождество вместе с управляемостью пары $(F, G Q G^*)$ даёт положительную
 определённость:
 
-#rocq-theorem("dare.v", "Pss_pd", sketch: true, proof: false)
+#rocq-theorem("dare.v", "P_ss_pd", sketch: true, proof: false)
 
 Глобальная сходимость снимает зависимость от начала: итерация Риккати из любого
 неотрицательно определённого $P_0$ сходится к тому же пределу $P_ss$.
@@ -546,12 +546,12 @@ $K_f = "filter_gain" thin P_pss$, предсказательное усилен�
 
 Вместе со сходимостью ковариаций сходятся и сами матрицы усиления:
 
-#rocq-theorem("dare.v", "Pss_gain_cvgn", proof: false)
+#rocq-theorem("dare.v", "P_ss_gain_cvgn", proof: false)
 
 Отсюда следует единственность положительно определённой неподвижной точки и
 сводная теорема о стабилизирующем решении ДАУР:
 
-#rocq-theorem("dare.v", "Pss_unique_pd", proof: false)
+#rocq-theorem("dare.v", "P_ss_unique_pd", proof: false)
 
 #rocq-theorem("dare.v", "dare_stabilizing_sol", proof: false)
 

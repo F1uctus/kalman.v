@@ -156,7 +156,7 @@ let sys_G = [ [ qfrac 1 2 ]; [ q1 ] ]
 let sys_H = [ [ q1; q0 ] ]
 let sys_Q = [ [ qfrac 1 10 ] ]
 let sys_R = [ [ q1 ] ]
-let sys_P0 = [ [ q0; q0 ]; [ q0; q0 ] ]
+let sys_P_0 = [ [ q0; q0 ]; [ q0; q0 ] ]
 
 let dare_step = step ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R
 
@@ -188,10 +188,10 @@ let dare_iter_row k p pss =
     ]
 
 let gen_dare ~kmax ~kss path =
-  let pss_q = iter kss dare_step sys_P0 in
+  let pss_q = iter kss dare_step sys_P_0 in
   let pss = mf pss_q in
   let rows = ref [] in
-  let cur = ref sys_P0 in
+  let cur = ref sys_P_0 in
   for k = 0 to kmax do
     rows := dare_iter_row k (mf !cur) pss :: !rows;
     cur := dare_step !cur
@@ -199,8 +199,8 @@ let gen_dare ~kmax ~kss path =
   jobj
     [
       ("system", jsystem);
-      ("Pss", jmat pss);
-      ("Pss_ellipse", jellipse (ellipse2 pss));
+      ("P_ss", jmat pss);
+      ("P_ss_ellipse", jellipse (ellipse2 pss));
       ("fixed_point_residual", jfloat (frob_dist (mf (dare_step pss_q)) pss));
       ("num_iterations", jint (kmax + 1));
       ("iterations", `List (List.rev !rows));
@@ -264,7 +264,7 @@ let gen_gramian ~n ~kmax path =
 (* ================= Schur stability of the closed loop ================= *)
 
 let gen_schur ~kmax ~kss path =
-  let pss_q = iter kss dare_step sys_P0 in
+  let pss_q = iter kss dare_step sys_P_0 in
   let acl_q =
     closed_loop ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R pss_q
   in
@@ -460,7 +460,7 @@ let gen_duality path =
 let qscale c (s : mat) : mat = List.map (List.map (qmul c)) s
 
 let gen_orthogonality ~kss path =
-  let pss = iter kss dare_step sys_P0 in
+  let pss = iter kss dare_step sys_P_0 in
   let p_pred = predict_cov ~m:1 ~n:2 sys_F sys_G sys_Q pss in
   let k = filter_gain ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_H sys_R p_pred in
   let s = innov_cov ~n:2 ~p:1 sys_H sys_R p_pred in
@@ -597,7 +597,7 @@ let gen_spectral path =
 (* ================= entry point ================= *)
 
 let () =
-  (* self-test: scalar DARE iterate 2 from P0 = 1 is 13/16 *)
+  (* self-test: scalar DARE iterate 2 from P_0 = 1 is 13/16 *)
   let f = [ [ qof_int 2 ] ] and one = [ [ q1 ] ] in
   let p2 = iter 2 (step ~m:1 ~n:1 ~p:1 ~cinv:(cinv ~n:1) f one one one one) [ [ q1 ] ] in
   (match p2 with

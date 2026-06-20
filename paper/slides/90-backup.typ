@@ -136,32 +136,3 @@
   соответствие спецификации и кода
 
 #note("backup-limits")
-
-== Соответствие теорем и файлов
-
-#set text(size: 11pt)
-
-#table(
-  columns: (1fr, auto, auto),
-  inset: (x: 8pt, y: 3pt),
-  stroke: unn-colors.panel + 1pt,
-  fill: (x, y) => if y == 0 { unn-colors.panel-light },
-  table.header([Свойство], [Утверждение], [Файл]),
-  [Инвариант шага фильтра], `kf_step_psd`, `kalman.v`,
-  [Несмещённость], `unbiased`, `kalman.v`,
-  [Оптимальность усиления], `filter_gain_optimal`, `kalman.v`,
-  [Грамиан и наблюдаемость], `obsv_gram_pd_of_observable`, `obsv_bound.v`,
-  [Двойственность], `stabilizable_dual`, `ctrl_gram_dual`,
-  `duality.v`, [Уравнение Ляпунова], `lyap_sol`,
-  `lyap_sol_unique`, `lyapunov.v`, [Решение ДАУР],
-  `dare_stabilizing_sol`, `Pss_unique_pd`, `dare.v`,
-  [Устойчивость контура], `Fp_schur`, `dare.v`,
-  [Сходимость фильтра], `kalman_filter_frob_cvgn`, `dare.v`,
-  [Уточнения CoqEAL], `riccati_iter_seqmx_correct`, `riccati_seqmx.v`,
-  [Обращение матрицы], `fl_inv_correct`, `faddeev.v`,
-)
-
-Профиль аксиом ключевых теорем: три аксиомы модуля `boolp` библиотеки mathcomp и
-назначение полюсов (`pole_placement_detect`).
-
-#note("backup-table")

@@ -5,13 +5,13 @@
 //
 // Data: paper/data/dare_convergence.json (the same file panel A of
 // dare-convergence.typ uses; no new driver). Each iteration carries
-// `log10_frob_dist` = log10 ||P_k - Pss||_F, so the *squared* distance is
+// `log10_frob_dist` = log10 ||P_k - P_ss||_F, so the *squared* distance is
 // 2·log10_frob_dist on the log axis.
 //
 // One picture, one theorem: this figure turns the ∀ε ∃N quantifier of
 // `cvgn_frob_sq_eps_N` / `riccati_frob_cvgn` (theories/dare.v) into a
 // picture. Those lemmas bound the SQUARED Frobenius norm
-// `\tr((P_k - Pss)^† (P_k - Pss)) = ||P_k - Pss||_F^2 < ε`, so the y-axis is
+// `\tr((P_k - P_ss)^† (P_k - P_ss)) = ||P_k - P_ss||_F^2 < ε`, so the y-axis is
 // that squared norm and the ε threshold is a literal horizontal line at 10^e.
 //
 // Layout — a frame strip (small multiples, "slider flattened" over ε): the same
