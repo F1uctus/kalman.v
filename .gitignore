@@ -29,6 +29,8 @@
 !kalman.opam
 !meta.yml
 
+paper/data/*.json
+
 # Coq/dune build artifacts under whitelisted trees
 **/*.glob
 **/*.cache
