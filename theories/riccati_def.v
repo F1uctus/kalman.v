@@ -69,8 +69,8 @@ Section GenericDefs.
     update_cov (predict_cov P).
 
   (* Неподвижная точка шага Риккати. *)
-  Definition riccati_fixpoint (Pss : 'M[R]_n) : Prop :=
-    Pss = riccati_step Pss.
+  Definition riccati_fixpoint (P_ss : 'M[R]_n) : Prop :=
+    P_ss = riccati_step P_ss.
 
   Lemma predict_covE (P : 'M[R]_n) :
     predict_cov P = F *m P *m map_mx conj F^T + G *m Q *m map_mx conj G^T.

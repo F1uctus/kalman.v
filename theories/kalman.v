@@ -40,7 +40,7 @@ Section KalmanFilter.
   Hypothesis Q_psd : psd Q.
   Hypothesis R_pd : pd R.
 
-  Variable x0 : 'cV[ℂ]_n.
+  Variable x_0 : 'cV[ℂ]_n.
 
   Variable w : nat -> Ω -> 'cV[ℂ]_m. (* Шум управления *)
   Variable v : nat -> Ω -> 'cV[ℂ]_p. (* Шум измерения *)
@@ -151,7 +151,7 @@ Section KalmanFilter.
   Definition x_true (u : nat -> 'cV[ℂ]_m) : nat -> Ω -> 'cV[ℂ]_n :=
     fix f k :=
       match k with
-      | 0%N => fun _ => x0
+      | 0%N => fun _ => x_0
       | k'.+1 => fun ω => F *m f k' ω + G *m u k' + G *m w k'.+1 ω
       end.
 
@@ -187,14 +187,14 @@ Section KalmanFilter.
 
     Математическое ожидание `Exp` определено в `expectation.v` формулой
     оператора `Ex` из infotheo над конечным распределением μ; линейность
-    (Exp_add/Exp_scale/Exp_mulmx_l) и производные тождества там доказаны
-    как леммы, а на вещественном поле оператор совпадает с `E из infotheo
+    (Exp_add/Exp_scale/Exp_mulmx_l) и производные тождества там доказаны как
+    леммы, а на вещественном поле оператор совпадает с E из infotheo
     (лемма ExpE). Гипотезами остаются только содержательные вероятностные
     предположения о шумах: нулевое среднее на каждом шаге. Эти гипотезы
     выполнимы: в `noise.v` построена конкретная модель шумов
-    (четырёхточечное распределение на равномерном пространстве траекторий
-    исходов), для которой нулевые средние доказаны, а несмещённость для
-    неё получается следствием `model_unbiased`.
+    (четырёхточечное распределение на равномерном пространстве траекторий исходов),
+    для которой нулевые средние доказаны, а несмещённость для неё получается
+    следствием `model_unbiased`.
   *)
 
   Local Notation 𝔼 := (Exp μ).
@@ -455,9 +455,10 @@ Section KalmanFilter.
     update_cov P_pred *m (invmx P_pred + H^t* *m invmx R *m H) = 1%:M.
   (*
     Подставляем $"update_cov" P = (E_n - K H) P$ и раскрываем произведение:
-    слагаемое с $P^(-1)$ равно $E_n - K H$. Из $K R_e = P H†$ (определение
-    усиления) и $R_e = H P H† + R$ следует $K R = (E_n - K H) P H†$, поэтому
-    слагаемое с $H† R^(-1) H$ равно $K R R^(-1) H = K H$; сумма равна $E_n$.
+    слагаемое с $P^(-1)$ равно $E_n - K H$. Из $K R_e = P H†$
+    (определение усиления) и $R_e = H P H† + R$ следует
+    $K R = (E_n - K H) P H†$, поэтому слагаемое с $H† R^(-1) H$ равно
+    $K R R^(-1) H = K H$; сумма равна $E_n$.
   *)
   Proof.
     move=> Ppd.
@@ -573,8 +574,8 @@ Section KalmanFilter.
     Тождество выделения полного квадрата.
 
     При $P succ.eq 0$ выполнено
-    $"alt_update_cov"(K', P) = "update_cov" P + (K' - K) R_e (K' - K)†$, где
-    $K$ обозначает оптимальное усиление, а $R_e$ инновационную ковариацию.
+    $"alt_update_cov"(K', P) = "update_cov" P + (K' - K) R_e (K' - K)†$, где $K$
+    обозначает оптимальное усиление, а $R_e$ инновационную ковариацию.
 
     - @kailath2000[§ 9.2, Theorem 9.2.1 "Innovations"].
   *)
@@ -742,11 +743,11 @@ Section KalmanFilter.
   (*
     Вспомогательное: итерация Риккати сохраняет неотрицательную определённость.
   *)
-  Lemma riccati_iter_psd (P0 : 'M[ℂ]_n) (k : nat) :
-    psd P0 -> psd (iter k (fun P => update_cov (predict_cov P)) P0).
+  Lemma riccati_iter_psd (P_0 : 'M[ℂ]_n) (k : nat) :
+    psd P_0 -> psd (iter k (fun P => update_cov (predict_cov P)) P_0).
   Proof.
     move=> psdP; elim: k => [//|k IH] /=.
-    have hPred : psd (predict_cov (iter k (fun P => update_cov (predict_cov P)) P0))
+    have hPred : psd (predict_cov (iter k (fun P => update_cov (predict_cov P)) P_0))
       := predict_cov_psd IH.
     by rewrite -(joseph_formE hPred); exact: update_cov_psd hPred.
   Qed.

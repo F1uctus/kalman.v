@@ -238,17 +238,17 @@ Qed.
     (*
       Корректность итерации исполнимого шага.
 
-      Программа `iter k riccati_step_seqmx sP0` уточняет абстрактную итерацию
-      `iter k riccati_step P0`, что позволяет вычислять конечные приближения к
+      Программа `iter k riccati_step_seqmx sP_0` уточняет абстрактную итерацию
+      `iter k riccati_step P_0`, что позволяет вычислять конечные приближения к
       установившейся ковариации $P_ss$ без обращения к пределу `mx_mono_lim`.
     *)
-Lemma riccati_iter_seqmx_correct (k : nat) (P0 : 'M[R]_n) (sP0 : @seqmx R)
-    (rP0 : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P0 sP0) :
+    Lemma riccati_iter_seqmx_correct (k : nat) (P_0 : 'M[R]_n) (sP_0 : @seqmx R)
+        (rP_0 : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P_0 sP_0) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-        (iter k (riccati_step conj F G H Q Rm) P0)
-    (iter k (riccati_step_seqmx conj m n p sF sG sH sQ sRm cinv) sP0).
+        (iter k (riccati_step conj F G H Q Rm) P_0)
+        (iter k (riccati_step_seqmx conj m n p sF sG sH sQ sRm cinv) sP_0).
 Proof.
-  elim: k => [|k IHk] /=; first exact: rP0.
+      elim: k => [|k IHk] /=; first exact: rP_0.
   exact: (riccati_step_seqmx_correct IHk).
 Qed.
 
@@ -458,14 +458,14 @@ Section ConcreteRat.
   Definition exH : 'M[rat]_1 := 1%:M.
   Definition exQ : 'M[rat]_1 := 1%:M.
   Definition exR : 'M[rat]_1 := 1%:M.
-  Definition exP0 : 'M[rat]_1 := 1%:M.
+  Definition exP_0 : 'M[rat]_1 := 1%:M.
 
   Definition sxF : @seqmx rat := [:: [:: 2%:R : rat]].
   Definition sxG : @seqmx rat := [:: [:: 1 : rat]].
   Definition sxH : @seqmx rat := [:: [:: 1 : rat]].
   Definition sxQ : @seqmx rat := [:: [:: 1 : rat]].
   Definition sxR : @seqmx rat := [:: [:: 1 : rat]].
-  Definition sxP0 : @seqmx rat := [:: [:: 1 : rat]].
+  Definition sxP_0 : @seqmx rat := [:: [:: 1 : rat]].
 
   Definition ex_step : @seqmx rat -> @seqmx rat :=
     riccati_step_seqmx (idfun : rat -> rat) 1 1 1 sxF sxG sxH sxQ sxR (cinv_fl 1).
@@ -473,13 +473,13 @@ Section ConcreteRat.
   (* Итерация исполнимого шага уточняет абстрактную итерацию над rat. *)
   Lemma ex_iter_correct (k : nat) :
     refines (Rseqmx (nat_Rxx 1) (nat_Rxx 1))
-      (iter k (riccati_step idfun exF exG exH exQ exR) exP0)
-      (iter k ex_step sxP0).
+      (iter k (riccati_step idfun exF exG exH exQ exR) exP_0)
+      (iter k ex_step sxP_0).
   Proof.
     apply: (@riccati_iter_seqmx_correct rat idfun 1 1 1
               exF exG exH exQ exR sxF sxG sxH sxQ sxR
               (rseqmx_11 _) (rseqmx_11 _) (rseqmx_11 _) (rseqmx_11 _) (rseqmx_11 _)
-              (cinv_fl 1) (@cinv_fl_correct1 rat) k exP0 sxP0).
+              (cinv_fl 1) (@cinv_fl_correct1 rat) k exP_0 sxP_0).
     exact: rseqmx_11.
   Qed.
 
@@ -490,7 +490,7 @@ Section ConcreteRat.
     проверено через `vm_compute` и связано со спецификацией через
     `ex_iter_correct` (отношение `Rseqmx` функционально).
   *)
-  Definition ex_two : @seqmx rat := iter 2 ex_step sxP0.
+  Definition ex_two : @seqmx rat := iter 2 ex_step sxP_0.
 
   Lemma ex_two_val :
     (ex_two == [:: [:: (13%:R / 16%:R : rat)]] :> @seqmx rat) = true.
@@ -618,13 +618,13 @@ Section System.
     exact: (update_cov_seqmxC (predict_cov_seqmxC rP)).
   Qed.
 
-  Lemma riccati_iter_seqmxC (k : nat) (P0 : 'M[rat]_n) (sP0 : @seqmx bigQ)
-      (rP0 : refines (RC n n) P0 sP0) :
+  Lemma riccati_iter_seqmxC (k : nat) (P_0 : 'M[rat]_n) (sP_0 : @seqmx bigQ)
+      (rP_0 : refines (RC n n) P_0 sP_0) :
     refines (RC n n)
-      (iter k (riccati_step conj F G H Q Rm) P0)
-      (iter k (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv) sP0).
+      (iter k (riccati_step conj F G H Q Rm) P_0)
+      (iter k (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv) sP_0).
   Proof.
-    elim: k => [|k IHk] /=; first exact: rP0.
+    elim: k => [|k IHk] /=; first exact: rP_0.
     exact: (riccati_step_seqmxC IHk).
   Qed.
 

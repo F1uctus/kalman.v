@@ -359,7 +359,7 @@ Qed.
 Lemma detectable_stabilizing_filter (ℂ : numClosedFieldType) (n p : nat)
     (F : 'M[ℂ]_n) (H : 'M[ℂ]_(p, n)) :
   detectable F H ->
-  exists K0 : 'M[ℂ]_(n, p), spec_rad_lt1 ((1%:M - K0 *m H) *m F).
+  exists K_0 : 'M[ℂ]_(n, p), spec_rad_lt1 ((1%:M - K_0 *m H) *m F).
 (*
   Так как $(E - K_0 H) F = F - K_0 (H F)$, достаточно стабилизировать
   предсказательный контур пары $(F, H F)$, которая детектируема по
@@ -369,9 +369,9 @@ Lemma detectable_stabilizing_filter (ℂ : numClosedFieldType) (n p : nat)
 Proof.
   move=> Hdet.
   have Hdet' : detectable F (H *m F) := detectable_mulHF Hdet.
-  have [K0 HK0] := pole_placement_detect Hdet'.
-  exists K0.
-  have ->: (1%:M - K0 *m H) *m F = F - K0 *m (H *m F).
+  have [K_0 HK0] := pole_placement_detect Hdet'.
+  exists K_0.
+  have ->: (1%:M - K_0 *m H) *m F = F - K_0 *m (H *m F).
     by rewrite mulmxBl mul1mx -mulmxA.
   exact: HK0.
 Qed.

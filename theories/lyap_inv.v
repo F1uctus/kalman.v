@@ -219,7 +219,7 @@ Section LyapInv.
     (левый собственный вектор) строго внутри единичного диска
     (`lyap_inversion_pdW_lt1`), откуда `spec_rad_lt1_of_dets` строит разложение
     Шура. Эта лемма устраняет `Hypothesis Fp_contract` в `Section DARE`:
-    `predict_cov Pss` - положительно определённая неподвижная точка с
+    `predict_cov P_ss` - положительно определённая неподвижная точка с
     положительно определённым весом $K_p R K_p† + G Q G†$.
     - @kailath2000[App. D, Theorem D.3.1 "Lyapunov Condition"].
   *)
