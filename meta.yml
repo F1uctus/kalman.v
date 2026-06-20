@@ -47,7 +47,7 @@ dependencies:
       name: dune
       version: '{>= "3.21"}'
     description: |-
-      [Dune](https://dune.build) 3.21+
+      [Dune](https://dune.build) 3.21 or later
   - opam:
       name: rocq-elpi
       version: '{>= "3"}'

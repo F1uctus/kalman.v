@@ -27,7 +27,7 @@ CoqEAL refinements.
 - License: [GNU General Public License v3.0 or later](LICENSE)
 - Compatible Rocq/Coq versions: Rocq 9.0 - 9.1 (MathComp 2.5.0)
 - Additional dependencies:
-  - [Dune](https://dune.build) 3.21+
+  - [Dune](https://dune.build) 3.21 or later
   - [Rocq-Elpi](https://github.com/LPCIC/coq-elpi) (HB plugin backend)
   - [Hierarchy Builder](https://github.com/math-comp/hierarchy-builder) 1.9.0 or later
   - [MathComp](https://math-comp.github.io) 2.5.0 boot library
@@ -45,21 +45,12 @@ CoqEAL refinements.
   - [Infotheo](https://github.com/affeldt-aist/infotheo) finite distributions and expectation
   - [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution
   - [CoqEAL](https://github.com/coq-community/coqeal) refinements for seqmx extraction
-  - [Dune](https://dune.build) 3.6 or later
 - Rocq/Coq namespace: `Kalman`
 - Related publication(s): none
 
 ## Building and installation instructions
 
-The easiest way to install the latest released version of Kalman Filter
-is via [OPAM](https://opam.ocaml.org/doc/Install.html):
-
-```shell
-opam repo add rocq-released https://rocq-prover.org/opam/released
-opam install kalman
-```
-
-To instead build and install manually, you need to make sure that all the
+To build and install manually, you need to make sure that all the
 libraries this development depends on are installed.  The easiest way to do that
 is still to rely on opam:
 
