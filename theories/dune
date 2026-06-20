@@ -15,3 +15,15 @@
            Bignums Stdlib infotheo mathcomp.ssreflect mathcomp.reals_stdlib
            mathcomp.zify mathcomp.algebra_tactics Interval Flocq Coquelicot))
 (include_subdirs qualified)
+
+(rule
+ (target paper_data.stamp)
+ (package kalman)
+ (deps (alias %{project_root}/extraction/ocaml/paper_data))
+ (action
+  (write-file %{target} "generated")))
+
+(install
+ (section lib)
+ (files paper_data.stamp)
+ (package kalman))

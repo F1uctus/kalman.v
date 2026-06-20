@@ -9,8 +9,31 @@
            Kalman Bignums Stdlib infotheo mathcomp.ssreflect
            mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
            Interval Flocq Coquelicot))
+
 (executable
  (name driver)
  (libraries zarith yojson)
  (modules riccati driver)
  (flags (:standard -w -a)))
+
+(rule
+ (targets
+  dare_convergence.json
+  duality_spectral.json
+  gramian.json
+  kalman_run.json
+  kalman_run_3d.json
+  lyapunov.json
+  orthogonality.json
+  schur_stability.json
+  spectral.json)
+ (mode (promote (until-clean) (into ../../paper/data)))
+ (package kalman)
+ (deps driver.exe)
+ (action
+  (run ./driver.exe .)))
+
+(alias
+ (name paper_data)
+ (package kalman)
+ (deps dare_convergence.json))

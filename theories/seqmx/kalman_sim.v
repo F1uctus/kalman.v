@@ -36,6 +36,7 @@ Unset Printing Implicit Defensive.
 Import GRing.Theory Num.Theory.
 Import Refinements.Op.
 Local Open Scope ring_scope.
+Local Open Scope hetero_computable_scope.
 
 (*
   Генератор Лемера (вариант ZX81): s' = (75 s + 74) mod 65537. Модуль прост,
@@ -68,6 +69,7 @@ Section EffSim.
 
 Context (C : Type).
 Context `{!zero_of C, !one_of C, !opp_of C, !add_of C, !mul_of C, !eq_of C}.
+Definition seqmx_0 m n : @seqmx C := @hzero_op _ _ _ m n.
 Variable cinv1 : C -> C.        (* обратный элемент поля *)
 Variable cconj : C -> C.        (* сопряжение; на рациональных данных id *)
 Variable cinv : @seqmx C -> @seqmx C.  (* обращение матрицы 1 x 1 *)
@@ -144,7 +146,7 @@ Fixpoint pair_up (s : seq nat) : seq (nat * nat) :=
 *)
 Definition kalman_sim_run (T : nat) : seq sim_row :=
   let st0 := (sim_x_0, seqmx_0 2 1, sim_P_0) in
-  let head_row : sim_row := (sim_x_0, [::], seqmx_0 2 1, sim_P_0) in
+  let head_row : sim_row := (sim_x_0, seqmx_0 1 1, seqmx_0 2 1, sim_P_0) in
   head_row :: sim_run_aux st0 (pair_up (lcg_stream sim_seed (T.*2))).
 
 (*
@@ -237,7 +239,7 @@ Fixpoint sim3_run_aux (st : @seqmx C * @seqmx C * @seqmx C)
 *)
 Definition kalman_sim3_run (seed : BinNums.N) (T : nat) : seq sim_row :=
   let st0 := (sim3_x_0, seqmx_0 6 1, sim3_P_0) in
-  let head_row : sim_row := (sim3_x_0, [::], seqmx_0 6 1, sim3_P_0) in
+  let head_row : sim_row := (sim3_x_0, seqmx_0 3 1, seqmx_0 6 1, sim3_P_0) in
   head_row :: sim3_run_aux st0 (lcg_stream seed (muln 6 T)).
 
 End EffSim.

@@ -130,7 +130,7 @@
           )
         }
         // Steady-state ellipse, emphasized.
-        let ess = data.Pss_ellipse
+        let ess = data.P_ss_ellipse
         add-ellipse(
           radii: (ess.a, ess.b),
           rotation: ess.angle_rad * 1rad,

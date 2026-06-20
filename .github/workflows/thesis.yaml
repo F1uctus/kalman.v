@@ -20,6 +20,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Cachix install
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixpkgs-unstable
+
+      - name: Cachix setup f1uctus
+        uses: cachix/cachix-action@v16
+        with:
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          extraPullNames: coq, coq-community, math-comp
+          name: f1uctus
+
+      - name: Copy paper/data JSON from Cachix-cached kalman build
+        run: |
+          kalman=$(nix-build --no-out-link --argstr bundle "rocq-9.1" --argstr job "kalman")
+          mkdir -p paper/data
+          rm -f paper/data/*.json
+          cp "$kalman/share/kalman/paper-data/"*.json paper/data/
+
       - name: Install poppler-utils (pdftotext)
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
@@ -78,6 +97,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      - name: Cachix install
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixpkgs-unstable
+
+      - name: Cachix setup f1uctus
+        uses: cachix/cachix-action@v16
+        with:
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          extraPullNames: coq, coq-community, math-comp
+          name: f1uctus
+
+      - name: Copy paper/data JSON from Cachix-cached kalman build
+        run: |
+          kalman=$(nix-build --no-out-link --argstr bundle "rocq-9.1" --argstr job "kalman")
+          mkdir -p paper/data
+          rm -f paper/data/*.json
+          cp "$kalman/share/kalman/paper-data/"*.json paper/data/
 
       - name: Install typst-djvu (@local)
         run: |

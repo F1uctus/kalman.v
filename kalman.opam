@@ -42,6 +42,8 @@ depends: [
   "coq-infotheo" {>= "0.9.7"}
   "rocq-bignums" {>= "9.0.0+rocq9.1"}
   "coq-coqeal" {>= "2.1.1"}
+  "zarith" 
+  "yojson" {>= "2.0.0"}
 ]
 
 tags: [

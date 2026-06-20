@@ -133,6 +133,35 @@ dependencies:
       version: '{>= "2.1.1"}'
     description: |-
       [CoqEAL](https://github.com/coq-community/coqeal) refinements for seqmx extraction
+  - opam:
+      name: zarith
+    description: |-
+      [Zarith](https://github.com/ocaml/Zarith) for exact rational arithmetic in the extracted driver
+  - opam:
+      name: yojson
+      version: '{>= "2.0.0"}'
+    description: |-
+      [Yojson](https://github.com/ocaml-community/yojson) for JSON output of numerical experiments
+
+build: |-
+  ## Building and installation instructions
+
+  To build and install manually, you need to make sure that all the
+  libraries this development depends on are installed.  The easiest way to do that
+  is still to rely on opam:
+
+  ``` shell
+  git clone https://github.com/F1uctus/kalman.v.git
+  cd kalman.v
+  opam repo add rocq-released https://rocq-prover.org/opam/released
+  opam install --deps-only .
+  dune build -p kalman
+  dune install
+  ```
+
+  Building the `kalman` package extracts verified seqmx programs to OCaml,
+  runs the driver, and promotes `paper/data/*.json` for Typst figures.
+  These JSON files are generated at build time and are not tracked in VCS.
 
 tested_rocq_opam_versions:
   - version: "2.5.0-rocq-prover-9.1"
