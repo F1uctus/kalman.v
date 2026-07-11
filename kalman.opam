@@ -42,7 +42,12 @@ depends: [
   "coq-infotheo" {>= "0.9.7"}
   "rocq-bignums" {>= "9.0.0+rocq9.1"}
   "coq-coqeal" {>= "2.1.1"}
-  "zarith" 
+  "rocq2typst" {>= "0.1.0"}
+  "rocq2typst-mathcomp" {>= "0.1.0"}
+  "rocq2typst-analysis" {>= "0.1.0"}
+  "rocq2typst-coqeal" {>= "0.1.0"}
+  "rocq2typst-infotheo" {>= "0.1.0"}
+  "zarith"
   "yojson" {>= "2.0.0"}
 ]
 

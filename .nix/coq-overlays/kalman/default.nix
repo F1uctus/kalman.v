@@ -15,6 +15,11 @@
   mathcomp-infotheo,
   bignums,
   coqeal,
+  rocq2typst,
+  rocq2typst-mathcomp,
+  rocq2typst-analysis,
+  rocq2typst-coqeal,
+  rocq2typst-infotheo,
   version ? ../../../.,
 }:
 
@@ -38,6 +43,11 @@ mkCoqDerivation {
     mathcomp-infotheo
     bignums
     coqeal
+    rocq2typst
+    rocq2typst-mathcomp
+    rocq2typst-analysis
+    rocq2typst-coqeal
+    rocq2typst-infotheo
   ];
 
   nativeBuildInputs = with coq.ocamlPackages; [

@@ -134,6 +134,31 @@ dependencies:
     description: |-
       [CoqEAL](https://github.com/coq-community/coqeal) refinements for seqmx extraction
   - opam:
+      name: rocq2typst
+      version: '{>= "0.1.0"}'
+    description: |-
+      [rocq2typst](https://github.com/F1uctus/rocq2typst) core renderer of Rocq statements into Typst markup
+  - opam:
+      name: rocq2typst-mathcomp
+      version: '{>= "0.1.0"}'
+    description: |-
+      [rocq2typst](https://github.com/F1uctus/rocq2typst) MathComp notation dictionary
+  - opam:
+      name: rocq2typst-analysis
+      version: '{>= "0.1.0"}'
+    description: |-
+      [rocq2typst](https://github.com/F1uctus/rocq2typst) mathcomp-analysis notation dictionary
+  - opam:
+      name: rocq2typst-coqeal
+      version: '{>= "0.1.0"}'
+    description: |-
+      [rocq2typst](https://github.com/F1uctus/rocq2typst) CoqEAL notation dictionary
+  - opam:
+      name: rocq2typst-infotheo
+      version: '{>= "0.1.0"}'
+    description: |-
+      [rocq2typst](https://github.com/F1uctus/rocq2typst) Infotheo notation dictionary
+  - opam:
       name: zarith
     description: |-
       [Zarith](https://github.com/ocaml/Zarith) for exact rational arithmetic in the extracted driver

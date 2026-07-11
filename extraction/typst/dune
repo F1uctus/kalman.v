@@ -1,0 +1,31 @@
+; Рендеринг утверждений Rocq в математическую разметку Typst.
+; kalman_typst.v добавляет к базе typst.db пакетов rocq2typst клаузы
+; нотаций этого проекта и перечень печатаемых утверждений; правило ниже
+; компилирует gen.v, который пишет rocq2typst.json, и продвигает файл в
+; paper/data (его читает paper/common/rocq.typ).
+(rocq.theory
+ (name KalmanTypst)
+ (flags :standard -w -all)
+ (modules kalman_typst)
+ (plugins rocq-elpi.elpi)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
+           Kalman Bignums Stdlib infotheo mathcomp.ssreflect
+           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
+           Interval Flocq Coquelicot
+           Typst.Core Typst.Mathcomp Typst.Analysis Typst.CoqEAL
+           Typst.Infotheo))
+
+(rule
+ (targets rocq2typst.json gen.vo gen.glob)
+ (mode (promote (until-clean) (into ../../paper/data) (only rocq2typst.json)))
+ (package kalman)
+ (deps gen.v kalman_typst.vo)
+ (action
+  (run rocq c -w -all -Q ../../theories Kalman -Q . KalmanTypst gen.v)))
+
+(alias
+ (name paper_data)
+ (package kalman)
+ (deps rocq2typst.json))
