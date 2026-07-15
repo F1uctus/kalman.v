@@ -273,14 +273,14 @@ Section ClosedLoopCtrlGramPd.
 
   Variable (N p : nat).
 
-  Variables (A : 'M[ℂ]_N) (Kp : 'M[ℂ]_(N, p)) (Hm : 'M[ℂ]_(p, N)).
+  Variables (A : 'M[ℂ]_N) (K_p : 'M[ℂ]_(N, p)) (H_m : 'M[ℂ]_(p, N)).
   Variables (Z : 'M[ℂ]_N) (R : 'M[ℂ]_p).
 
   Hypothesis Zpsd : psd Z.
   Hypothesis R_pd : pd R.
 
-  Local Notation Fp := (A - Kp *m Hm).
-  Local Notation W := (Kp *m R *m Kp^t* + Z).
+  Local Notation F_p := (A - K_p *m H_m).
+  Local Notation W := (K_p *m R *m K_p^t* + Z).
 
   (*
     Критерий положительной определённости для неподвижной точки Ляпунова
@@ -297,7 +297,7 @@ Section ClosedLoopCtrlGramPd.
   *)
   Lemma controllable_oi_gram_pd (P : 'M[ℂ]_N) :
     psd P ->
-    P = Fp *m P *m Fp^t* + W ->
+    P = F_p *m P *m F_p^t* + W ->
     controllable A Z ->
     pd P.
   (*
@@ -314,24 +314,24 @@ Section ClosedLoopCtrlGramPd.
     move=> Ppsd Pfix Hctrl.
     have Wpsd : psd W.
       apply: psd_add; last exact: Zpsd.
-      exact: psd_lcongr Kp (pd_psd R_pd).
+      exact: psd_lcongr K_p (pd_psd R_pd).
     (*
       Извлечение $K_p† u = 0$ и $Z u = 0$ из $W u = 0$
       (разложение неотрицательно определённого веса).
     *)
     have splitWu : forall u : 'cV[ℂ]_N, W *m u = 0 ->
-        Kp^t* *m u = 0 /\ Z *m u = 0.
+        K_p^t* *m u = 0 /\ Z *m u = 0.
       move=> u Wu0.
       have qf0' : \tr (u^t* *m W *m u) = 0 by rewrite -mulmxA Wu0 mulmx0 mxtrace0.
-      have hKR : 0 <= \tr (u^t* *m (Kp *m R *m Kp^t*) *m u)
-        by case: (psd_lcongr Kp (pd_psd R_pd)) => _ /(_ u).
+      have hKR : 0 <= \tr (u^t* *m (K_p *m R *m K_p^t*) *m u)
+        by case: (psd_lcongr K_p (pd_psd R_pd)) => _ /(_ u).
       have hZ : 0 <= \tr (u^t* *m Z *m u) by case: Zpsd => _ /(_ u).
-      have split0 : \tr (u^t* *m (Kp *m R *m Kp^t*) *m u) = 0
+      have split0 : \tr (u^t* *m (K_p *m R *m K_p^t*) *m u) = 0
                 /\ \tr (u^t* *m Z *m u) = 0.
         move: qf0'; rewrite mulmxDr mulmxDl mxtraceD => /eqP.
         by rewrite paddr_eq0 // => /andP[/eqP ? /eqP ?].
       split; last exact: psd_qf0_mul0 Zpsd (proj2 split0).
-      set uu := Kp^t* *m u.
+      set uu := K_p^t* *m u.
       have qfu : \tr (uu^t* *m R *m uu) = 0.
         by rewrite -(proj1 split0) /uu trmxC_mul trmxCK !mulmxA.
       exact: pd_qf0_col0 R_pd qfu.
@@ -340,37 +340,37 @@ Section ClosedLoopCtrlGramPd.
     rewrite lt0r; apply/andP; split; last by case: Ppsd => _ /(_ v).
     apply/negP=> /eqP qf0.
     (*
-      Конечная Лёвнер-оценка: lyap_partial Fp W N <= P, форма при v обращается в
-      ноль.
+      Конечная Лёвнер-оценка: lyap_partial F_p W N <= P, форма при v обращается
+      в ноль.
     *)
-    have Lle : psd_le (lyap_partial Fp W N) P
+    have Lle : psd_le (lyap_partial F_p W N) P
       := lyap_partial_fix_le Ppsd Pfix N.
-    have Lpsd : psd (lyap_partial Fp W N) := lyap_partial_psd Fp Wpsd N.
-    have Lqf0 : \tr (v^t* *m lyap_partial Fp W N *m v) = 0.
-      have [_ hge] : psd (P - lyap_partial Fp W N) := Lle.
+    have Lpsd : psd (lyap_partial F_p W N) := lyap_partial_psd F_p Wpsd N.
+    have Lqf0 : \tr (v^t* *m lyap_partial F_p W N *m v) = 0.
+      have [_ hge] : psd (P - lyap_partial F_p W N) := Lle.
       apply/eqP; rewrite eq_le; apply/andP; split; last by case: Lpsd => _ /(_ v).
       have h := hge v.
       by rewrite mulmxBr mulmxBl raddfB /= qf0 sub0r oppr_ge0 in h.
     rewrite lyap_partial_qform in Lqf0.
     (* Обращение в ноль $W$-формы на сопряжённых итерациях $(F_p†)^j v$. *)
     have ge0 : forall i : 'I_N,
-        0 <= \tr (((Fp^t*)^+i *m v)^t* *m W *m ((Fp^t*)^+i *m v)).
-      by move=> i; case: Wpsd => _ /(_ ((Fp^t*)^+i *m v)).
+        0 <= \tr (((F_p^t*)^+i *m v)^t* *m W *m ((F_p^t*)^+i *m v)).
+      by move=> i; case: Wpsd => _ /(_ ((F_p^t*)^+i *m v)).
     have termW0 : forall j : 'I_N,
-        \tr (((Fp^t*)^+j *m v)^t* *m W *m ((Fp^t*)^+j *m v)) = 0.
+        \tr (((F_p^t*)^+j *m v)^t* *m W *m ((F_p^t*)^+j *m v)) = 0.
       move=> j; apply/eqP; rewrite eq_le; apply/andP; split; last exact: ge0 j.
       rewrite -Lqf0 (bigD1 j) //= lerDl.
       by apply: sumr_ge0 => i _; exact: ge0 i.
-    have Wu0 : forall j, (j < N)%N -> W *m ((Fp^t*)^+j *m v) = 0.
+    have Wu0 : forall j, (j < N)%N -> W *m ((F_p^t*)^+j *m v) = 0.
       by move=> j hj; exact: psd_qf0_mul0 Wpsd (termW0 (Ordinal hj)).
     (* (Fp†)^j v = (A†)^j v (распространение Kp† (A†)^j v = 0). *)
-    have keyEq : forall j, (j <= N)%N -> (Fp^t*)^+j *m v = (A^t*)^+j *m v.
+    have keyEq : forall j, (j <= N)%N -> (F_p^t*)^+j *m v = (A^t*)^+j *m v.
       elim => [|j IH] hj; first by rewrite !expr0.
-      have IHj : (Fp^t*)^+j *m v = (A^t*)^+j *m v := IH (ltnW hj).
+      have IHj : (F_p^t*)^+j *m v = (A^t*)^+j *m v := IH (ltnW hj).
       have WFj : W *m ((A^t*)^+j *m v) = 0 by rewrite -IHj; exact: Wu0 j hj.
-      have KpAj : Kp^t* *m ((A^t*)^+j *m v) = 0 := proj1 (splitWu _ WFj).
+      have KpAj : K_p^t* *m ((A^t*)^+j *m v) = 0 := proj1 (splitWu _ WFj).
       rewrite exprS -mulmxA IHj.
-      have FpT : Fp^t* = A^t* - Hm^t* *m Kp^t* by rewrite trmxCB trmxC_mul.
+      have FpT : F_p^t* = A^t* - H_m^t* *m K_p^t* by rewrite trmxCB trmxC_mul.
       rewrite FpT mulmxBl -mulmxA KpAj mulmx0 subr0.
       by rewrite exprS -mulmxA.
     have WAj : forall i : 'I_N, W *m ((A^t*)^+i *m v) = 0.

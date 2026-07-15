@@ -77,11 +77,11 @@ Section EffPrograms.
     $A_(c l) = F - F K_f H$, где $K_f$ обозначает усиление Калмана на
     предсказанной ковариации. Извлекается для эксперимента по устойчивости Шура.
   *)
-  Definition closed_loop_seqmx (m n p : nat) (sF sG sH sQ sRm : @seqmx C)
+  Definition closed_loop_seqmx (m n p : nat) (sF sG sH sQ sR_m : @seqmx C)
       (cinv : @seqmx C -> @seqmx C) (sP : @seqmx C) : @seqmx C :=
-    let Kf := filter_gain_seqmx conj n p sH sRm cinv
+    let K_f := filter_gain_seqmx conj n p sH sR_m cinv
                 (predict_cov_seqmx conj m n sF sG sQ sP) in
-    add_seqmx sF (opp_seqmx (@hmul_op _ _ _ n p n (@hmul_op _ _ _ n n p sF Kf) sH)).
+    add_seqmx sF (opp_seqmx (@hmul_op _ _ _ n p n (@hmul_op _ _ _ n n p sF K_f) sH)).
 
 End EffPrograms.
 
@@ -182,16 +182,16 @@ Section Refine.
   (* Матрица замкнутого контура. *)
   Lemma closed_loop_seqmx_correct (m n p : nat)
       (F : 'M[R]_n) (G : 'M[R]_(n, m)) (H : 'M[R]_(p, n))
-      (Q : 'M[R]_m) (Rm : 'M[R]_p) (P : 'M[R]_n)
-      (sF sG sH sQ sRm sP : @seqmx R)
+      (Q : 'M[R]_m) (R_m : 'M[R]_p) (P : 'M[R]_n)
+      (sF sG sH sQ sR_m sP : @seqmx R)
       (rF : refines (RR n n) F sF) (rG : refines (RR n m) G sG)
       (rH : refines (RR p n) H sH) (rQ : refines (RR m m) Q sQ)
-      (rRm : refines (RR p p) Rm sRm) (rP : refines (RR n n) P sP)
+      (rR_m : refines (RR p p) R_m sR_m) (rP : refines (RR n n) P sP)
       (cinv : @seqmx R -> @seqmx R)
       (cinv_correct : forall (S : 'M[R]_p) (sS : @seqmx R),
         refines (RR p p) S sS -> refines (RR p p) (invmx S) (cinv sS)) :
-    refines (RR n n) (riccati_def.closed_loop conj F G H Q Rm P)
-      (closed_loop_seqmx conj m n p sF sG sH sQ sRm cinv sP).
+    refines (RR n n) (riccati_def.closed_loop conj F G H Q R_m P)
+      (closed_loop_seqmx conj m n p sF sG sH sQ sR_m cinv sP).
   Proof.
     rewrite /riccati_def.closed_loop /closed_loop_seqmx.
     have rPpred : refines (RR n n) (riccati_def.predict_cov conj F G Q P)
@@ -200,13 +200,13 @@ Section Refine.
       apply: radd; first exact: (rmul (rmul rF rP) (rctr rF)).
       exact: (rmul (rmul rG rQ) (rctr rG)).
     have rInnov : refines (RR p p)
-        (riccati_def.innov_cov conj H Rm (riccati_def.predict_cov conj F G Q P))
-        (innov_cov_seqmx conj n p sH sRm (predict_cov_seqmx conj m n sF sG sQ sP)).
+        (riccati_def.innov_cov conj H R_m (riccati_def.predict_cov conj F G Q P))
+        (innov_cov_seqmx conj n p sH sR_m (predict_cov_seqmx conj m n sF sG sQ sP)).
       rewrite /riccati_def.innov_cov /innov_cov_seqmx.
       apply: radd => //; exact: (rmul (rmul rH rPpred) (rctr rH)).
     have rKf : refines (RR n p)
-        (riccati_def.filter_gain conj H Rm (riccati_def.predict_cov conj F G Q P))
-        (filter_gain_seqmx conj n p sH sRm cinv
+        (riccati_def.filter_gain conj H R_m (riccati_def.predict_cov conj F G Q P))
+        (filter_gain_seqmx conj n p sH sR_m cinv
           (predict_cov_seqmx conj m n sF sG sQ sP)).
       rewrite /riccati_def.filter_gain /filter_gain_seqmx.
       exact: (rmul (rmul rPpred (rctr rH)) (cinv_correct _ _ rInnov)).
@@ -234,7 +234,7 @@ Section BridgeC.
 
   (*
     Замкнутый контур совпадает с предсказательной матрицей $F_p = F - F K_f H$
-    (`Kf` - усиление Калмана на предсказанной ковариации), исследуемой в
+    (`K_f` - усиление Калмана на предсказанной ковариации), исследуемой в
     `dare.v`.
   *)
   Lemma gclosed_loop_bridge (m n p : nat) (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m))

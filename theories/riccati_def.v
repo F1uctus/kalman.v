@@ -35,7 +35,7 @@ Section GenericDefs.
 
   Variables (m n p : nat).
   Variables (F : 'M[R]_n) (G : 'M[R]_(n, m)) (H : 'M[R]_(p, n)).
-  Variables (Q : 'M[R]_m) (Rm : 'M[R]_p).
+  Variables (Q : 'M[R]_m) (R_m : 'M[R]_p).
 
   (* Ковариация предсказания: $F P F† + G Q G†$. *)
   Definition predict_cov (P : 'M[R]_n) : 'M[R]_n :=
@@ -43,7 +43,7 @@ Section GenericDefs.
 
   (* Инновационная ковариация: $R_(e,k) = H P H† + R$. *)
   Definition innov_cov (P : 'M[R]_n) : 'M[R]_p :=
-    H *m P *m map_mx conj H^T + Rm.
+    H *m P *m map_mx conj H^T + R_m.
 
   (* Усиление фильтра: $K_(f,k) = P H† R_(e,k)^(-1)$. *)
   Definition filter_gain (P : 'M[R]_n) : 'M[R]_(n, p) :=
@@ -57,9 +57,9 @@ Section GenericDefs.
     Шаг обновления с произвольным усилением $K_p$ в форме Джозефа:
     $(E_n - K_p H) P (E_n - K_p H)† + K_p R K_p†$.
   *)
-  Definition alt_update_cov (Kp : 'M[R]_(n, p)) (P : 'M[R]_n) : 'M[R]_n :=
-    let EmKH := 1%:M - Kp *m H in
-    EmKH *m P *m map_mx conj EmKH^T + Kp *m Rm *m map_mx conj Kp^T.
+  Definition alt_update_cov (K_p : 'M[R]_(n, p)) (P : 'M[R]_n) : 'M[R]_n :=
+    let EmKH := 1%:M - K_p *m H in
+    EmKH *m P *m map_mx conj EmKH^T + K_p *m R_m *m map_mx conj K_p^T.
 
   (*
     Шаг итерации Риккати: $P_(k+1|k+1) = "riccati_step"(P_(k|k))$, где
@@ -77,7 +77,7 @@ Section GenericDefs.
   Proof. by []. Qed.
 
   Lemma innov_covE (P : 'M[R]_n) :
-    innov_cov P = H *m P *m map_mx conj H^T + Rm.
+    innov_cov P = H *m P *m map_mx conj H^T + R_m.
   Proof. by []. Qed.
 
   Lemma filter_gainE (P : 'M[R]_n) :
@@ -88,10 +88,10 @@ Section GenericDefs.
     update_cov P = (1%:M - filter_gain P *m H) *m P.
   Proof. by []. Qed.
 
-  Lemma alt_update_covE (Kp : 'M[R]_(n, p)) (P : 'M[R]_n) :
-    alt_update_cov Kp P =
-    (1%:M - Kp *m H) *m P *m map_mx conj (1%:M - Kp *m H)^T
-    + Kp *m Rm *m map_mx conj Kp^T.
+  Lemma alt_update_covE (K_p : 'M[R]_(n, p)) (P : 'M[R]_n) :
+    alt_update_cov K_p P =
+    (1%:M - K_p *m H) *m P *m map_mx conj (1%:M - K_p *m H)^T
+    + K_p *m R_m *m map_mx conj K_p^T.
   Proof. by []. Qed.
 
   Lemma riccati_stepE (P : 'M[R]_n) :
@@ -152,8 +152,8 @@ Section Gramians.
     фильтрующее усиление на предсказанной ковариации `predict_cov`.
   *)
   Definition closed_loop (m n p : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
-      (H : 'M[R]_(p, n)) (Q : 'M[R]_m) (Rm : 'M[R]_p)
+      (H : 'M[R]_(p, n)) (Q : 'M[R]_m) (R_m : 'M[R]_p)
       (P : 'M[R]_n) : 'M[R]_n :=
-    F - F *m filter_gain conj H Rm (predict_cov conj F G Q P) *m H.
+    F - F *m filter_gain conj H R_m (predict_cov conj F G Q P) *m H.
 
 End Gramians.

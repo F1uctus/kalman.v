@@ -631,9 +631,9 @@ Section DARE.
 
   (* Сокращения. *)
   Local Notation P_pss := (predict_cov F G Q P_ss).
-  Local Notation Kf := (filter_gain H R P_pss).
-  Local Notation Kp := (F *m Kf).
-  Local Notation Fp := (F - Kp *m H).
+  Local Notation K_f := (filter_gain H R P_pss).
+  Local Notation K_p := (F *m K_f).
+  Local Notation F_p := (F - K_p *m H).
   Local Notation R_e := (innov_cov H R P_pss).
 
   Lemma P_pss_psd : psd P_pss.
@@ -642,14 +642,14 @@ Section DARE.
   Lemma R_e_unit : R_e \in unitmx.
   Proof. apply: innov_cov_inv; [exact: R_pd | exact: P_pss_psd]. Qed.
 
-  (* $P_ss = (E - "Kf" H) P_pss = "update_cov" P_pss$ (неподвижная точка). *)
+  (* $P_ss = (E - K_f H) P_pss = "update_cov" P_pss$ (неподвижная точка). *)
   Lemma P_ss_eq_update : P_ss = update_cov H R P_pss.
   Proof.
     exact: P_ss_fix.
   Qed.
 
-  (* Свёртка усиления: F (E - Kf H) = Fp. *)
-  Lemma F_update_factor : F *m (1%:M - Kf *m H) = Fp.
+  (* Свёртка усиления: F (E - K_f H) = F_p. *)
+  Lemma F_update_factor : F *m (1%:M - K_f *m H) = F_p.
   Proof.
     by rewrite mulmxBr mulmx1 mulmxA.
   Qed.
@@ -659,13 +659,13 @@ Section DARE.
     $P_pss = F_p P_pss F† + G Q G†$.
   *)
   Lemma predict_cov_closed_loop :
-    predict_cov F G Q P_ss = Fp *m P_pss *m F^t* + G *m Q *m G^t*.
+    predict_cov F G Q P_ss = F_p *m P_pss *m F^t* + G *m Q *m G^t*.
   Proof.
     by rewrite {1}predict_covE {1}P_ss_eq_update update_covE mulmxA F_update_factor.
   Qed.
 
   (* Важное перекрёстное тождество: $F_p P_pss H† = K_p R$. *)
-  Lemma Fp_Ppss_Ht : Fp *m P_pss *m H^t* = Kp *m R.
+  Lemma Fp_Ppss_Ht : F_p *m P_pss *m H^t* = K_p *m R.
   Proof.
     rewrite mulmxBl mulmxBl.
     rewrite -[F *m P_pss *m H^t*]mulmxA -(filter_gain_normal_eq H R_pd P_pss_psd).
@@ -682,17 +682,17 @@ Section DARE.
   *)
   Theorem riccati_closed_loop_identity :
     predict_cov F G Q P_ss =
-      Fp *m predict_cov F G Q P_ss *m Fp^t* +
+      F_p *m predict_cov F G Q P_ss *m F_p^t* +
       (F *m filter_gain H R (predict_cov F G Q P_ss)) *m R *m
         (F *m filter_gain H R (predict_cov F G Q P_ss))^t* +
       G *m Q *m G^t*.
   Proof.
     rewrite {1}predict_cov_closed_loop.
     congr (_ + _).
-    have Fpt : Fp^t* = F^t* - H^t* *m Kp^t*.
-      by rewrite trmxCB [(Kp *m H)^t*]trmxC_mul.
-    have expand : Fp *m P_pss *m Fp^t*
-                = Fp *m P_pss *m F^t* - Kp *m R *m Kp^t*.
+    have Fpt : F_p^t* = F^t* - H^t* *m K_p^t*.
+      by rewrite trmxCB [(K_p *m H)^t*]trmxC_mul.
+    have expand : F_p *m P_pss *m F_p^t*
+                = F_p *m P_pss *m F^t* - K_p *m R *m K_p^t*.
       rewrite Fpt mulmxBr.
       congr (_ - _).
       by rewrite mulmxA Fp_Ppss_Ht.
@@ -719,7 +719,7 @@ Section DARE.
   *)
   Proof.
     have Ppd : pd P_pss.
-      apply: (controllable_oi_gram_pd (A := F) (Kp := Kp) (Hm := H)
+      apply: (controllable_oi_gram_pd (A := F) (K_p := K_p) (H_m := H)
                 (Z := G *m Q *m G^t*) (R := R) GQGt_psd R_pd (P := P_pss)).
       - exact: P_pss_psd.
       - by rewrite {1}riccati_closed_loop_identity addrA.
@@ -1072,12 +1072,12 @@ Section DARE.
         have trXL_cvg0_o :
             ((fun k => \tr (XL k)) : nat -> ℂ^o) @ \oo --> (0 : ℂ^o)
           := trXL_cvg0.
-        have Hmul0 : (fun k => \tr (XL k) * \tr (XL k)) @ \oo --> (0 : ℂ^o).
+        have H_mul0 : (fun k => \tr (XL k) * \tr (XL k)) @ \oo --> (0 : ℂ^o).
           have HM := cvgM trXL_cvg0_o trXL_cvg0_o.
           rewrite mulr0 in HM.
           exact: HM.
         suff -> : (fun k : nat => (\tr (XL k)) ^+ 2)
-                = (fun k => \tr (XL k) * \tr (XL k)) by exact: Hmul0.
+                = (fun k => \tr (XL k) * \tr (XL k)) by exact: H_mul0.
         by apply/funext=> k; rewrite expr2.
     (* X_k - L_k -> 0 в матричной топологии. *)
     have XL_cvg :
@@ -1283,18 +1283,18 @@ Section DARE.
   *)
   Theorem filter_gain_frob_cvgn (P_0 : 'M[ℂ]_n) :
     psd P_0 ->
-    exists (P_ss0 : 'M[ℂ]_n) (Kp : 'M[ℂ]_(n, p)),
+    exists (P_ss0 : 'M[ℂ]_n) (K_p : 'M[ℂ]_(n, p)),
       [/\ P_ss0 = riccati_step F G H Q R P_ss0,
           pd P_ss0,
-          Kp = filter_gain H R (predict_cov F G Q P_ss0) &
+          K_p = filter_gain H R (predict_cov F G Q P_ss0) &
           forall eps : ℂ, eps > 0 ->
             exists N : nat, forall k, (N <= k)%N ->
               \tr ((filter_gain H R
                       (predict_cov F G Q
-                        (iter k (riccati_step F G H Q R) P_0)) - Kp)^t* *m
+                        (iter k (riccati_step F G H Q R) P_0)) - K_p)^t* *m
                   (filter_gain H R
                       (predict_cov F G Q
-                        (iter k (riccati_step F G H Q R) P_0)) - Kp)) < eps].
+                        (iter k (riccati_step F G H Q R) P_0)) - K_p)) < eps].
   Proof.
     move=> HP_0.
     exists P_ss, (filter_gain H R (predict_cov F G Q P_ss)); split.
@@ -1331,9 +1331,9 @@ Section DARE.
     $P_pss = F_p dot P_pss dot F_p† + K_p dot R dot K_p† + G dot Q dot G†$. где:
     - P_pss = predict_cov P_ss = F P_ss F† + GQG†
       (предсказательная ss-ковариация),
-    - Kf = filter_gain P_pss (усиление фильтра),
-    - Kp = F ⋅ Kf (предсказательное усиление),
-    - Fp = F - Kp ⋅ H (замкнутый контур в предикторной форме).
+    - K_f = filter_gain P_pss (усиление фильтра),
+    - K_p = F ⋅ K_f (предсказательное усиление),
+    - F_p = F - K_p ⋅ H (замкнутый контур в предикторной форме).
 
     Откуда непосредственно следует сжатие в порядке Лёвнера.
 
@@ -1347,15 +1347,15 @@ Section DARE.
     равна $K_p R K_p† + G Q G†$ и неотрицательно определена.
   *)
   Theorem Fp_Ppss_le :
-    psd_le (Fp *m P_pss *m Fp^t*) P_pss.
+    psd_le (F_p *m P_pss *m F_p^t*) P_pss.
   Proof.
     rewrite /psd_le.
     rewrite {1}riccati_closed_loop_identity.
-    have ->: Fp *m P_pss *m Fp^t* + Kp *m R *m Kp^t* + G *m Q *m G^t*
-          - Fp *m P_pss *m Fp^t*
-          = Kp *m R *m Kp^t* + G *m Q *m G^t*.
-      set X := Fp *m P_pss *m Fp^t*.
-      set Y := Kp *m R *m Kp^t*.
+    have ->: F_p *m P_pss *m F_p^t* + K_p *m R *m K_p^t* + G *m Q *m G^t*
+          - F_p *m P_pss *m F_p^t*
+          = K_p *m R *m K_p^t* + G *m Q *m G^t*.
+      set X := F_p *m P_pss *m F_p^t*.
+      set Y := K_p *m R *m K_p^t*.
       set Z := G *m Q *m G^t*.
       by rewrite addrC addrA addrA addNr add0r.
     apply: psd_add.
@@ -1368,12 +1368,12 @@ Section DARE.
 
     $P_pss$ есть положительно определённая неподвижная точка предсказанной
     ковариации с положительно определённым весом $K_p R K_p† + G Q G†$; инверсия
-    Ляпунова (`riccati_unique.Fp_schur`) даёт `spec_rad_lt1 Fp`.
+    Ляпунова (`riccati_unique.Fp_schur`) даёт `spec_rad_lt1 F_p`.
 
     - @kailath2000[App. E, Lemma E.4.2 "Stable F − K_(P,Z) H"].
   *)
   Theorem Fp_schur :
-    spec_rad_lt1 Fp.
+    spec_rad_lt1 F_p.
   Proof.
     apply: (riccati_unique.Fp_schur Q_psd R_pd FG_stab (M := P_pss)).
     - exact: P_pss_psd.
@@ -1395,7 +1395,7 @@ Section DARE.
     - @kailath2000[§ 14].
   *)
   Definition OP : 'M[ℂ]_n :=
-    obsv_gram_infty_w Fp (H^t* *m invmx R *m H).
+    obsv_gram_infty_w F_p (H^t* *m invmx R *m H).
 
   (*
     Вес $H† R^(-1) H$ неотрицательно определён
@@ -1423,7 +1423,7 @@ Section DARE.
     устойчивостью по Шуру матрицы $F_p$.
   *)
   Theorem OP_fix :
-    OP = Fp^t* *m OP *m Fp + H^t* *m invmx R *m H.
+    OP = F_p^t* *m OP *m F_p + H^t* *m invmx R *m H.
   Proof.
     rewrite /OP /obsv_gram_infty_w.
     rewrite {1}(lyap_sol_fix_schur ler_r2c c2rK r2c_continuous ℂ_archi

@@ -8,12 +8,11 @@
   - @kailath2000[App. E, Lemma E.4.3 "Unique Stabilizing Solution"].
 
   См. Lemma 14.4.1 "Local Identities" для разности двух решений:
-  $M_1 - M_2 = "Fp"(M_1) (M_1 - M_2) "Fp"(M_2)†$, где
-  $"Fp"(M) = F - F "Kf"(M) H$ - предсказательный замкнутый контур. Каждый
-  $"Fp"(M_i)$ устойчив по Шуру (`lyap_inv_spec_rad`): положительно определённая
-  предсказанная неподвижная точка с положительно определённым весом
-  $K_p R K_p† + G Q G†$. Отсюда `lyap_two_sided_zero_schur` даёт
-  $M_1 - M_2 = 0$.
+  $M_1 - M_2 = F_p(M_1) (M_1 - M_2) F_p(M_2)†$, где $F_p(M) = F - F K_f(M) H$ -
+  предсказательный замкнутый контур. Каждый $F_p(M_i)$ устойчив по Шуру
+  (`lyap_inv_spec_rad`): положительно определённая предсказанная неподвижная
+  точка с положительно определённым весом $K_p R K_p† + G Q G†$. Отсюда
+  `lyap_two_sided_zero_schur` даёт $M_1 - M_2 = 0$.
 *)
 
 From Stdlib.Unicode Require Import Utf8.
@@ -49,42 +48,42 @@ Section RiccatiUnique.
   (*
     Стабилизируемость пары процессного шума $(F, G Q^(1/2))$
     (через неотрицательно определённый вес $G Q G†$). Достаточна для
-    устойчивости предсказательного контура `Fp` и единственности
+    устойчивости предсказательного контура `F_p` и единственности
     стабилизирующего (неотрицательно определённого) решения ДАУР.
 
     - @kailath2000[App. E, Theorem E.5.1 "Algebraic Riccati Equation"].
   *)
   Hypothesis FG_stab : stabilizable F (G *m Q *m G^t*).
 
-  Local Notation Kf M := (filter_gain H R M).
-  Local Notation Kp M := (F *m filter_gain H R M).
-  Local Notation Fp M := (F - F *m filter_gain H R M *m H).
+  Local Notation K_f M := (filter_gain H R M).
+  Local Notation K_p M := (F *m filter_gain H R M).
+  Local Notation F_p M := (F - F *m filter_gain H R M *m H).
   Local Notation predM M := (predict_cov F G Q (update_cov H R M)).
 
   (*
-    Тождество для коэффициента усиления: $"Fp"(M) M H† = "Kp"(M) R$
+    Тождество для коэффициента усиления: $F_p(M) M H† = K_p(M) R$
     (ср. `dare.Fp_Ppss_Ht`).
   *)
   Lemma Fp_M_Ht (M : 'M[ℂ]_n) :
     psd M ->
-    (F - F *m Kf M *m H) *m M *m H^t* = F *m Kf M *m R.
+    (F - F *m K_f M *m H) *m M *m H^t* = F *m K_f M *m R.
   Proof.
     move=> Mpsd.
     have gsp := filter_gain_normal_eq H R_pd Mpsd.
-    have e : Kf M *m H *m M *m H^t* + Kf M *m R = M *m H^t*.
+    have e : K_f M *m H *m M *m H^t* + K_f M *m R = M *m H^t*.
       by move: gsp; rewrite innov_covE mulmxDr !mulmxA.
-    have key : (1%:M - Kf M *m H) *m M *m H^t* = Kf M *m R.
+    have key : (1%:M - K_f M *m H) *m M *m H^t* = K_f M *m R.
       rewrite !mulmxBl !mul1mx -e.
       by rewrite addrAC subrr add0r.
-    have factor : (F - F *m Kf M *m H) *m M *m H^t*
-                = F *m ((1%:M - Kf M *m H) *m M *m H^t*).
+    have factor : (F - F *m K_f M *m H) *m M *m H^t*
+                = F *m ((1%:M - K_f M *m H) *m M *m H^t*).
       by rewrite !mulmxBl !mul1mx mulmxBr !mulmxA.
     by rewrite factor key mulmxA.
   Qed.
 
-  (* $F (E - "Kf" M H) = "Fp" M$ (свёртка усиления). *)
+  (* $F (E - K_f M H) = F_p M$ (свёртка усиления). *)
   Lemma F_EmKfH (M : 'M[ℂ]_n) :
-    F *m (1%:M - Kf M *m H) = F - F *m Kf M *m H.
+    F *m (1%:M - K_f M *m H) = F - F *m K_f M *m H.
   Proof.
     by rewrite mulmxBr mulmx1 mulmxA.
   Qed.
@@ -93,7 +92,7 @@ Section RiccatiUnique.
     Тождество замкнутого контура для предсказанной ковариации, для произвольной
     неотрицательно определённой предсказанной точки M
     (форма Ляпунова для замкнутого контура на шаге Риккати):
-    $P_(i+1) = "Fp" P_i "Fp"† + "Kp" R "Kp"† + G Q G†$.
+    $P_(i+1) = F_p P_i F_p† + K_p R K_p† + G Q G†$.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"]: апостериорное
       обновление (9.3.4); форма Джозефа, эквивалентная `update_cov`, первый шаг
@@ -104,15 +103,15 @@ Section RiccatiUnique.
       стандартная рекурсия Риккати (9.2.33); алгебраически эквивалентно тому же
       шагу;
     - @kailath2000[Prob. 14.4 "Boundedness of P_i for Arbitrary P_0"]: ч.(a) -
-      уравнение Ляпунова для замкнутого контура $(F - K H) P (F - K H)† + dots$ для
-      наблюдателя с произвольным стабилизирующим $K$; при оптимальном $"Kf"$
+      уравнение Ляпунова для замкнутого контура $(F - K H) P (F - K H)† + dots$
+      для наблюдателя с произвольным стабилизирующим $K$; при оптимальном $K_f$
       совпадает с тождеством.
   *)
   Lemma pred_closed_loop_id (M : 'M[ℂ]_n) :
     psd M ->
     predict_cov F G Q (update_cov H R M)
-    = (F - F *m Kf M *m H) *m M *m (F - F *m Kf M *m H)^t*
-      + F *m Kf M *m R *m (F *m Kf M)^t* + G *m Q *m G^t*.
+    = (F - F *m K_f M *m H) *m M *m (F - F *m K_f M *m H)^t*
+      + F *m K_f M *m R *m (F *m K_f M)^t* + G *m Q *m G^t*.
   Proof.
     move=> Mpsd.
     rewrite !predict_covE -(joseph_formE H R_pd Mpsd) /joseph_form.
@@ -121,16 +120,16 @@ Section RiccatiUnique.
     - by rewrite trmxC_mul !mulmxA.
   Qed.
 
-  (* Транспонированное усиление, тождество $H M A_2† = R ("Kp" M)†$. *)
+  (* Транспонированное усиление, тождество $H M A_2† = R (K_p M)†$. *)
   Lemma Ht_M_Fp (M : 'M[ℂ]_n) :
     psd M ->
-    H *m M *m (F - F *m Kf M *m H)^t* = R *m (F *m Kf M)^t*.
+    H *m M *m (F - F *m K_f M *m H)^t* = R *m (F *m K_f M)^t*.
   Proof.
     move=> Mpsd.
-    have lhs : H *m M *m (F - F *m Kf M *m H)^t*
-            = ((F - F *m Kf M *m H) *m M *m H^t*)^t*.
+    have lhs : H *m M *m (F - F *m K_f M *m H)^t*
+            = ((F - F *m K_f M *m H) *m M *m H^t*)^t*.
       by rewrite !trmxC_mul trmxCK -Mpsd.1 !mulmxA.
-    have rhs : R *m (F *m Kf M)^t* = ((F *m Kf M) *m R)^t*.
+    have rhs : R *m (F *m K_f M)^t* = ((F *m K_f M) *m R)^t*.
       by rewrite !trmxC_mul -R_pd.1.
     by rewrite lhs rhs (Fp_M_Ht Mpsd).
   Qed.
@@ -138,7 +137,7 @@ Section RiccatiUnique.
   (*
     Разностное тождество для двух неотрицательно определённых предсказанных
     неподвижных точек (локальное тождество для разности двух решений):
-    $M_1 - M_2 = "Fp"(M_1) (M_1 - M_2) "Fp"(M_2)†$.
+    $M_1 - M_2 = F_p(M_1) (M_1 - M_2) F_p(M_2)†$.
     - @kailath2000[§ 14.4, Lemma 14.4.1 "Local Identities"].
   *)
   Lemma pred_diff_id (M1 M2 : 'M[ℂ]_n) :
@@ -146,13 +145,13 @@ Section RiccatiUnique.
     M1 = predict_cov F G Q (update_cov H R M1) ->
     M2 = predict_cov F G Q (update_cov H R M2) ->
     M1 - M2
-    = (F - F *m Kf M1 *m H) *m (M1 - M2) *m (F - F *m Kf M2 *m H)^t*.
+    = (F - F *m K_f M1 *m H) *m (M1 - M2) *m (F - F *m K_f M2 *m H)^t*.
   Proof.
     move=> p1 p2 f1 f2.
-    set A1 := F - F *m Kf M1 *m H.
-    set A2 := F - F *m Kf M2 *m H.
-    set P1 := F *m Kf M1.
-    set P2 := F *m Kf M2.
+    set A1 := F - F *m K_f M1 *m H.
+    set A2 := F - F *m K_f M2 *m H.
+    set P1 := F *m K_f M1.
+    set P2 := F *m K_f M2.
     have c1 : A1 *m M1 *m H^t* = P1 *m R := Fp_M_Ht p1.
     have c2 : H *m M2 *m A2^t* = R *m P2^t* := Ht_M_Fp p2.
     have dA : A1 - A2 = P2 *m H - P1 *m H.
@@ -204,24 +203,24 @@ Section RiccatiUnique.
   Lemma Fp_schur (M : 'M[ℂ]_n) :
     psd M ->
     M = predict_cov F G Q (update_cov H R M) ->
-    spec_rad_lt1 (F - F *m Kf M *m H).
+    spec_rad_lt1 (F - F *m K_f M *m H).
   (*
-    Схема: баланс по Ляпунову $M = "Fp" M "Fp"† + W$
-    ($W := "Kp" R "Kp"† + G Q G†$, лишь неотрицательно определён) + перенос
+    Схема: баланс по Ляпунову $M = F_p M F_p† + W$
+    ($W := K_p R K_p† + G Q G†$, лишь неотрицательно определён) + перенос
     стабилизируемости на коррекцию по выходу (`stabilizable_oi_reduce`) =>
     устойчивость по Шуру через `lyap_inv_spec_rad_stab`.
   *)
   Proof.
     move=> Mpsd Mfix.
-    have Mid : M = (F - F *m Kf M *m H) *m M *m (F - F *m Kf M *m H)^t*
-                  + (F *m Kf M *m R *m (F *m Kf M)^t* + G *m Q *m G^t*).
+    have Mid : M = (F - F *m K_f M *m H) *m M *m (F - F *m K_f M *m H)^t*
+                  + (F *m K_f M *m R *m (F *m K_f M)^t* + G *m Q *m G^t*).
       by rewrite {1}Mfix (pred_closed_loop_id Mpsd) -addrA.
-    have Wpsd : psd (F *m Kf M *m R *m (F *m Kf M)^t* + G *m Q *m G^t*).
+    have Wpsd : psd (F *m K_f M *m R *m (F *m K_f M)^t* + G *m Q *m G^t*).
       apply: psd_add; last exact: psd_lcongr G Q_psd.
-      exact: psd_lcongr (F *m Kf M) (pd_psd R_pd).
-    have Wstab : stabilizable (F - F *m Kf M *m H)
-                  (F *m Kf M *m R *m (F *m Kf M)^t* + G *m Q *m G^t*).
-      exact: (stabilizable_oi_reduce (Kp := F *m Kf M) (Hm := H)
+      exact: psd_lcongr (F *m K_f M) (pd_psd R_pd).
+    have Wstab : stabilizable (F - F *m K_f M *m H)
+                  (F *m K_f M *m R *m (F *m K_f M)^t* + G *m Q *m G^t*).
+      exact: (stabilizable_oi_reduce (K_p := F *m K_f M) (H_m := H)
                 (psd_lcongr G Q_psd) R_pd FG_stab).
     exact: lyap_inv_spec_rad_stab Mpsd Wpsd Mid Wstab.
   Qed.
@@ -236,10 +235,10 @@ Section RiccatiUnique.
     M1 = M2.
   Proof.
     move=> q1 q2 f1 f2.
-    have s1 : spec_rad_lt1 (F - F *m Kf M1 *m H) := Fp_schur q1 f1.
-    have s2 : spec_rad_lt1 (F - F *m Kf M2 *m H) := Fp_schur q2 f2.
+    have s1 : spec_rad_lt1 (F - F *m K_f M1 *m H) := Fp_schur q1 f1.
+    have s2 : spec_rad_lt1 (F - F *m K_f M2 *m H) := Fp_schur q2 f2.
     have D : M1 - M2
-          = (F - F *m Kf M1 *m H) *m (M1 - M2) *m (F - F *m Kf M2 *m H)^t*
+          = (F - F *m K_f M1 *m H) *m (M1 - M2) *m (F - F *m K_f M2 *m H)^t*
       := pred_diff_id q1 q2 f1 f2.
     have := lyap_two_sided_zero_schur ℂ_archi s1 s2 D.
     by move/eqP; rewrite subr_eq0 => /eqP.

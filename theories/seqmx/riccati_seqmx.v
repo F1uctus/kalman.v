@@ -46,7 +46,7 @@ Context (C : Type).
 Context `{!zero_of C, !one_of C, !opp_of C, !add_of C, !mul_of C, !eq_of C}.
 Variable conj : C -> C.
 Variables (m n p : nat).
-Variables (sF sG sH sQ sRm : @seqmx C).
+  Variables (sF sG sH sQ sR_m : @seqmx C).
 Variable cinv : @seqmx C -> @seqmx C.
 
   (* Эрмитово сопряжение: транспонируем и применяем `conj` поэлементно. *)
@@ -61,7 +61,7 @@ Definition predict_cov_seqmx (sP : @seqmx C) : @seqmx C :=
 Definition innov_cov_seqmx (sP : @seqmx C) : @seqmx C :=
   add_seqmx
     (@hmul_op _ _ _ p n p (@hmul_op _ _ _ p n n sH sP) (ctr_seqmx p n sH))
-    sRm.
+      sR_m.
 
   Definition filter_gain_seqmx (sP : @seqmx C) : @seqmx C :=
   @hmul_op _ _ _ n p p
@@ -82,7 +82,7 @@ Definition alt_update_cov_seqmx (sKp sP : @seqmx C) : @seqmx C :=
     let EmKH := sub_seqmx (seqmx1 n) (@hmul_op _ _ _ n p n sKp sH) in
   add_seqmx
       (@hmul_op _ _ _ n n n (@hmul_op _ _ _ n n n EmKH sP) (ctr_seqmx n n EmKH))
-    (@hmul_op _ _ _ n p n (@hmul_op _ _ _ n p p sKp sRm) (ctr_seqmx n p sKp)).
+      (@hmul_op _ _ _ n p n (@hmul_op _ _ _ n p p sKp sR_m) (ctr_seqmx n p sKp)).
 
   (*
     Исполнимый шаг Риккати.
@@ -146,14 +146,14 @@ Section System.
 
 Variables (m n p : nat).
 Variables (F : 'M[R]_n) (G : 'M[R]_(n, m)) (H : 'M[R]_(p, n)).
-Variables (Q : 'M[R]_m) (Rm : 'M[R]_p).
+    Variables (Q : 'M[R]_m) (R_m : 'M[R]_p).
 
-Variables (sF sG sH sQ sRm : @seqmx R).
+    Variables (sF sG sH sQ sR_m : @seqmx R).
 Hypothesis rF : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) F sF.
 Hypothesis rG : refines (Rseqmx (nat_Rxx n) (nat_Rxx m)) G sG.
 Hypothesis rH : refines (Rseqmx (nat_Rxx p) (nat_Rxx n)) H sH.
 Hypothesis rQ : refines (Rseqmx (nat_Rxx m) (nat_Rxx m)) Q sQ.
-Hypothesis rRm : refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) Rm sRm.
+    Hypothesis rR_m : refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) R_m sR_m.
 
     (* Обращение p*p-матрицы (см. заголовок файла). *)
 Variable cinv : @seqmx R -> @seqmx R.
@@ -176,7 +176,7 @@ Qed.
 Lemma innov_cov_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx p) (nat_Rxx p))
-        (innov_cov conj H Rm P) (innov_cov_seqmx conj n p sH sRm sP).
+        (innov_cov conj H R_m P) (innov_cov_seqmx conj n p sH sR_m sP).
 Proof.
       rewrite /innov_cov /innov_cov_seqmx.
   have rX := refines_mulmx (refines_mulmx rH rP) (refines_ctr_seqmx rH).
@@ -186,8 +186,8 @@ Qed.
     Lemma filter_gain_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx p))
-        (filter_gain conj H Rm P)
-        (filter_gain_seqmx conj n p sH sRm cinv sP).
+        (filter_gain conj H R_m P)
+        (filter_gain_seqmx conj n p sH sR_m cinv sP).
 Proof.
       rewrite /filter_gain /filter_gain_seqmx.
   have rinv := cinv_correct (innov_cov_seqmx_correct rP).
@@ -197,8 +197,8 @@ Qed.
 Lemma update_cov_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-        (update_cov conj H Rm P)
-    (update_cov_seqmx conj n p sH sRm cinv sP).
+        (update_cov conj H R_m P)
+        (update_cov_seqmx conj n p sH sR_m cinv sP).
 Proof.
       rewrite /update_cov /update_cov_seqmx.
       have rK := filter_gain_seqmx_correct rP.
@@ -208,28 +208,28 @@ Proof.
   exact: (refines_mulmx rsub rP).
 Qed.
 
-Lemma alt_update_cov_seqmx_correct (Kp : 'M[R]_(n, p)) (sKp : @seqmx R)
-    (rKp : refines (Rseqmx (nat_Rxx n) (nat_Rxx p)) Kp sKp)
+    Lemma alt_update_cov_seqmx_correct (K_p : 'M[R]_(n, p)) (sKp : @seqmx R)
+        (rKp : refines (Rseqmx (nat_Rxx n) (nat_Rxx p)) K_p sKp)
     (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-        (alt_update_cov conj H Rm Kp P)
-    (alt_update_cov_seqmx conj n p sH sRm sKp sP).
+        (alt_update_cov conj H R_m K_p P)
+        (alt_update_cov_seqmx conj n p sH sR_m sKp sP).
 Proof.
       rewrite /alt_update_cov /alt_update_cov_seqmx.
   have rKpH := refines_mulmx rKp rH.
   have r1 := Rseqmx_1 R (nat_Rxx n).
       have rEmKH := refines_addmx r1 (refines_oppmx rKpH).
       have rT1 := refines_mulmx (refines_mulmx rEmKH rP) (refines_ctr_seqmx rEmKH).
-  have rT2 := refines_mulmx (refines_mulmx rKp rRm) (refines_ctr_seqmx rKp).
+      have rT2 := refines_mulmx (refines_mulmx rKp rR_m) (refines_ctr_seqmx rKp).
   exact: (refines_addmx rT1 rT2).
 Qed.
 
 Lemma riccati_step_seqmx_correct (P : 'M[R]_n) (sP : @seqmx R)
     (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-        (riccati_step conj F G H Q Rm P)
-    (riccati_step_seqmx conj m n p sF sG sH sQ sRm cinv sP).
+        (riccati_step conj F G H Q R_m P)
+        (riccati_step_seqmx conj m n p sF sG sH sQ sR_m cinv sP).
 Proof.
       rewrite /riccati_step /riccati_step_seqmx.
   exact: (update_cov_seqmx_correct (predict_cov_seqmx_correct rP)).
@@ -245,8 +245,8 @@ Qed.
     Lemma riccati_iter_seqmx_correct (k : nat) (P_0 : 'M[R]_n) (sP_0 : @seqmx R)
         (rP_0 : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P_0 sP_0) :
   refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-        (iter k (riccati_step conj F G H Q Rm) P_0)
-        (iter k (riccati_step_seqmx conj m n p sF sG sH sQ sRm cinv) sP_0).
+        (iter k (riccati_step conj F G H Q R_m) P_0)
+        (iter k (riccati_step_seqmx conj m n p sF sG sH sQ sR_m cinv) sP_0).
 Proof.
       elim: k => [|k IHk] /=; first exact: rP_0.
   exact: (riccati_step_seqmx_correct IHk).
@@ -406,15 +406,15 @@ Section BridgeC.
 
   Variables (m n p : nat).
   Variables (F : 'M[ℂ]_n) (G : 'M[ℂ]_(n, m)) (H : 'M[ℂ]_(p, n)).
-  Variables (Q : 'M[ℂ]_m) (Rm : 'M[ℂ]_p).
+  Variables (Q : 'M[ℂ]_m) (R_m : 'M[ℂ]_p).
 
-  Variables (sF sG sH sQ sRm : @seqmx ℂ).
+  Variables (sF sG sH sQ sR_m : @seqmx ℂ).
   
   Hypothesis rF : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) F sF.
   Hypothesis rG : refines (Rseqmx (nat_Rxx n) (nat_Rxx m)) G sG.
   Hypothesis rH : refines (Rseqmx (nat_Rxx p) (nat_Rxx n)) H sH.
   Hypothesis rQ : refines (Rseqmx (nat_Rxx m) (nat_Rxx m)) Q sQ.
-  Hypothesis rRm : refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) Rm sRm.
+  Hypothesis rR_m : refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) R_m sR_m.
   
   Variable cinv : @seqmx ℂ -> @seqmx ℂ.
   
@@ -429,8 +429,8 @@ Section BridgeC.
   Corollary kalman_riccati_step_seqmx_correct (P : 'M[ℂ]_n) (sP : @seqmx ℂ)
       (rP : refines (Rseqmx (nat_Rxx n) (nat_Rxx n)) P sP) :
     refines (Rseqmx (nat_Rxx n) (nat_Rxx n))
-      (riccati_step conjC F G H Q Rm P)
-      (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv sP).
+      (riccati_step conjC F G H Q R_m P)
+      (riccati_step_seqmx conjC m n p sF sG sH sQ sR_m cinv sP).
   Proof.
     apply: riccati_step_seqmx_correct; assumption.
   Qed.
@@ -548,14 +548,14 @@ Section System.
 
   Variables (m n p : nat).
   Variables (F : 'M[rat]_n) (G : 'M[rat]_(n, m)) (H : 'M[rat]_(p, n)).
-  Variables (Q : 'M[rat]_m) (Rm : 'M[rat]_p).
-  Variables (sF sG sH sQ sRm : @seqmx bigQ).
+  Variables (Q : 'M[rat]_m) (R_m : 'M[rat]_p).
+  Variables (sF sG sH sQ sR_m : @seqmx bigQ).
 
   Hypothesis rF : refines (RC n n) F sF.
   Hypothesis rG : refines (RC n m) G sG.
   Hypothesis rH : refines (RC p n) H sH.
   Hypothesis rQ : refines (RC m m) Q sQ.
-  Hypothesis rRm : refines (RC p p) Rm sRm.
+  Hypothesis rR_m : refines (RC p p) R_m sR_m.
 
   Variable cinv : @seqmx bigQ -> @seqmx bigQ.
 
@@ -576,7 +576,7 @@ Section System.
   Lemma innov_cov_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC p p)
-      (innov_cov conj H Rm P) (innov_cov_seqmx conjC n p sH sRm sP).
+      (innov_cov conj H R_m P) (innov_cov_seqmx conjC n p sH sR_m sP).
   Proof.
     rewrite /innov_cov /innov_cov_seqmx.
     have rX := refinesC_mulmx (refinesC_mulmx rH rP) (refinesC_ctr rH).
@@ -586,8 +586,8 @@ Section System.
   Lemma filter_gain_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n p)
-      (filter_gain conj H Rm P)
-      (filter_gain_seqmx conjC n p sH sRm cinv sP).
+      (filter_gain conj H R_m P)
+      (filter_gain_seqmx conjC n p sH sR_m cinv sP).
   Proof.
     rewrite /filter_gain /filter_gain_seqmx.
     have rinv := cinv_correct (innov_cov_seqmxC rP).
@@ -597,8 +597,8 @@ Section System.
   Lemma update_cov_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n n)
-      (update_cov conj H Rm P)
-      (update_cov_seqmx conjC n p sH sRm cinv sP).
+      (update_cov conj H R_m P)
+      (update_cov_seqmx conjC n p sH sR_m cinv sP).
   Proof.
     rewrite /update_cov /update_cov_seqmx.
     have rK := filter_gain_seqmxC rP.
@@ -611,8 +611,8 @@ Section System.
   Lemma riccati_step_seqmxC (P : 'M[rat]_n) (sP : @seqmx bigQ)
       (rP : refines (RC n n) P sP) :
     refines (RC n n)
-      (riccati_step conj F G H Q Rm P)
-      (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv sP).
+      (riccati_step conj F G H Q R_m P)
+      (riccati_step_seqmx conjC m n p sF sG sH sQ sR_m cinv sP).
   Proof.
     rewrite /riccati_step /riccati_step_seqmx.
     exact: (update_cov_seqmxC (predict_cov_seqmxC rP)).
@@ -621,8 +621,8 @@ Section System.
   Lemma riccati_iter_seqmxC (k : nat) (P_0 : 'M[rat]_n) (sP_0 : @seqmx bigQ)
       (rP_0 : refines (RC n n) P_0 sP_0) :
     refines (RC n n)
-      (iter k (riccati_step conj F G H Q Rm) P_0)
-      (iter k (riccati_step_seqmx conjC m n p sF sG sH sQ sRm cinv) sP_0).
+      (iter k (riccati_step conj F G H Q R_m) P_0)
+      (iter k (riccati_step_seqmx conjC m n p sF sG sH sQ sR_m cinv) sP_0).
   Proof.
     elim: k => [|k IHk] /=; first exact: rP_0.
     exact: (riccati_step_seqmxC IHk).

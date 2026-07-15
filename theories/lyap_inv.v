@@ -307,22 +307,22 @@ Section LyapInv.
     предсказательного контура $F_p = F - F K_f H$, из стабилизируемости пары
     $(F, G Q^(1/2))$.
   *)
-  Lemma stabilizable_oi_reduce n p (A : 'M[ℂ]_n.+1) (Kp : 'M[ℂ]_(n.+1, p))
-      (Hm : 'M[ℂ]_(p, n.+1)) (Z : 'M[ℂ]_n.+1) (R : 'M[ℂ]_p) :
+  Lemma stabilizable_oi_reduce n p (A : 'M[ℂ]_n.+1) (K_p : 'M[ℂ]_(n.+1, p))
+      (H_m : 'M[ℂ]_(p, n.+1)) (Z : 'M[ℂ]_n.+1) (R : 'M[ℂ]_p) :
     psd Z -> pd R ->
     stabilizable A Z ->
-    stabilizable (A - Kp *m Hm) (Kp *m R *m Kp^t* + Z).
+    stabilizable (A - K_p *m H_m) (K_p *m R *m K_p^t* + Z).
   Proof.
     move=> Zpsd R_pd HAZ lam w wNZ wFp lam_ge1.
     apply/negP=> /eqP wW0.
     set v := w^t*.
-    have KRpsd : psd (Kp *m R *m Kp^t*) := psd_lcongr Kp (pd_psd R_pd).
-    have qfW0 : \tr (v^t* *m (Kp *m R *m Kp^t* + Z) *m v) = 0.
+    have KRpsd : psd (K_p *m R *m K_p^t*) := psd_lcongr K_p (pd_psd R_pd).
+    have qfW0 : \tr (v^t* *m (K_p *m R *m K_p^t* + Z) *m v) = 0.
       by rewrite /v trmxCK wW0 mul0mx mxtrace0.
-    have split0 : \tr (v^t* *m (Kp *m R *m Kp^t*) *m v) = 0
+    have split0 : \tr (v^t* *m (K_p *m R *m K_p^t*) *m v) = 0
               /\ \tr (v^t* *m Z *m v) = 0.
       move: qfW0; rewrite mulmxDr mulmxDl mxtraceD => /eqP.
-      have hKR : 0 <= \tr (v^t* *m (Kp *m R *m Kp^t*) *m v)
+      have hKR : 0 <= \tr (v^t* *m (K_p *m R *m K_p^t*) *m v)
         by case: KRpsd => _ /(_ v).
       have hZ : 0 <= \tr (v^t* *m Z *m v) by case: Zpsd => _ /(_ v).
       by rewrite paddr_eq0 // => /andP[/eqP ? /eqP ?].
@@ -330,13 +330,13 @@ Section LyapInv.
       have Zv0 : Z *m v = 0 := psd_qf0_mul0 Zpsd (proj2 split0).
       have e : w *m Z = (Z *m v)^t* by rewrite /v trmxC_mul trmxCK -(proj1 Zpsd).
       by rewrite e Zv0 trmxC0.
-    have wKp0 : w *m Kp = 0.
-      set u := Kp^t* *m v.
+    have wKp0 : w *m K_p = 0.
+      set u := K_p^t* *m v.
       have qfu : \tr (u^t* *m R *m u) = 0.
         by rewrite -(proj1 split0) /u trmxC_mul trmxCK !mulmxA.
       have u0 : u = 0 := pd_qf0_col0 R_pd qfu.
-      have e : (w *m Kp)^t* = 0 by rewrite trmxC_mul -/v -/u u0.
-      by rewrite -(trmxCK (w *m Kp)) e trmxC0.
+      have e : (w *m K_p)^t* = 0 by rewrite trmxC_mul -/v -/u u0.
+      by rewrite -(trmxCK (w *m K_p)) e trmxC0.
     have wA : w *m A = lam *: w.
       have h := wFp; rewrite mulmxBr mulmxA wKp0 mul0mx subr0 in h; exact: h.
     by have := HAZ lam w wNZ wA lam_ge1; rewrite wZ0 eqxx.
