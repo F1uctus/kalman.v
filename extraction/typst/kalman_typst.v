@@ -23,7 +23,7 @@ From Kalman.seqmx Require Import riccati_seqmx.
 
 Elpi Accumulate typst.db lp:{{
 
-% ===== словарь pp-app проекта ==============================================
+% словарь pp-app проекта
 % аргумент математического ожидания: лямбда по точке выборки скрывается
 pred exp-arg i:term, o:string.
 exp-arg (fun N T Bo) S :- !, coq.name->id N Nm,
@@ -70,7 +70,8 @@ pp-app Ctx GR Args S :- gsuf "riccati_seqmx.cnat" GR, std.last Args J, !,
 pp-app Ctx GR Args S :- gsuf "mxfrob.frob_sq" GR, std.last Args M, !,
   pp 0 M SM, style-fmt "frob-sq" [SM] RAW, paren Ctx 40 RAW S.
 
-% ===== прочие точки расширения =============================================
+
+% прочие точки расширения
 % перечёркнутые отношения проекта
 neg-rel Ctx T S :- head T GR [_, A, B], gsuf "mxloewner.psd_le" GR, !,
   style-fmt "loewner-le-not" [] Op, pp-rel Ctx Op A B S.
@@ -103,7 +104,8 @@ concl-oneside T M C :- head T GR [_, _, M], gsuf "mxdefinite.pd" GR, !,
 frob-inner T M :- head T GR Args, gsuf "mxfrob.frob_sq" GR, !,
   std.last Args M.
 
-% ===== таблица именных констант ============================================
+
+% таблица именных констант
 const-notation "kalman.x_true" "x" nsub 2.
 const-notation "kalman.x_hat" "hat(x)" nsub 2.
 const-notation "kalman.x_err" "tilde(x)" nsub 2.
@@ -124,12 +126,14 @@ const-notation "riccati_seqmx.cinv_fl" "cinv_fl" ncall 2.
 const-notation "riccati_seqmx.update_cov_seqmx" "update_cov_seqmx" ncall 1.
 const-notation "riccati_seqmx.predict_cov_seqmx" "predict_cov_seqmx" ncall 1.
 
-% ===== переопределение обозначений =========================================
+
+% переопределение обозначений
 % единичная матрица с размером в индексе: E_n вместо bb(1)
 :before "style.default"
 style "identity" "E_{}".
 
-% ===== перечень печатаемых утверждений =====================================
+
+% перечень печатаемых утверждений
 % порядок клауз задаёт порядок ключей в JSON
 target "dare" "def" "K_0".
 target "dare" "def" "OP".
