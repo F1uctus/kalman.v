@@ -365,7 +365,9 @@ Section DARE.
 
     (* $M = F (E − K H)$. *)
     Lemma cl_loop_factor : F *m (1%:M - K *m H) = cl_loop.
-    Proof. by rewrite /cl_loop /cl_gain mulmxBr mulmx1 mulmxA. Qed.
+    Proof.
+      by rewrite /cl_loop /cl_gain mulmxBr mulmx1 mulmxA.
+    Qed.
 
     Lemma cl_weight_psd : psd cl_weight.
     Proof.
@@ -422,7 +424,9 @@ Section DARE.
 
     Lemma S_pred_recr k :
       S_pred k.+1 = predict_cov F G Q (update_cov H R (S_pred k)).
-    Proof. by rewrite /S_pred iterS !riccati_stepE. Qed.
+    Proof.
+      by rewrite /S_pred iterS !riccati_stepE.
+    Qed.
 
     (*
       $S' k <= lyap_partial M W (k+1)$ - индукция через выделение полного
@@ -637,10 +641,14 @@ Section DARE.
   Local Notation R_e := (innov_cov H R P_pss).
 
   Lemma P_pss_psd : psd P_pss.
-  Proof. apply: predict_cov_psd; [exact: Q_psd | exact: P_ss_psd]. Qed.
+  Proof.
+    apply: predict_cov_psd; [exact: Q_psd | exact: P_ss_psd].
+  Qed.
 
   Lemma R_e_unit : R_e \in unitmx.
-  Proof. apply: innov_cov_inv; [exact: R_pd | exact: P_pss_psd]. Qed.
+  Proof.
+    apply: innov_cov_inv; [exact: R_pd | exact: P_pss_psd].
+  Qed.
 
   (* $P_ss = (E - K_f H) P_pss = "update_cov" P_pss$ (неподвижная точка). *)
   Lemma P_ss_eq_update : P_ss = update_cov H R P_pss.

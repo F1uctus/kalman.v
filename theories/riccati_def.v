@@ -120,14 +120,18 @@ Section Gramians.
   Lemma obsv_gram0 (n p : nat) (F : 'M[R]_n) (H : 'M[R]_(p, n))
       (W : 'M[R]_p) :
     obsv_gram F H W 0 = 0.
-  Proof. by rewrite /obsv_gram big_ord0. Qed.
+  Proof.
+    by rewrite /obsv_gram big_ord0.
+  Qed.
 
   Lemma obsv_gram_recr (n p : nat) (F : 'M[R]_n) (H : 'M[R]_(p, n))
       (W : 'M[R]_p) (k : nat) :
     obsv_gram F H W k.+1 =
     obsv_gram F H W k +
     map_mx conj (F ^+ k)^T *m map_mx conj H^T *m W *m H *m (F ^+ k).
-  Proof. by rewrite /obsv_gram big_ord_recr. Qed.
+  Proof.
+    by rewrite /obsv_gram big_ord_recr.
+  Qed.
 
   (* Грамиан управляемости. *)
   Definition ctrl_gram (n m : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
@@ -138,14 +142,18 @@ Section Gramians.
   Lemma ctrl_gram0 (n m : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
       (Q : 'M[R]_m) :
     ctrl_gram F G Q 0 = 0.
-  Proof. by rewrite /ctrl_gram big_ord0. Qed.
+  Proof.
+    by rewrite /ctrl_gram big_ord0.
+  Qed.
 
   Lemma ctrl_gram_recr (n m : nat) (F : 'M[R]_n) (G : 'M[R]_(n, m))
       (Q : 'M[R]_m) (k : nat) :
     ctrl_gram F G Q k.+1 =
     ctrl_gram F G Q k +
     (F ^+ k) *m G *m Q *m map_mx conj G^T *m map_mx conj (F ^+ k)^T.
-  Proof. by rewrite /ctrl_gram big_ord_recr. Qed.
+  Proof.
+    by rewrite /ctrl_gram big_ord_recr.
+  Qed.
 
   (*
     Матрица замкнутого контура (предиктор) $F - F K_f H$, где $K_f$ обозначает

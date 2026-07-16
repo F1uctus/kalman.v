@@ -204,7 +204,9 @@ Section PCoef.
 
   Lemma pcoef_scalar k (c : {poly R}) :
     pcoef k (c%:M : 'M[{poly R}]_n) = (c`_k) *: 1%:M.
-  Proof. by apply/matrixP => i j; rewrite !mxE coefMn mulrnAr mulr1. Qed.
+  Proof.
+    by apply/matrixP => i j; rewrite !mxE coefMn mulrnAr mulr1.
+  Qed.
 
 End PCoef.
 

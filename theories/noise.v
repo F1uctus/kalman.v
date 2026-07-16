@@ -214,7 +214,9 @@ Section KalmanNoiseModel.
   Variable T : nat.
 
   Lemma card16 : (0 < #|'I_16|)%N.
-  Proof. by rewrite card_ord. Qed.
+  Proof.
+    by rewrite card_ord.
+  Qed.
 
   (* Пространство траекторий исходов и его равномерное распределение. *)
   Definition model_Ω : finType := {ffun 'I_(T.*2) -> 'I_16}.

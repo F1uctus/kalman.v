@@ -31,31 +31,45 @@ Section HermitianTranspose.
 
   Lemma trmxC_add m n (A B : 'M[ℂ]_(m, n)) :
     (A + B)^t* = A^t* + B^t*.
-  Proof. by rewrite linearD /= map_mxD. Qed.
+  Proof.
+    by rewrite linearD /= map_mxD.
+  Qed.
 
   Lemma trmxC_mul m n p (A : 'M[ℂ]_(m, n)) (B : 'M[ℂ]_(n, p)) :
     (A *m B)^t* = B^t* *m A^t*.
-  Proof. by rewrite trmx_mul map_mxM. Qed.
+  Proof.
+    by rewrite trmx_mul map_mxM.
+  Qed.
 
   Lemma trmxC0 m n :
     (0 : 'M[ℂ]_(m, n))^t* = 0.
-  Proof. by rewrite linear0 map_mx0. Qed.
+  Proof.
+    by rewrite linear0 map_mx0.
+  Qed.
 
   Lemma trmxCB m n (A B : 'M[ℂ]_(m, n)) :
     (A - B)^t* = A^t* - B^t*.
-  Proof. by rewrite trmxC_add linearN /= map_mxN. Qed.
+  Proof.
+    by rewrite trmxC_add linearN /= map_mxN.
+  Qed.
 
   Lemma trmxCN m n (A : 'M[ℂ]_(m, n)) :
     (- A)^t* = - A^t*.
-  Proof. by rewrite linearN /= map_mxN. Qed.
+  Proof.
+    by rewrite linearN /= map_mxN.
+  Qed.
 
   Lemma trmxC1 n :
     (1%:M : 'M[ℂ]_n)^t* = 1%:M.
-  Proof. by rewrite trmx1 map_mx1. Qed.
+  Proof.
+    by rewrite trmx1 map_mx1.
+  Qed.
 
   Lemma trmxC_scale m n (a : ℂ) (A : 'M[ℂ]_(m, n)) :
     (a *: A)^t* = a^* *: A^t*.
-  Proof. by rewrite linearZ /= map_mxZ. Qed.
+  Proof.
+    by rewrite linearZ /= map_mxZ.
+  Qed.
 
   (* Эрмитово сопряжение перестановочно со степенью квадратной матрицы. *)
   Lemma trmxCX m (M : 'M[ℂ]_m) k :

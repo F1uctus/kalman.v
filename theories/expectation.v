@@ -55,7 +55,9 @@ Section Expectation.
   (* Конгруэнтность по поточечному равенству случайных величин. *)
   Lemma eq_Exp r c (X Y : Ω -> 'M[K]_(r, c)) :
     X =1 Y -> Exp X = Exp Y.
-  Proof. by move=> XY; apply: eq_bigr => ω _; rewrite XY. Qed.
+  Proof.
+    by move=> XY; apply: eq_bigr => ω _; rewrite XY.
+  Qed.
 
   (* Аддитивность; доказательство дословно как `E_add_RV` в infotheo. *)
   Lemma Exp_add r c (X Y : Ω -> 'M[K]_(r, c)) :
@@ -89,12 +91,16 @@ Section Expectation.
     (`FDist.f1`: $sum_ω μ(ω) = 1$); ср. `E_const_RV` в infotheo.
   *)
   Lemma Exp_const r c (M : 'M[K]_(r, c)) : Exp (fun _ => M) = M.
-  Proof. by rewrite /Exp -scaler_suml FDist.f1 scale1r. Qed.
+  Proof.
+    by rewrite /Exp -scaler_suml FDist.f1 scale1r.
+  Qed.
 
   (* Производные тождества. *)
 
   Lemma Exp_zero r c : Exp (fun _ => 0 : 'M[K]_(r, c)) = 0.
-  Proof. exact: Exp_const. Qed.
+  Proof.
+    exact: Exp_const.
+  Qed.
 
   Lemma Exp_opp r c (X : Ω -> 'M[K]_(r, c)) :
     Exp (fun ω => - X ω) = - Exp X.
@@ -141,11 +147,15 @@ Section ExpectationInfotheo.
   (* Аддитивность как следствие `E_add_RV` из infotheo. *)
   Lemma Exp_addE (X Y : {RV μ -> 'M[R]_(r, c)}) :
     Exp μ (fun ω => X ω + Y ω) = Exp μ X + Exp μ Y.
-  Proof. by rewrite !ExpE (E_add_RV X Y). Qed.
+  Proof.
+    by rewrite !ExpE (E_add_RV X Y).
+  Qed.
 
   (* Однородность как следствие `E_scale_RV` из infotheo. *)
   Lemma Exp_scaleE (a : R) (X : {RV μ -> 'M[R]_(r, c)}) :
     Exp μ (fun ω => a *: X ω) = a *: Exp μ X.
-  Proof. by rewrite !ExpE (E_scale_RV X a). Qed.
+  Proof.
+    by rewrite !ExpE (E_scale_RV X a).
+  Qed.
 
 End ExpectationInfotheo.

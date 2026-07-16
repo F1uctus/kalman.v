@@ -243,7 +243,9 @@ Section GramianInfWeighted.
 
   (* $"frob_sq" F† = "frob_sq" F < 1$. *)
   Lemma F_trmxC_contract_w : frob_sq (F^t*) < 1.
-  Proof. by rewrite frob_sq_trmxC. Qed.
+  Proof.
+    by rewrite frob_sq_trmxC.
+  Qed.
 
   Theorem obsv_gram_infty_w_psd : psd obsv_gram_infty_w.
   Proof.
