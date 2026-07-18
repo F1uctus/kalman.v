@@ -6,10 +6,20 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
 #import "ellipse.typ": ellipse-curve
-#import "plotdata.typ": dare-convergence-path, load
+#import "wire.typ": ellipse2, frob-dist, load
 #import "style.typ": viz-canvas
 
-#let dare-data = load(dare-convergence-path)
+#let raw = load("/paper/data/dare_convergence.json")
+#let pss = raw.P_ss
+#let dare-data = (
+  P_ss: pss,
+  P_ss_ellipse: ellipse2(pss),
+  iterations: raw.iterations.enumerate().map(((k, P)) => {
+    let fd = frob-dist(P, pss)
+    (k: k, P: P, ellipse: ellipse2(P),
+     log10_frob_dist: if fd > 0.0 { calc.log(fd, base: 10) } else { -16.0 })
+  }),
+)
 
 #let social-ellipse-items(data, n) = {
   let shown = data.iterations.filter(it => it.ellipse.a > 0.12 and it.ellipse.b > 0.06)

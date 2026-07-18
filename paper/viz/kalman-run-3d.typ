@@ -15,10 +15,16 @@
 // run is checked to stay inside the +/- 2 sigma corridor (sim3_run_in_band).
 
 #import "@preview/cetz:0.5.2"
-#import "plotdata.typ": load
+#import "wire.typ": load
 #import "style.typ": viz-canvas, viz-resolve
 
-#let kalman3-data = load("/paper/data/kalman_run_3d.json")
+#let raw = load("/paper/data/kalman_run_3d.json")
+#let pos(m) = (m.at(0).at(0), m.at(2).at(0), m.at(4).at(0))
+#let kalman3-data = (steps: raw.steps.enumerate().map(((k, s)) => {
+  let base = (k: k, "true": pos(s.x_true), est: pos(s.x_est),
+    sigma: (calc.sqrt(s.P.at(0).at(0)), calc.sqrt(s.P.at(2).at(2)), calc.sqrt(s.P.at(4).at(4))))
+  if s.meas != none { base + (meas: (s.meas.at(0).at(0), s.meas.at(1).at(0), s.meas.at(2).at(0))) } else { base }
+}))
 
 // Axonometric view: z straight up, x to the right and toward the viewer, y to
 // the left and toward the viewer (depth). The three unit axes map to fixed 2D

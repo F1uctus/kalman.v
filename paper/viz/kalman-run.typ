@@ -20,10 +20,15 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
-#import "plotdata.typ": load
+#import "wire.typ": load
 #import "style.typ": viz-canvas, viz-resolve
 
-#let kalman-data = load("/paper/data/kalman_run.json")
+#let raw = load("/paper/data/kalman_run.json")
+#let kalman-data = (steps: raw.steps.enumerate().map(((k, s)) => {
+  let base = (k: k, x_true: (s.x_true.at(0).at(0), s.x_true.at(1).at(0)),
+    x_est: (s.x_est.at(0).at(0), s.x_est.at(1).at(0)), pos_sigma: calc.sqrt(s.P.at(0).at(0)))
+  if s.meas != none { base + (meas: s.meas.at(0).at(0)) } else { base }
+}))
 
 #let axes-style = (
   stroke: (dash: "dotted", paint: gray),

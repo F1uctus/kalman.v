@@ -25,10 +25,18 @@
 #import "@preview/cetz-plot:0.1.4"
 #import "../common/markup-shorthands.typ": *
 #import "frames.typ": frame-strip
-#import "plotdata.typ": dare-convergence-path, load
+#import "wire.typ": frob-dist, load
 #import "style.typ": viz-canvas, viz-resolve
 
-#let epsn-data = load(dare-convergence-path)
+#let raw = load("/paper/data/dare_convergence.json")
+#let pss = raw.P_ss
+#let epsn-data = (
+  P_ss: pss,
+  iterations: raw.iterations.enumerate().map(((k, P)) => {
+    let fd = frob-dist(P, pss)
+    (k: k, P: P, log10_frob_dist: if fd > 0.0 { calc.log(fd, base: 10) } else { -16.0 })
+  }),
+)
 
 // The swept parameter: ε = 10^e for these exponents (log10 ε = e exactly).
 #let epsn-exponents = (-2, -4, -6)

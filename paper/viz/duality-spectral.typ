@@ -3,7 +3,8 @@
 //
 // viz/duality-spectral.typ — PBH spectral mirror of estimation/control duality.
 //
-// Data: paper/data/duality_spectral.json (extraction/ocaml/driver.exe, gen_duality).
+// Data: paper/viz/wire.typ `pbh-duality`, a Typst port of the former
+// extraction/ocaml/driver.ml `gen_duality`.
 // A didactic 2×2 real-spectrum system. For each eigenmode the PBH criterion asks
 // two questions:
 //   • detectability  — does the output see it?    (H v ≠ 0, right eigenvector v)
@@ -14,10 +15,10 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
-#import "plotdata.typ": load
+#import "wire.typ": pbh-duality
 #import "style.typ": viz-canvas, viz-resolve
 
-#let duality-spectral-data = load("/paper/data/duality_spectral.json")
+#let duality-spectral-data = pbh-duality()
 
 #let circle-curve(r) = t => (r * calc.cos(t), r * calc.sin(t))
 

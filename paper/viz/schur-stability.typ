@@ -16,10 +16,17 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
-#import "plotdata.typ": load
+#import "wire.typ": load, frob, mat-pow, spectral-radius, eig2-general
 #import "style.typ": viz-canvas, viz-resolve
 
-#let schur-data = load("/paper/data/schur_stability.json")
+#let raw = load("/paper/data/schur_stability.json")
+#let ((r1, i1), (r2, i2)) = eig2-general(raw.A_cl)
+#let schur-data = (
+  A_cl: raw.A_cl, spectral_radius: spectral-radius(raw.A_cl),
+  eigenvalues: ((re: r1, im: i1), (re: r2, im: i2)),
+  // A_cl^k and its Frobenius norm computed in Typst (raw JSON carries only A_cl)
+  power_norms: range(31).map(k => (k: k, frob: frob(mat-pow(raw.A_cl, k)))),
+)
 
 #let circle-curve(r) = t => (r * calc.cos(t), r * calc.sin(t))
 

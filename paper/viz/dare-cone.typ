@@ -20,10 +20,11 @@
 #import "@preview/cetz:0.5.2"
 #import "../common/markup-shorthands.typ": *
 #import "proj3.typ": default-view, proj
-#import "plotdata.typ": dare-convergence-path, load
+#import "wire.typ": load
 #import "style.typ": viz-canvas, viz-resolve
 
-#let dare-cone-data = load(dare-convergence-path)
+#let raw = load("/paper/data/dare_convergence.json")
+#let dare-cone-data = (P_ss: raw.P_ss, iterations: raw.iterations.map(P => (P: P)))
 
 // Boundary ray direction d(theta) = lambda*v v^T for v=(cos,sin):
 //   (P11, P12, P22) = (cos^2, cos*sin, sin^2).  Period pi traces the whole cone.
