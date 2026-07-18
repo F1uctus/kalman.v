@@ -33,7 +33,7 @@ all: $(EXPERIMENTS)
 
 vo:
 	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
-	    theories/seqmx/kalman_sim_q.vo
+	    theories/seqmx/kalman_sim_q.vo theories/seqmx/experiments.vo
 	$(OPAM) rocq c -w -all -Q ../c KalmanC ../c/show.v
 	$(OPAM) rocq c -w -all -Q ../c KalmanC -Q . KalmanC show_json.v
 

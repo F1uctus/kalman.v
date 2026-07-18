@@ -134,14 +134,11 @@ let gen_gramian ~kmax path =
 
 (* ================= Schur stability ================= *)
 
-let gen_schur ~kmax ~kss path =
+(* Только A_cl; степени A_cl^k и их нормы вычисляет Typst (это визуализация). *)
+let gen_schur ~kss path =
   let pss = iter kss dare_step sys_P_0 in
   let acl = closed_loop ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R pss in
-  jobj
-    [ ("A_cl", jmat (mf acl));
-      ("power_norms",
-       `List (List.init (kmax + 1) (fun k -> jmat (mf (mpow ~n:2 acl k))))) ]
-  |> Yojson.Basic.to_file path
+  jobj [ ("A_cl", jmat (mf acl)) ] |> Yojson.Basic.to_file path
 
 (* ================= Kalman runs ================= *)
 (* Both runs are the extracted, verified programs theories/seqmx/kalman_sim.v
@@ -243,7 +240,7 @@ let () =
   let dir = if Array.length Sys.argv > 1 then Sys.argv.(1) else "../../../paper/data" in
   gen_dare ~kmax:36 (Filename.concat dir "dare_convergence.json");
   gen_gramian ~kmax:5 (Filename.concat dir "gramian.json");
-  gen_schur ~kmax:30 ~kss:200 (Filename.concat dir "schur_stability.json");
+  gen_schur ~kss:200 (Filename.concat dir "schur_stability.json");
   gen_kalman_run ~kmax:40 (Filename.concat dir "kalman_run.json");
   gen_kalman_run_3d ~kmax:30 (Filename.concat dir "kalman_run_3d.json");
   gen_orthogonality ~kss:200 (Filename.concat dir "orthogonality.json");
