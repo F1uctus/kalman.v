@@ -17,10 +17,20 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
-#import "plotdata.typ": load, points, lyapunov-path
+#import "wire.typ": load, eig2, ellipse2, frob-dist, points
 #import "style.typ": viz-canvas, viz-resolve
 
-#let lyap-data = load(lyapunov-path)
+#let raw = load("/paper/data/lyapunov.json")
+#let sol = raw.lyap_sol
+#let lyap-data = (
+  lyap_sol: sol,
+  lyap_sol_ellipse: ellipse2(sol),
+  iterations: raw.iterations.enumerate().map(((n, P)) => {
+    let fd = frob-dist(P, sol)
+    (N: n, P: P, ellipse: ellipse2(P),
+     log10_frob_dist: if fd > 0.0 { calc.log(fd, base: 10) } else { -16.0 })
+  }),
+)
 
 // Log-scale Frobenius distance to the Lyapunov solution. Scientific (boxed) axes:
 // the squared norm has no true zero, so a central school-book origin would imply

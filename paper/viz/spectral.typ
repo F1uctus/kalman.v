@@ -17,9 +17,16 @@
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
 #import "ellipse.typ": add-ellipse
-#import "plotdata.typ": load, spectral-path
+#import "wire.typ": load, eig2, qform-ellipse2
 
-#let spectral-data = load(spectral-path)
+#let raw = load("/paper/data/spectral.json")
+#let obj(M) = {
+  let (l1, l2) = eig2(M)
+  (mat: M, eig: (l1, l2), qform_ellipse: qform-ellipse2(M))
+}
+#let spectral-data = (
+  antitone: (A: obj(raw.A), B: obj(raw.B), A_inv: obj(raw.A_inv), B_inv: obj(raw.B_inv)),
+)
 
 // A small square plot canvas on a fixed symmetric range, school-book axes.
 #let qf-plot(r, size: 3.1, body) = cetz.canvas(length: 1cm, {

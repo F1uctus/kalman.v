@@ -22,10 +22,14 @@
 
 #import "@preview/cetz:0.5.2"
 #import "proj3.typ": proj
-#import "plotdata.typ": load, orthogonality-path
+#import "wire.typ": load, trace2
 #import "style.typ": viz-canvas, viz-resolve
 
-#let orthogonality-data = load(orthogonality-path)
+#let raw = load("/paper/data/orthogonality.json")
+#let orthogonality-data = (
+  P_pred: raw.P_pred, S: raw.S, K: raw.K, trace_opt: trace2(raw.P_opt),
+  alternatives: raw.alternatives.map(a => (label: a.label, K: a.K, trace: trace2(a.P_alt))),
+)
 
 // A floor (z = 0) seen from above-front, with the perpendicular pointing up.
 #let ortho-view = (

@@ -24,10 +24,18 @@
 #import "@preview/cetz-plot:0.1.4"
 #import "ellipse.typ": add-ellipse
 #import "frames.typ": frame-grid
-#import "plotdata.typ": load
+#import "wire.typ": load, eig2, ellipse2, pd
 #import "style.typ": viz-canvas, viz-resolve
 
-#let gramian-data = load("/paper/data/gramian.json")
+#let raw = load("/paper/data/gramian.json")
+#let gramian-data = (n: 2, kmax: 5, cases: raw.cases.map(c => (
+  kind: c.kind, positive: c.positive, F: c.F, view: c.view, weight: c.weight,
+  pd_at_n: pd(c.frames.at(1)),
+  frames: c.frames.enumerate().map(((i, g)) => {
+    let (l1, l2) = eig2(g)
+    (k: i + 1, gram: g, eig: (l1, l2), pd: pd(g), ellipse: ellipse2(g))
+  }),
+)))
 
 #let gram-lim = 2.0 // shared square scale (all four gramians fit, comparably)
 #let gram-pd-color = rgb("#1f6f6b") // PD => a proper 2-D ellipse

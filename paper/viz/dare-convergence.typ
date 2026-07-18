@@ -17,10 +17,20 @@
 #import "@preview/cetz-plot:0.1.4"
 #import "../common/markup-shorthands.typ": *
 #import "ellipse.typ": add-ellipse
-#import "plotdata.typ": dare-convergence-path, load, points
+#import "wire.typ": load, eig2, ellipse2, frob-dist, points
 #import "style.typ": viz-canvas, viz-resolve
 
-#let dare-data = load(dare-convergence-path)
+#let raw = load("/paper/data/dare_convergence.json")
+#let pss = raw.P_ss
+#let dare-data = (
+  P_ss: pss,
+  P_ss_ellipse: ellipse2(pss),
+  iterations: raw.iterations.enumerate().map(((k, P)) => {
+    let fd = frob-dist(P, pss)
+    (k: k, P: P, ellipse: ellipse2(P),
+     log10_frob_dist: if fd > 0.0 { calc.log(fd, base: 10) } else { -16.0 })
+  }),
+)
 
 // Least-squares line y = a x + b through equal-length numeric arrays xs, ys.
 #let lsq-line(xs, ys) = {
