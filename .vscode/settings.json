@@ -17,6 +17,7 @@
     "Aunit",
     "Bherm",
     "Bignums",
+    "bigq",
     "bigr",
     "bimap",
     "binint",
@@ -28,6 +29,7 @@
     "Bsym",
     "Cachix",
     "centern",
+    "Certi",
     "cetz",
     "cinv",
     "clearbody",
@@ -194,7 +196,9 @@
     "Pseq",
     "psumr",
     "Psym",
+    "Qden",
     "qform",
+    "Qnum",
     "qualif",
     "quantifications",
     "raddf",
@@ -415,10 +419,10 @@
     "**/*.vos": true
   },
   "git.ignoreLimitWarning": true,
-  "tinymist.rootPath": "/home/f1uctus/Dev/rocq/unn-rocq-kalman",
+  "tinymist.rootPath": "/home/f1uctus/Dev/rocq/kalman",
   "tinymist.typstExtraArgs": [
     "--package-path",
-    "/home/f1uctus/Dev/rocq/unn-rocq-kalman/paper/packages"
+    "/home/f1uctus/Dev/rocq/kalman/paper/packages"
   ],
   "tinymist.formatterProseWrap": true,
   "tinymist.formatterPrintWidth": 80,

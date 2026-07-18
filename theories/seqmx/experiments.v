@@ -1,6 +1,33 @@
 (*
   Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
   SPDX-License-Identifier: GPL-3.0-or-later
+
+  Вычислимые refinement- для иллюстративных экспериментов: грамианы
+  наблюдаемости/управляемости и матрица замкнутого контура. Построены поверх
+  `riccati_seqmx.v` с помощью CoqEAL: доказательства живут на зависимых
+  матрицах `'M[R]_(m, n)`, исполнение на `seqmx`, связь через теоремы `refines`.
+  Один и тот же терм программы запускается над `rat`/`bigQ`/`Q.t` (zarith) и
+  по построению совпадает со спецификацией.
+
+  Структура файла.
+
+  - `EffPrograms` - исполнимые программы над слоем операций CoqEAL: степень
+    матрицы `mpow_seqmx`, грамианы `obsv_gram_seqmx`/`ctrl_gram_seqmx`, матрица
+    замкнутого контура `closed_loop_seqmx`.
+  - Абстрактные грамианы и матрица замкнутого контура над `(R, conj)`
+    (`obsv_gram`, `ctrl_gram`, `closed_loop`) вынесены в `riccati_def.v`. При
+    `conj := conjC` над `numClosedFieldType` они совпадают с операторами
+    `obsv_bound.v`.
+  - `Refine` - теоремы `refines`, связывающие эти определения с программами при
+    подстановке `C := R`.
+  - `BridgeC` - подстановка `conj := conjC`: грамианы уточнения совпадают с
+    `obsv_bound.obsv_gram`/`ctrl_gram`, а `closed_loop` - с предсказательной
+    матрицей замкнутого контура $F_p = F - F K_f H$ @kailath2000[§ 14.5],
+    исследуемой в `dare.v`.
+
+  Обращение $p crossproduct p$-матрицы (для усиления Калмана в замкнутом контуре) в параметре
+  `cinv` с обязательством `cinv_correct`, как и в `riccati_seqmx.v`; при `p = 1`
+  снимается через `cinv1`.
 *)
 
 From mathcomp.boot Require Import all_boot.
@@ -40,7 +67,7 @@ Section EffPrograms.
 
   (* Степень матрицы $A^k$ правым домножением ($A^0 = E$). *)
   Definition mpow_seqmx (n : nat) (sA : @seqmx C) (k : nat) : @seqmx C :=
-    iter k (fun acc => @hmul_op _ _ _ n n n acc sA) (seqmx1 n).
+    iter k (fun acc => @hmul_op _ _ _ n n n acc sA) (iseqmx1 n).
 
   (* Грамиан наблюдаемости: sum_{j<k} (F^j)^t* H^t* W H F^j. *)
   Fixpoint obsv_gram_seqmx (n p : nat) (sF sH sW : @seqmx C) (k : nat)
@@ -137,7 +164,7 @@ Section Refine.
     refines (RR n n) (A ^+ k) (mpow_seqmx n sA k).
   Proof.
     elim: k => [|k IHk].
-    - rewrite expr0 /mpow_seqmx /=; exact: Rseqmx_1.
+    - rewrite expr0 /mpow_seqmx /= iseqmx1E; exact: Rseqmx_1.
     - rewrite exprSr /mpow_seqmx /= -/(mpow_seqmx n sA k) -mulmxE.
       exact: (rmul IHk rA).
   Qed.
@@ -158,9 +185,9 @@ Section Refine.
     elim: k => [|k IHk].
     - rewrite riccati_def.obsv_gram0 /=; exact: rzero.
     - rewrite riccati_def.obsv_gram_recr /=.
-    have rFj := rmpow rF k.
-    apply: radd => //.
-    exact: (rmul (rmul (rmul (rmul (rctr rFj) (rctr rH)) rW) rH) rFj).
+      have rFj := rmpow rF k.
+      apply: radd => //.
+      exact: (rmul (rmul (rmul (rmul (rctr rFj) (rctr rH)) rW) rH) rFj).
   Qed.
 
   (* Грамиан управляемости. *)
@@ -174,9 +201,9 @@ Section Refine.
     elim: k => [|k IHk].
     - rewrite riccati_def.ctrl_gram0 /=; exact: rzero.
     - rewrite riccati_def.ctrl_gram_recr /=.
-    have rFj := rmpow rF k.
-    apply: radd => //.
-    exact: (rmul (rmul (rmul (rmul rFj rG) rQ) (rctr rG)) (rctr rFj)).
+      have rFj := rmpow rF k.
+      apply: radd => //.
+      exact: (rmul (rmul (rmul (rmul rFj rG) rQ) (rctr rG)) (rctr rFj)).
   Qed.
 
   (* Матрица замкнутого контура. *)
@@ -241,8 +268,6 @@ Section BridgeC.
       (H : 'M[ℂ]_(p, n)) (Q : 'M[ℂ]_m) (R : 'M[ℂ]_p) (P : 'M[ℂ]_n) :
     riccati_def.closed_loop conjC F G H Q R P =
     F - F *m filter_gain H R (predict_cov F G Q P) *m H.
-  Proof.
-    by [].
-  Qed.
+  Proof. by []. Qed.
 
 End BridgeC.

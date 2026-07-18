@@ -7,7 +7,7 @@
           mxfrob mxtopo mxmonotone riccati_def riccati_cont riccati_mono obsv_bound
           lyapunov gramian_infty detectability spec_rad lyap_inv riccati_unique dare
           kalman duality faddeev seqmx/riccati_seqmx seqmx/experiments
-          seqmx/kalman_sim)
+          seqmx/kalman_sim seqmx/kalman_sim_q)
  (plugins rocq-elpi.elpi)
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
            mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable

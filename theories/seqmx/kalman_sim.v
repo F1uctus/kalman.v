@@ -56,6 +56,12 @@ Fixpoint lcg_stream (s : BinNums.N) (k : nat) : seq nat :=
   if k is k'.+1 then lcg_out (lcg_next s) :: lcg_stream (lcg_next s) k'
   else [::].
 
+(* Сравнение Stdlib совпадает с ltn (используется в val4). *)
+Lemma ltb_ltn (a b : nat) : Nat.ltb a b = (a < b)%N.
+Proof.
+  by elim: a b => [|a IH] [|b] //=; rewrite ltnS -IH.
+Qed.
+
 Definition sim_seed : BinNums.N := N.of_nat 1234.
 
 (*
@@ -89,10 +95,15 @@ Definition sim_x_0 : @seqmx C := [:: [:: 1%C]; [:: 1%C]].
 (*
   Значения четырёхточечного шума (`noise.v`, noise_val): α на исходах меньше
   пяти, минус α до десяти, β до тринадцати, иначе минус β.
+
+  Сравнение исходов ведётся через Nat.ltb вместо ltn: ltn раскрывается в
+  вычитание с eq_op на структуре eqType для nat, чьё непрозрачное
+  доказательство eqnP компилятор CertiRocq оставляет аксиомой. Связь с
+  ltn даёт лемма ltb_ltn.
 *)
 Definition val4 (a b : C) (o : nat) : C :=
-  if (o < 5)%N then a else if (o < 10)%N then (- a)%C
-  else if (o < 13)%N then b else (- b)%C.
+  if Nat.ltb o 5 then a else if Nat.ltb o 10 then (- a)%C
+  else if Nat.ltb o 13 then b else (- b)%C.
 
 (* Шум управления: α = 1/10, β = 1/2; второй момент равен Q = 1/10. *)
 Definition wval (o : nat) : C := val4 (cfrac 1 10) (cfrac 1 2) o.
@@ -116,14 +127,14 @@ Definition sim_step (st : @seqmx C * @seqmx C * @seqmx C) (ow ov : nat)
   let: (xt, xe, P) := st in
   let wk : @seqmx C := [:: [:: wval ow]] in
   let vk : @seqmx C := [:: [:: vval ov]] in
-  let xt' := add_seqmx (@hmul_op _ _ _ 2 2 1 sim_F xt)
-                       (@hmul_op _ _ _ 2 1 1 sim_G wk) in
-  let yk := add_seqmx (@hmul_op _ _ _ 1 2 1 sim_H xt') vk in
+  let xt' := add_seqmx (@hmul_op _ _ _ 2%N 2%N 1%N sim_F xt)
+                       (@hmul_op _ _ _ 2%N 1%N 1%N sim_G wk) in
+  let yk := add_seqmx (@hmul_op _ _ _ 1%N 2%N 1%N sim_H xt') vk in
   let Ppred := predict_cov_seqmx cconj 1 2 sim_F sim_G sim_Q P in
   let K := filter_gain_seqmx cconj 2 1 sim_H sim_R cinv Ppred in
-  let xpred := @hmul_op _ _ _ 2 2 1 sim_F xe in
-  let innov := sub_seqmx yk (@hmul_op _ _ _ 1 2 1 sim_H xpred) in
-  let xe' := add_seqmx xpred (@hmul_op _ _ _ 2 1 1 K innov) in
+  let xpred := @hmul_op _ _ _ 2%N 2%N 1%N sim_F xe in
+  let innov := sub_seqmx yk (@hmul_op _ _ _ 1%N 2%N 1%N sim_H xpred) in
+  let xe' := add_seqmx xpred (@hmul_op _ _ _ 2%N 1%N 1%N K innov) in
   let P' := riccati_step_seqmx cconj 1 2 1 sim_F sim_G sim_H sim_Q sim_R
               cinv P in
   ((xt', xe', P'), (xt', yk, xe', P')).
@@ -212,14 +223,14 @@ Definition sim3_step (st : @seqmx C * @seqmx C * @seqmx C)
   let: (xt, xe, P) := st in
   let wk : @seqmx C := [:: [:: wval o0]; [:: wval o1]; [:: wval o2]] in
   let vk : @seqmx C := [:: [:: vval o3]; [:: vval o4]; [:: vval o5]] in
-  let xt' := add_seqmx (@hmul_op _ _ _ 6 6 1 sim3_F xt)
-                       (@hmul_op _ _ _ 6 3 1 sim3_G wk) in
-  let yk := add_seqmx (@hmul_op _ _ _ 3 6 1 sim3_H xt') vk in
+  let xt' := add_seqmx (@hmul_op _ _ _ 6%N 6%N 1%N sim3_F xt)
+                       (@hmul_op _ _ _ 6%N 3%N 1%N sim3_G wk) in
+  let yk := add_seqmx (@hmul_op _ _ _ 3%N 6%N 1%N sim3_H xt') vk in
   let Ppred := predict_cov_seqmx cconj 3 6 sim3_F sim3_G sim3_Q P in
   let K := filter_gain_seqmx cconj 6 3 sim3_H sim3_R cinv Ppred in
-  let xpred := @hmul_op _ _ _ 6 6 1 sim3_F xe in
-  let innov := sub_seqmx yk (@hmul_op _ _ _ 3 6 1 sim3_H xpred) in
-  let xe' := add_seqmx xpred (@hmul_op _ _ _ 6 3 1 K innov) in
+  let xpred := @hmul_op _ _ _ 6%N 6%N 1%N sim3_F xe in
+  let innov := sub_seqmx yk (@hmul_op _ _ _ 3%N 6%N 1%N sim3_H xpred) in
+  let xe' := add_seqmx xpred (@hmul_op _ _ _ 6%N 3%N 1%N K innov) in
   let P' := riccati_step_seqmx cconj 3 6 3 sim3_F sim3_G sim3_H sim3_Q sim3_R
               cinv P in
   ((xt', xe', P'), (xt', yk, xe', P')).
@@ -257,29 +268,39 @@ Section ConcreteRatSim.
 
   (* Константы cfrac есть отношения натуральных чисел в поле rat. *)
   Lemma cfrac_ratE (a b : nat) : cfrac (C := rat) GRing.inv a b = a%:R / b%:R.
-  Proof. by rewrite /cfrac !cnat_natr. Qed.
+  Proof.
+    by rewrite /cfrac !cnat_natr.
+  Qed.
 
   (* Таблица значений шума управления совпадает с моделью noise.v. *)
   Lemma wvalE (i : 'I_16) :
     wval (C := rat) GRing.inv i = noise_val (1%:R / 10%:R) (1%:R / 2%:R) i.
-  Proof. by rewrite /wval /val4 /noise_val !cfrac_ratE. Qed.
+  Proof.
+    by rewrite /wval /val4 /noise_val !ltb_ltn !cfrac_ratE.
+  Qed.
 
   (* Таблица значений шума измерения совпадает с моделью noise.v. *)
   Lemma vvalE (i : 'I_16) :
     vval (C := rat) GRing.inv i = noise_val (1%:R / 2%:R) (3%:R / 2%:R) i.
-  Proof. by rewrite /vval /val4 /noise_val !cfrac_ratE. Qed.
+  Proof.
+    by rewrite /vval /val4 /noise_val !ltb_ltn !cfrac_ratE.
+  Qed.
 
   (* Второй момент шума управления равен Q = 1/10. *)
   Lemma wvar_eq_Q :
     (5%:R * (1%:R / 10%:R) ^+ 2 + 3%:R * (1%:R / 2%:R) ^+ 2) / 8%:R
       = 1%:R / 10%:R :> rat.
-  Proof. by apply/eqP; vm_compute. Qed.
+  Proof.
+    by apply/eqP; vm_compute.
+  Qed.
 
   (* Второй момент шума измерения равен R = 1. *)
   Lemma vvar_eq_R :
     (5%:R * (1%:R / 2%:R) ^+ 2 + 3%:R * (3%:R / 2%:R) ^+ 2) / 8%:R
       = 1%:R :> rat.
-  Proof. by apply/eqP; vm_compute. Qed.
+  Proof.
+    by apply/eqP; vm_compute.
+  Qed.
 
 End ConcreteRatSim.
 

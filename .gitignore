@@ -6,8 +6,8 @@
 !extraction/
 !extraction/**
 
-!references/
-!references/**
+#!references/
+#!references/**
 
 !theories/
 !theories/**
@@ -30,6 +30,9 @@
 !meta.yml
 
 paper/data/*.json
+
+# CertiRocq: generated C and binaries (manual build, see extraction/c)
+extraction/c/generated/
 
 # Coq/dune build artifacts under whitelisted trees
 **/*.glob

@@ -5,8 +5,8 @@
 //
 // Data: paper/data/schur_stability.json, emitted by extraction/ocaml/driver.exe
 // from the extracted, verified theories/seqmx/experiments.v
-// `closed_loop_seqmx`. The closed-loop matrix A_cl = F - F Kf H = F(I - Kf H)
-// (the predicted-covariance form Fp of dare.v `riccati_closed_loop_identity`)
+// `closed_loop_seqmx`. The closed-loop matrix A_cl = F - F K_f H = F(I - K_f H)
+// (the predicted-covariance form F_p of dare.v `riccati_closed_loop_identity`)
 // has spectral radius rho < 1 — the classical condition behind DARE convergence
 // (theories/spec_rad.v `spec_rad_lt1`, detectability.v `schur_stable`). Two panels:
 //   (a) the eigenvalues of A_cl, the spectral-radius circle of radius rho, and
@@ -135,14 +135,24 @@
     y-grid: "both",
     axis-style: "scientific",
     legend: "inner-north-east",
-    legend-style: (stroke: none, fill: white, padding: 0.2, item: (spacing: 0.3)),
+    legend-style: (
+      stroke: none,
+      fill: white,
+      padding: 0.2,
+      item: (spacing: 0.3),
+    ),
     {
       cetz-plot.plot.add(
         rho-line,
         style: (stroke: (paint: red, dash: "dashed", thickness: 0.8pt)),
         label: text(size: st.legend, $rho^k$),
       )
-      cetz-plot.plot.add(pts, style: (stroke: black + 1pt), mark: "o", mark-size: 0.1)
+      cetz-plot.plot.add(
+        pts,
+        style: (stroke: black + 1pt),
+        mark: "o",
+        mark-size: 0.1,
+      )
     },
   )
 }))
@@ -153,8 +163,8 @@
 // (used on slides).
 #let schur-stability-figure(data: schur-data, style: (:), dir: ltr) = {
   let st = viz-resolve(style)
-  let cap-a = text(size: st.subcaption)[(а) спектр $A_(c l)$ внутри
-    единичной окружности]
+  let cap-a = text(size: st.subcaption)[(а) спектр $A_(c l)$ внутри единичной
+    окружности]
   let cap-b = text(size: st.subcaption)[(б) геометрическая сходимость
     $norm(A_(c l)^k)_F -> 0$]
   if dir == ttb {

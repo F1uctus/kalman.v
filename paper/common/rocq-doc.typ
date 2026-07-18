@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #import "rocq.typ": (
-  rocq-comment-text, rocq-doc-comment, rocq-locate, rocq-proof-sketch,
-  rocq-proofbody-range, rocq-render-range, rocq-src, rocq-statement-range,
+  rocq-comment-text, rocq-doc-comment, rocq-locate, rocq-math-lookup,
+  rocq-proof-sketch, rocq-proofbody-range, rocq-render-range, rocq-src,
+  rocq-statement-range,
 )
 #import "rocq-cite.typ": rocq-cite-list
 
@@ -13,6 +14,10 @@
 // number is the block's own (rendering the lazy `prefix` number elsewhere would
 // re-evaluate the counter at the reference site and be off by one).
 #let great-theorems-numberfunc = label("great-theorems:numberfunc")
+
+// `rocq-doc` takes a `math` boolean parameter that shadows the `math` module, so
+// bind the equation constructor here while the module is still in scope.
+#let math-equation = math.equation
 
 
 // Notation translation applied to comment prose before it is evaluated as Typst.
@@ -109,6 +114,7 @@
   statement: true,
   sketch: false,
   proof: false,
+  math: false,
   scope: (:),
   kind: none,
   kinds: none,
@@ -145,7 +151,14 @@
   let has-sketch = sketch-text != none and sketch-env != none
 
   // A statement signature is a short, self-contained listing: never split it.
-  let stmt = if statement {
+  // With `math: true` the signature is rendered as textbook math from the
+  // generated map (extraction/typst) instead of the raw codly listing.
+  let stmt = if statement and math {
+    let m = rocq-math-lookup(module, name)
+    block(width: 100%, above: 0.6em, below: 0.6em)[
+      #math-equation(block: true, eval(m, mode: "math", scope: scope))
+    ]
+  } else if statement {
     let r = rocq-statement-range(lines, loc.idx, loc.kind)
     rocq-render-range(source, lines, r.start, r.end, breakable: false)
   }

@@ -20,6 +20,24 @@
 #let rocq-syntax = to-sublime-syntax("/paper/assets/rocq.tmLanguage.json")
 #let rocq-src(p) = read("/theories/" + p)
 
+// Карта `модуль.имя` -> математическая разметка Typst, порождённая командой
+// RenderTypst (extraction/typst, регенерация через extraction/typst/gen.sh).
+// Читается при сборке как прочие порождённые данные в paper/data/.
+#let rocq2typst-map = json("/paper/data/rocq2typst.json")
+
+// Разметка Typst для утверждения `name` из файла-модуля `module` (имя `.v` без
+// расширения). Отсутствие записи -- ошибка сборки, как и у rocq-locate: карту
+// надо пополнить запуском генератора.
+#let rocq-math-lookup(module, name) = {
+  let key = module + "." + name
+  if key in rocq2typst-map {
+    rocq2typst-map.at(key)
+  } else {
+    panic("rocq-doc: нет математического рендеринга `" + key
+      + "` в paper/data/rocq2typst.json (запустите extraction/typst/gen.sh)")
+  }
+}
+
 // Live statistics of the formalization
 // сounted at compile time from the sources.
 

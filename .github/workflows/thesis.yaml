@@ -143,7 +143,7 @@ jobs:
       # Emoji, Arial), системные шрифты раннера игнорируются. Это даёт
       # постраничное совпадение PDF с локальной сборкой (mscorefonts ставил
       # Times New Roman v2.82 с другой метрикой, и страницы съезжали).
-      - name: Build PDFs
+      - name: Build PDFs and social preview
         env:
           TYPST_PACKAGE_PATH: paper/packages
         run: |
@@ -153,6 +153,13 @@ jobs:
           typst compile paper/slides.typ paper/slides.pdf --root . \
             --package-path paper/packages --font-path paper/fonts \
             --ignore-system-fonts
+          typst compile paper/social-preview.typ paper/images/social-preview.png \
+            -f png --pages 1 --root . \
+            --package-path paper/packages --font-path paper/fonts \
+            --ignore-system-fonts
+
+      - name: Check social preview PNG is up to date
+        run: git diff --exit-code paper/images/social-preview.png
 
       - uses: softprops/action-gh-release@v3
         if: github.event_name != 'pull_request'
