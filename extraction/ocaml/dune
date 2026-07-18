@@ -19,7 +19,6 @@
 (rule
  (targets
   dare_convergence.json
-  duality_spectral.json
   gramian.json
   kalman_run.json
   kalman_run_3d.json
