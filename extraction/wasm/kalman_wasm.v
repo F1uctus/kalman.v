@@ -41,6 +41,7 @@ Definition sys_Q : @seqmx Q := [:: [:: 1#10]].
 Definition sys_R : @seqmx Q := [:: [:: 1]].
 
 Definition gram_F : @seqmx Q := [:: [:: 4#5; 3#10]; [:: 0; 1#2]].
+(* Вес наблюдаемости gram_W равен обращению R при R равном единичной матрице. *)
 Definition gram_W : @seqmx Q := [:: [:: 1]].
 Definition gram_Q : @seqmx Q := [:: [:: 1]].
 

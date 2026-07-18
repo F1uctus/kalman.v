@@ -17,7 +17,7 @@
 #import "@preview/cetz-plot:0.1.4"
 #import "../common/markup-shorthands.typ": *
 #import "ellipse.typ": add-ellipse
-#import "wire.typ": load, eig2, ellipse2, frob-dist, points
+#import "wire.typ": load, ellipse2, frob-dist, points
 #import "style.typ": viz-canvas, viz-resolve
 
 #let raw = load("/paper/data/dare_convergence.json")
