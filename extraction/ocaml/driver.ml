@@ -134,7 +134,7 @@ let gen_gramian ~kmax path =
 
 (* ================= Schur stability ================= *)
 
-(* Только A_cl; степени A_cl^k и их нормы вычисляет Typst (это визуализация). *)
+(* Only A_cl is emitted. Typst computes the powers A_cl^k and their norms for the figure. *)
 let gen_schur ~kss path =
   let pss = iter kss dare_step sys_P_0 in
   let acl = closed_loop ~m:1 ~n:2 ~p:1 ~cinv:(cinv ~n:1) sys_F sys_G sys_H sys_Q sys_R pss in

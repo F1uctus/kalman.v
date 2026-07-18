@@ -68,7 +68,7 @@ Definition gramian_json : list byte := bytes_of_string (jobj [:: ("cases", jarr
 Definition schur_pss : @seqmx Q := iter 200 q_dare_step q_dare_P0.
 Definition schur_Acl : @seqmx Q :=
   closed_loop_seqmx (fun x : Q => x) 1 2 1 sys_F sys_G sys_H sys_Q sys_R q_cinv schur_pss.
-(* Только A_cl; степени A_cl^k и их нормы вычисляет Typst (это визуализация). *)
+(* Выводится только A_cl. Степени A_cl^k и их нормы для фигуры вычисляет Typst. *)
 Definition schur_json : list byte := bytes_of_string (jobj
   [:: ("A_cl", jmat schur_Acl) ]).
 

@@ -24,7 +24,7 @@
 #let schur-data = (
   A_cl: raw.A_cl, spectral_radius: spectral-radius(raw.A_cl),
   eigenvalues: ((re: r1, im: i1), (re: r2, im: i2)),
-  // A_cl^k and its Frobenius norm computed in Typst (raw JSON carries only A_cl)
+  // The raw JSON carries only A_cl. Typst computes A_cl^k and its Frobenius norm here.
   power_norms: range(31).map(k => (k: k, frob: frob(mat-pow(raw.A_cl, k)))),
 )
 
