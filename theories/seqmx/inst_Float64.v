@@ -58,7 +58,7 @@ Definition finv (x : float) : float := (1 / x)%float.
 
 Section FloatRun.
 
-(* Обращение матриц 1 x 1 и 3 x 3 методом Фаддеева-Леверье. *)
+(* Обращение матриц $1 times 1$ и $3 times 3$ методом Фаддеева-Леверье. *)
 Definition f_cinv  : @seqmx float -> @seqmx float := cinv_fl (C := float) 1.
 Definition f_cinv3 : @seqmx float -> @seqmx float := cinv_fl (C := float) 3.
 

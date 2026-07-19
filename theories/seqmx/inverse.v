@@ -40,7 +40,10 @@ Section EffInverseFL.
   Context (C : Type).
   Context `{!zero_of C, !one_of C, !opp_of C, !add_of C, !mul_of C, !inv_of C}.
 
-  (* Матрица $M_(j+1)$ рекуррентности Фаддеева-Леверье для n*n-матрицы sA. *)
+  (*
+    Матрица $M_(j+1)$ рекуррентности Фаддеева-Леверье для $n times n$-матрицы
+    sA.
+  *)
   Fixpoint fl_M (n : nat) (sA : @seqmx C) (j : nat) : @seqmx C :=
     if j is j'.+1 then
       let AM := @hmul_op _ _ _ n n n sA (fl_M n sA j') in

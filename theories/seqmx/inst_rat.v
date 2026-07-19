@@ -28,7 +28,9 @@ Import GRing.Theory Num.Theory Num.Def.
 Import Refinements.Op.
 Local Open Scope ring_scope.
 
-(* Скалярная система: конкретное исполнение при $"conj" := "idfun"$ и p = 1. *)
+(*
+  Скалярная система: конкретное исполнение при $"conj" := "idfun"$ и $p = 1$.
+*)
 Section ConcreteRat.
 
   Existing Instance Rseqmx_map_seqmx.
@@ -112,7 +114,7 @@ Section ConcreteRatSim.
     by rewrite /vval /val4 /noise_val !ltb_ltn !cfrac_ratE.
   Qed.
 
-  (* Второй момент шума управления равен Q = 1/10. *)
+  (* Второй момент шума управления равен $Q = 1/10$. *)
   Lemma wvar_eq_Q :
     (5%:R * (1%:R / 10%:R) ^+ 2 + 3%:R * (1%:R / 2%:R) ^+ 2) / 8%:R
       = 1%:R / 10%:R :> rat.
@@ -120,7 +122,7 @@ Section ConcreteRatSim.
     by apply/eqP; vm_compute.
   Qed.
 
-  (* Второй момент шума измерения равен R = 1. *)
+  (* Второй момент шума измерения равен $R = 1$. *)
   Lemma vvar_eq_R :
     (5%:R * (1%:R / 2%:R) ^+ 2 + 3%:R * (3%:R / 2%:R) ^+ 2) / 8%:R
       = 1%:R :> rat.

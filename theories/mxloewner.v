@@ -117,7 +117,9 @@ Section LoewnerOrder.
       by apply: mulr_ge0; [exact: a_ge0 | exact: Dqf].
   Qed.
 
-  (* Неотрицательная определённость масштаба `a *: X` (вещественный a >= 0). *)
+  (*
+    Неотрицательная определённость масштаба `a *: X` (вещественный $a >= 0$).
+  *)
   Lemma psd_scaler (a : ℂ) (X : 'M[ℂ]_n) :
     a \is Num.real -> 0 <= a -> psd X -> psd (a *: X).
   Proof.

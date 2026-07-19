@@ -48,7 +48,7 @@ Import Refinements.Op.
 
 Section QRun.
 
-(* Обращение матриц 1 x 1 и 3 x 3 над Q методом Фаддеева-Леверье. *)
+(* Обращение матриц $1 times 1$ и $3 times 3$ над Q методом Фаддеева-Леверье. *)
 Definition q_cinv  : @seqmx Q -> @seqmx Q := cinv_fl (C := Q) 1.
 Definition q_cinv3 : @seqmx Q -> @seqmx Q := cinv_fl (C := Q) 3.
 

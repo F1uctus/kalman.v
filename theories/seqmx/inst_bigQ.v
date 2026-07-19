@@ -184,7 +184,7 @@ End BridgeBigQ.
 *)
 Section BigQSim.
 
-  (* Обращение матрицы 1 x 1 над bigQ методом Фаддеева-Леверье. *)
+  (* Обращение матрицы $1 times 1$ над bigQ методом Фаддеева-Леверье. *)
   Definition bigq_cinv (sS : @seqmx bigQ) : @seqmx bigQ :=
     cinv_fl (C := bigQ) 1 sS.
 
@@ -213,7 +213,7 @@ Section BigQSim.
   Lemma sim_run_in_band : all row_in_band (bigq_run 40) = true.
   Proof. by vm_compute. Qed.
 
-  (* Обращение матрицы 3 x 3 над bigQ методом Фаддеева-Леверье. *)
+  (* Обращение матрицы $3 times 3$ над bigQ методом Фаддеева-Леверье. *)
   Definition bigq_cinv3 (sS : @seqmx bigQ) : @seqmx bigQ :=
     cinv_fl (C := bigQ) 3 sS.
 

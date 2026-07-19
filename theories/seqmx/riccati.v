@@ -141,7 +141,7 @@ Section RefineRiccati.
     Hypothesis rQ : refines (Rseqmx (nat_Rxx m) (nat_Rxx m)) Q sQ.
     Hypothesis rR_m : refines (Rseqmx (nat_Rxx p) (nat_Rxx p)) R_m sR_m.
 
-    (* Обращение p*p-матрицы; см. заголовок файла. *)
+    (* Обращение $p times p$-матрицы; см. заголовок файла. *)
     Variable cinv : @seqmx R -> @seqmx R.
 
     Hypothesis cinv_correct : forall (S : 'M[R]_p) (sS : @seqmx R),
