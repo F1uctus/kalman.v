@@ -8,8 +8,10 @@
 SWITCH  ?=
 OPAM    := opam exec $(if $(SWITCH),--switch $(SWITCH)) --
 ROOT    := $(abspath ../..)
-# Общие модули печати живут в extraction/common.
-SHOWQ   := -Q ../common KalmanShow
+# Общие модули печати живут в extraction/common и собираются dune в отдельном
+# каталоге сборки, чтобы не оставлять .vo рядом с исходниками.
+COMMON  := $(abspath ../../_build_certirocq/default/extraction/common)
+SHOWQ   := -Q $(COMMON) KalmanShow
 OUT     := generated
 RT      := $(shell $(OPAM) rocq c -where)/user-contrib/CertiRocq/Plugin/runtime
 SYSROOT ?= /usr/share/wasi-sysroot
@@ -36,12 +38,7 @@ all: $(EXPERIMENTS)
 
 vo:
 	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
-	    theories/seqmx/inst_Q.vo theories/seqmx/gramian.vo theories/seqmx/closed_loop.vo
-	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show.v
-	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show_json.v
-	$(OPAM) rocq c -w -all \
-	    -Q $(ROOT)/_build_certirocq/default/theories Kalman \
-	    $(SHOWQ) ../common/figures.v
+	    theories/seqmx/inst_Q.vo extraction/common/figures.vo
 
 compile: vo
 	mkdir -p $(OUT)
@@ -59,4 +56,3 @@ $(foreach e,$(EXPERIMENTS),$(eval $(call RUN_ONE,$(e))))
 
 clean:
 	rm -rf $(OUT) *.vo *.vok *.vos *.glob *.aux
-	rm -f ../common/*.vo ../common/*.vok ../common/*.vos ../common/*.glob
