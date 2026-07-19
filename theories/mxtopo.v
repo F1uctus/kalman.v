@@ -90,7 +90,7 @@ Section FrobeniusBridge.
 
   Implicit Types (M N : 'M[ℂ]_(r, c)).
 
-  (* Для каждого элемента: $|M_(i j)|² <= frob_sq M$. *)
+  (* Для каждого элемента: $|M_(i j)|^2 <= frob_sq M$. *)
   Lemma frob_sq_entry_ge M (i : 'I_r) (j : 'I_c) :
     `|M i j| ^+ 2 <= frob_sq M.
   Proof.
@@ -127,7 +127,7 @@ Section FrobToMxCvg.
 
   (*
     Технический шаг: для ℂ-значной последовательности $s >= 0$, если $s <= t$ и
-    $t -> 0$ в ℂ^o, то $s -> 0$ в ℂ^o.
+    $t -> 0$ в `ℂ^o`, то $s -> 0$ в `ℂ^o`.
   *)
   Lemma cvgC_le0_squeeze (s t : nat -> ℂ) :
     (forall k, 0 <= s k) -> (forall k, s k <= t k) ->
@@ -283,8 +283,8 @@ Section Continuity.
     Сходимость суммы скалярных последовательностей.
 
     ℂ : numClosedFieldType не является автоматически
-    `pseudoMetricNormedZmodType` (это структура есть только у обёртки ℂ^o),
-    поэтому идём через явное приведение к ℂ^o.
+    `pseudoMetricNormedZmodType` (это структура есть только у обёртки `ℂ^o`),
+    поэтому идём через явное приведение к `ℂ^o`.
   *)
   Lemma cvgC_D (f g : nat -> ℂ) (a b : ℂ) :
     f @ \oo --> a -> g @ \oo --> b -> (fun k => f k + g k) @ \oo --> a + b.

@@ -320,7 +320,7 @@ Section LyapunovFixpointUnique.
   (* Коэффициент сжатия < 1 *)
   Lemma frob_sq_A_sq_lt1 :
     (frob_sq A) ^+ 2 < 1.
-  (* $0 <= frob_sq A < 1 => (frob_sq A)² <= frob_sq A < 1$. *)
+  (* $0 <= frob_sq A < 1 => (frob_sq A)^2 <= frob_sq A < 1$. *)
   Proof.
     have fa_ge0 : 0 <= frob_sq A := frob_sq_ge0 A.
     have fa_le1 : frob_sq A <= 1 := ltW A_contract.

@@ -56,7 +56,7 @@ Section LyapInv.
     X = A^t* *m X *m A + Q ->
     A *m v = lam *: v ->
     (1 - `|lam| ^+ 2) * \tr (v^t* *m X *m v) = \tr (v^t* *m Q *m v).
-  (* Схема: $v† (A† X A) v = (A v)† X (A v) = |λ|² (v† X v).$ *)
+  (* Схема: $v† (A† X A) v = (A v)† X (A v) = |λ|^2 (v† X v).$ *)
   Proof.
     move=> lyapeq Fv.
     have key : \tr (v^t* *m (A^t* *m X *m A) *m v)

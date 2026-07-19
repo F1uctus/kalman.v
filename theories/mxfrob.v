@@ -72,7 +72,7 @@ Section Frob.
     by move/eqP->; rewrite mxE.
   Qed.
 
-  (* $"View": ‖M‖ꜰ² = 0 <=> M = 0$. *)
+  (* $"View": ‖M‖_F^2 = 0 <=> M = 0$. *)
   Lemma frob_sq_eq0P r c (M : 'M[ℂ]_(r, c)) :
     reflect (M = 0) (frob_sq M == 0).
   Proof.
@@ -297,7 +297,7 @@ Section Frob.
       rewrite /mxtrace; apply: eq_bigr=> i _.
       by rewrite !mxE eqxx /= -expr2.
     rewrite frob_sq_eq trM_eq.
-    (* Цель: $∑ l_i² <= (∑ l_i)²$, раскрываем справа как сумму множителей. *)
+    (* Цель: $∑ l_i^2 <= (∑ l_i)^2$, раскрываем справа как сумму множителей. *)
     rewrite expr2 mulr_suml.
     apply: ler_sum=> i _.
     rewrite expr2 mulr_sumr.
@@ -368,7 +368,7 @@ Section Frob.
     (* Шаг 2: `tr_conj_frob_le` с неотрицательно определённой $D F† F D$. *)
     have psd_DFtFD : psd (D *m Fm^t* *m Fm *m D) := psd_conj_herm_FtF Fm Dherm.
     apply: (le_trans (tr_conj_frob_le Fm psd_DFtFD)).
-    (* Цель: $frob_sq F_m * tr(D F† F D) <= (frob_sq F_m)² * frob_sq D$. *)
+    (* Цель: $frob_sq F_m * tr(D F† F D) <= (frob_sq F_m)^2 * frob_sq D$. *)
     rewrite expr2 -mulrA.
     apply: ler_pM; first by exact: frob_sq_ge0.
     - by apply: psd_tr_ge0; exact: psd_DFtFD.

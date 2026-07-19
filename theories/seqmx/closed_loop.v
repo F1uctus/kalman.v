@@ -13,9 +13,9 @@
   замкнутого контура $F_p = F - F K_f H$ @kailath2000[§ 14.5], исследуемой в
   `dare.v`; это закрепляет раздел `BridgeC`.
 
-  Обращение $p crossproduct p$-матрицы для усиления Калмана остаётся параметром
-  `cinv` с обязательством `cinv_correct`, как и в `riccati.v`; оно снимается
-  программой `cinv_fl` из `inverse.v`.
+  Обращение $p times p$-матрицы для усиления Калмана остаётся параметром `cinv`
+  с обязательством `cinv_correct`, как и в `riccati.v`; оно снимается программой
+  `cinv_fl` из `inverse.v`.
 *)
 
 From mathcomp.boot Require Import all_boot.

@@ -8,11 +8,12 @@
   - @kailath2000[App. E, Lemma E.4.3 "Unique Stabilizing Solution"].
 
   См. Lemma 14.4.1 "Local Identities" для разности двух решений:
-  $M_1 - M_2 = F_p(M_1) (M_1 - M_2) F_p(M_2)†$, где $F_p(M) = F - F K_f(M) H$ -
-  предсказательный замкнутый контур. Каждый $F_p(M_i)$ устойчив по Шуру
-  (`lyap_inv_spec_rad`): положительно определённая предсказанная неподвижная
-  точка с положительно определённым весом $K_p R K_p† + G Q G†$. Отсюда
-  `lyap_two_sided_zero_schur` даёт $M_1 - M_2 = 0$.
+  $M_1 - M_2 = F_p (M_1) (M_1 - M_2) F_p (M_2)†$, где
+  $F_p (M) = F - F K_f (M) H$ - предсказательный замкнутый контур. Каждый
+  $F_p (M_i)$ устойчив по Шуру (`lyap_inv_spec_rad`): положительно определённая
+  предсказанная неподвижная точка с положительно определённым весом
+  $K_p R K_p† + G Q G†$. Отсюда `lyap_two_sided_zero_schur` даёт
+  $M_1 - M_2 = 0$.
 *)
 
 From Stdlib.Unicode Require Import Utf8.
@@ -61,7 +62,7 @@ Section RiccatiUnique.
   Local Notation predM M := (predict_cov F G Q (update_cov H R M)).
 
   (*
-    Тождество для коэффициента усиления: $F_p(M) M H† = K_p(M) R$ (ср.
+    Тождество для коэффициента усиления: $F_p (M) M H† = K_p (M) R$ (ср.
     `dare.Fp_Ppss_Ht`).
   *)
   Lemma Fp_M_Ht (M : 'M[ℂ]_n) :
@@ -137,7 +138,7 @@ Section RiccatiUnique.
   (*
     Разностное тождество для двух неотрицательно определённых предсказанных
     неподвижных точек (локальное тождество для разности двух решений):
-    $M_1 - M_2 = F_p(M_1) (M_1 - M_2) F_p(M_2)†$.
+    $M_1 - M_2 = F_p (M_1) (M_1 - M_2) F_p (M_2)†$.
     - @kailath2000[§ 14.4, Lemma 14.4.1 "Local Identities"].
   *)
   Lemma pred_diff_id (M1 M2 : 'M[ℂ]_n) :

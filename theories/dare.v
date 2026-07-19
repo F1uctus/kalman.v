@@ -745,7 +745,7 @@ Section DARE.
     psd L -> L = riccati_step F G H Q R L -> L = P_ss.
   (*
     Разность предсказанных ковариаций удовлетворяет
-    $M_1 - M_2 = F_p(M_1)(M_1 - M_2)F_p(M_2)†$ с обоими устойчивыми по Шуру
+    $M_1 - M_2 = F_p (M_1)(M_1 - M_2)F_p (M_2)†$ с обоими устойчивыми по Шуру
     контурами (`lyap_inv_spec_rad`), откуда `lyap_two_sided_zero_schur` даёт 0.
   *)
   Proof.
@@ -1068,13 +1068,13 @@ Section DARE.
       - by move=> k; apply: psd_tr_ge0; exact: XL_psd.
       - exact: XL_le_UL.
       - exact: trUL_cvg0.
-    (* $frob_sq (X_k - L_k) <= (tr(X_k - L_k))² -> 0$. *)
+    (* $frob_sq (X_k - L_k) <= (tr(X_k - L_k))^2 -> 0$. *)
     have frob_XL_cvg0 :
         (fun k => frob_sq (XL k)) @ \oo --> (0 : ℂ).
       apply: (cvgC_le0_squeeze (t := fun k => (\tr (XL k)) ^+ 2)).
       - by move=> k; exact: frob_sq_ge0.
       - by move=> k; apply: frob_sq_le_tr_sq; exact: XL_psd.
-      - (* $(tr(X_k - L_k))² -> 0² = 0$. *)
+      - (* $(tr(X_k - L_k))^2 -> 0^2 = 0$. *)
         have trXL_cvg0_o :
             ((fun k => \tr (XL k)) : nat -> ℂ^o) @ \oo --> (0 : ℂ^o)
           := trXL_cvg0.
@@ -1249,7 +1249,7 @@ Section DARE.
   (*
     Сходимость в стационарный режим (полная форма).
 
-    Объединение положительно определённой неподвижной точки и $epsilon$--$N$
+    Объединение положительно определённой неподвижной точки и $epsilon$-$N$
     сходимости как траектории, так и матрицы усиления.
 
     - @kailath2000[App. E, Theorem E.5.1 "Algebraic Riccati Equation"];

@@ -19,7 +19,7 @@ Notation "A ⋅ B" := (mulmx A B)
 Notation "M †" := (M^t*)
   (at level 30, only printing, format "M †") : sesquilinear_scope.
 
-(* Стандартный базис: 'e_i строка, 'e_i† столбец. *)
+(* Стандартный базис: `'e_i` строка, `'e_i†` столбец. *)
 Notation "''e_' i" := (delta_mx ord0 i)
   (at level 8, i at level 2, only printing, format "''e_' i") : ring_scope.
 
