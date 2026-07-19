@@ -411,8 +411,9 @@
   "emeraldwalk.runonsave": {
     "commands": [
       {
-        "cmd": "'${workspaceFolder}/tools/rocq-comment-fmt/_build/default/bin/main.exe' --write '${file}'",
-        "match": "/theories/.*\\.v$"
+        "cmd": "FMT='${workspaceFolder}/tools/rocq-comment-fmt/_build/default/bin/main.exe'; if [ -x \"$FMT\" ]; then \"$FMT\" --write '${file}'; else echo 'rocq-comment-fmt not built: clone https://github.com/F1uctus/rocq-comment-fmt into tools/, then run the VSCode task \"rocq-comment-fmt: build\"'; exit 1; fi",
+        "match": "/theories/.*\\.v$",
+        "autoShowOutputPanel": "error"
       }
     ]
   },
@@ -431,10 +432,10 @@
     "**/*.vos": true
   },
   "git.ignoreLimitWarning": true,
-  "tinymist.rootPath": "/home/f1uctus/Dev/rocq/kalman",
+  "tinymist.rootPath": "${workspaceFolder}",
   "tinymist.typstExtraArgs": [
     "--package-path",
-    "/home/f1uctus/Dev/rocq/kalman/paper/packages"
+    "/mnt/d/Dev/rocq/kalman/paper/packages"
   ],
   "tinymist.formatterProseWrap": true,
   "tinymist.formatterPrintWidth": 80,
@@ -459,5 +460,5 @@
   "inlineTypst.scopes": [
     "comment"
   ],
-  //"inlineTypst.typst.preamble": "paper/common/preamble.typ"
+  "inlineTypst.typst.preamble": "paper/common/preamble.typ"
 }
