@@ -4,20 +4,9 @@
 
   Генерация сырых данных фигур внутри dune.
 
-  Документы из `extraction/common/figures.v` инстанцируются на примитивных
-  числах с плавающей точкой. Такое исполнение не является уточнением
-  спецификации, что подробно разобрано в заголовке `theories/seqmx/inst_Float64.v`;
-  оно выбрано за постоянное время арифметики. Осмысленность значений закреплена
-  леммами `f_run_close_q`, `f_run3_close_q` и `f_dare_close_q` того же файла:
-  наибольшее поэлементное отклонение от точных значений над Q не превосходит
-  $2^(-40)$. Поскольку этот файл зависит от `inst_Float64.v`, данные не будут
-  собраны, пока сверка не пройдёт.
-
-  Печать коэффициента. Значение float64 переводится в точное рациональное число
-  по представлению `Prim2SF`, то есть по знаку, мантиссе и двоичному порядку,
-  после чего печатается той же десятичной записью `q_dec`, что и на пути через
-  Q. Перевод точен: всякое конечное число двойной точности есть рациональное
-  число со знаменателем, равным степени двойки.
+  Документы берутся готовыми из `extraction/common/figures_F64.v`, где они
+  инстанцированы на примитивных числах с плавающей точкой и снабжены сверкой с
+  точным расчётом над Q.
 
   Запись файла. У Rocq нет ввода и вывода, поэтому файл пишет команда elpi
   `WriteJson`: она приводит терм типа `string` к нормальной форме машиной
@@ -27,54 +16,8 @@
 *)
 
 Set Warnings "-all".
-From Stdlib Require Import BinNat ZArith QArith Floats SpecFloat FloatOps.
-From Stdlib Require Import List Strings.String.
-From mathcomp.boot Require Import all_boot.
-From CoqEAL Require Import refinements seqmx.
 From elpi Require Import elpi.
-From Kalman.seqmx Require Import support inverse riccati gramian closed_loop sim.
-From Kalman.seqmx Require Import inst_Float64.
-From KalmanShow Require Import show show_json figures.
-
-Local Open Scope string_scope.
-
-Import Refinements.Op.
-
-(*
-  Точный перевод конечного числа двойной точности в рациональное: значение равно
-  $(-1)^s m 2^e$, поэтому при неотрицательном порядке знаменатель равен единице,
-  а при отрицательном равен $2^(-e)$.
-*)
-Definition q_of_float (x : float) : Q :=
-  match Prim2SF x with
-  | S754_finite s m e =>
-      let n := if s then Zneg m else Zpos m in
-      if (0 <=? e)%Z then Qmake (n * 2 ^ e) 1
-      else Qmake n (Z.to_pos (2 ^ (- e)))
-  | _ => 0%Q
-  end.
-
-(*
-  Печать коэффициента. Бесконечность и нечисло выводятся словами, не
-  являющимися числами JSON, поэтому их появление обнаруживается при разборе
-  документа, а не превращается в правдоподобное значение.
-*)
-Definition fnum (x : float) : string :=
-  match Prim2SF x with
-  | S754_nan => "nan"
-  | S754_infinity s => if s then "-inf" else "inf"
-  | _ => q_dec 20 (q_of_float x)
-  end.
-
-(* Инстанцирование восьми документов на float64. *)
-Definition d_dare     : string := dare_doc     float fnum.
-Definition d_gramian  : string := gramian_doc  float fnum.
-Definition d_schur    : string := schur_pow_doc float fnum.
-Definition d_run      : string := run_doc      float fnum.
-Definition d_run3     : string := run3_doc     float fnum.
-Definition d_ortho    : string := ortho_doc    float fnum.
-Definition d_lyap     : string := lyap_doc     float fnum.
-Definition d_spectral : string := spectral_doc float fnum.
+From KalmanShow Require Export figures_F64.
 
 (*
   Команда записи строки Rocq в файл.

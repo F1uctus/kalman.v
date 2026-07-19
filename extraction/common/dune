@@ -6,7 +6,7 @@
  (name KalmanShow)
  (package kalman)
  (flags :standard -w -all)
- (modules show show_json figures figures_Q)
+ (modules show show_json figures figures_Q figures_F64)
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
            mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
            mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
