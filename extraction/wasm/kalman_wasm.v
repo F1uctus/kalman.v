@@ -1,8 +1,8 @@
 (*
   Точки входа WebAssembly для сырых данных фигур фильтра Калмана.
 
-  Компилируются замкнутые термы над Q из theories/seqmx/kalman_sim_q.v и
-  одноимённых обобщённых программ riccati_seqmx.v. Выводятся только сырые
+  Компилируются замкнутые термы над Q из theories/seqmx/inst_Q.v и
+  одноимённых обобщённых программ riccati.v. Выводятся только сырые
   матрицы документом JSON (десятичные дроби, show_json); производные
   величины фигур вычисляются на стороне Typst. Компиляция идёт через
   backend C конвейера CertiRocq, в котором есть сборщик мусора gc_stack;
@@ -12,7 +12,8 @@ Set Warnings "-all".
 From Stdlib Require Import BinNat QArith List Strings.String Strings.Byte.
 From mathcomp.boot Require Import all_boot.
 From CoqEAL Require Import refinements seqmx.
-From Kalman.seqmx Require Import riccati_seqmx experiments kalman_sim kalman_sim_q.
+From Kalman.seqmx Require Import
+  support inverse riccati gramian closed_loop sim inst_Q.
 From KalmanShow Require Import show show_json.
 From CertiRocq.Plugin Require Import CertiRocq.
 

@@ -6,28 +6,28 @@
 
   Все данные прогона строятся внутри Rocq: системные матрицы, начальные условия,
   шумы, истинная траектория, измерения, оценки и ковариации. Шумы порождаются
-  четырёхточечной моделью из `noise.v`
-  (нулевое среднее, второй момент равен заданной скалярной ковариации);
-  конкретная траектория исходов задаётся детерминированным генератором Лемера
-  над двоичными натуральными числами (Stdlib `N`), то есть прогон есть значение
-  случайного процесса в одной точке вероятностного пространства из `noise.v`.
-  Матричная арифметика шага выполняется извлекаемыми seqmx-программами из
-  `riccati_seqmx.v`; OCaml-драйвер лишь переводит результат извлечённого терма в
-  JSON.
+  четырёхточечной моделью из `noise.v` с нулевым средним и вторым моментом,
+  равным заданной скалярной ковариации; конкретная траектория исходов задаётся
+  детерминированным генератором Лемера над двоичными натуральными числами
+  Stdlib `N`, то есть прогон есть значение случайного процесса в одной точке
+  вероятностного пространства из `noise.v`. Матричная арифметика шага
+  выполняется извлекаемыми seqmx-программами из `riccati.v`.
 
   Чётные элементы потока исходов питают шум управления, нечётные шум измерения;
   это соответствует пространству траекторий {ffun 'I_(2T) -> 'I_16} из
   `noise.v`.
+
+  Здесь собрана только часть, не зависящая от коэффициентного типа. Проверки над
+  `rat` живут в `inst_rat.v`, точные прогоны и проверки коридора над `bigQ` в
+  `inst_bigQ.v`.
 *)
 
 From Stdlib Require Import BinNat.
 From mathcomp.boot Require Import all_boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix ssrint.
 From mathcomp Require Import order rat.
-From CoqEAL Require Import hrel param refinements seqmx binrat.
-From Bignums Require Import BigQ.
-From Kalman Require Import noise.
-From Kalman.seqmx Require Import riccati_seqmx.
+From CoqEAL Require Import hrel param refinements seqmx.
+From Kalman.seqmx Require Import support riccati.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -47,7 +47,8 @@ Definition lcg_a : BinNums.N := N.of_nat 75.
 Definition lcg_c : BinNums.N := N.of_nat 74.
 Definition lcg_m : BinNums.N := N.succ (N.pow (N.of_nat 2) (N.of_nat 16)).
 
-Definition lcg_next (s : BinNums.N) : BinNums.N := N.modulo (N.add (N.mul lcg_a s) lcg_c) lcg_m.
+Definition lcg_next (s : BinNums.N) : BinNums.N :=
+  N.modulo (N.add (N.mul lcg_a s) lcg_c) lcg_m.
 
 Definition lcg_out (s : BinNums.N) : nat := N.to_nat (N.modulo s (N.of_nat 16)).
 
@@ -56,7 +57,7 @@ Fixpoint lcg_stream (s : BinNums.N) (k : nat) : seq nat :=
   if k is k'.+1 then lcg_out (lcg_next s) :: lcg_stream (lcg_next s) k'
   else [::].
 
-(* Сравнение Stdlib совпадает с ltn (используется в val4). *)
+(* Сравнение Stdlib совпадает с ltn; используется в val4. *)
 Lemma ltb_ltn (a b : nat) : Nat.ltb a b = (a < b)%N.
 Proof.
   by elim: a b => [|a IH] [|b] //=; rewrite ltnS -IH.
@@ -152,8 +153,8 @@ Fixpoint pair_up (s : seq nat) : seq (nat * nat) :=
   if s is ow :: ov :: rest then (ow, ov) :: pair_up rest else [::].
 
 (*
-  Полный прогон на T шагов: строка начального состояния
-  (измерения ещё нет, вместо него пустая матрица), затем T шагов фильтра.
+  Полный прогон на T шагов: строка начального состояния, в которой измерения
+  ещё нет и вместо него стоит нулевая матрица, затем T шагов фильтра.
 *)
 Definition kalman_sim_run (T : nat) : seq sim_row :=
   let st0 := (sim_x_0, seqmx_0 2 1, sim_P_0) in
@@ -167,9 +168,9 @@ Definition kalman_sim_run (T : nat) : seq sim_row :=
   положения и скорости. Скорость в плоскости x-y поворачивается на угол θ с
   (cos θ, sin θ) = (4/5, 3/5), а положение её интегрирует; по оси z движение с
   постоянной скоростью. Истинная траектория есть винтовая линия: радиус в
-  плоскости x-y ограничен
-  (собственные значения блока поворота равны exp(plus i θ) и exp(minus i θ), оба лежат на единичной окружности),
-  а высота z растёт линейно. Пифагоров угол даёт точную рациональную арифметику
+  плоскости x-y ограничен, поскольку собственные значения блока поворота равны
+  exp(plus i θ) и exp(minus i θ) и оба лежат на единичной окружности, а высота z
+  растёт линейно. Пифагоров угол даёт точную рациональную арифметику
   без чисел с плавающей точкой. Измеряются три положения; обращение
   инновационной ковариации идёт над матрицей 3 x 3, что задействует обращение
   методом Фаддеева-Леверье общего порядка.
@@ -244,8 +245,8 @@ Fixpoint sim3_run_aux (st : @seqmx C * @seqmx C * @seqmx C)
   else [::].
 
 (*
-  Полный трёхмерный прогон на T шагов: начальная строка без измерения
-  (вместо него пустая матрица), затем T шагов фильтра. На шаг приходится шесть
+  Полный трёхмерный прогон на T шагов: начальная строка без измерения, вместо
+  которого стоит нулевая матрица, затем T шагов фильтра. На шаг приходится шесть
   исходов потока.
 *)
 Definition kalman_sim3_run (seed : BinNums.N) (T : nat) : seq sim_row :=
@@ -254,122 +255,3 @@ Definition kalman_sim3_run (seed : BinNums.N) (T : nat) : seq sim_row :=
   head_row :: sim3_run_aux st0 (lcg_stream seed (muln 6 T)).
 
 End EffSim.
-
-(* Проверки над rat: тождества значений шума и формальная проверка коридора. *)
-Section ConcreteRatSim.
-
-  #[local] Instance rat_zero : zero_of rat := 0%R.
-  #[local] Instance rat_one  : one_of rat  := 1%R.
-  #[local] Instance rat_opp  : opp_of rat  := -%R.
-  #[local] Instance rat_add  : add_of rat  := +%R.
-  #[local] Instance rat_mul  : mul_of rat  := *%R.
-  #[local] Instance rat_eq   : eq_of rat   := eqtype.eq_op.
-  #[local] Instance rat_inv  : inv_of rat  := GRing.inv.
-
-  (* Константы cfrac есть отношения натуральных чисел в поле rat. *)
-  Lemma cfrac_ratE (a b : nat) : cfrac (C := rat) GRing.inv a b = a%:R / b%:R.
-  Proof.
-    by rewrite /cfrac !cnat_natr.
-  Qed.
-
-  (* Таблица значений шума управления совпадает с моделью noise.v. *)
-  Lemma wvalE (i : 'I_16) :
-    wval (C := rat) GRing.inv i = noise_val (1%:R / 10%:R) (1%:R / 2%:R) i.
-  Proof.
-    by rewrite /wval /val4 /noise_val !ltb_ltn !cfrac_ratE.
-  Qed.
-
-  (* Таблица значений шума измерения совпадает с моделью noise.v. *)
-  Lemma vvalE (i : 'I_16) :
-    vval (C := rat) GRing.inv i = noise_val (1%:R / 2%:R) (3%:R / 2%:R) i.
-  Proof.
-    by rewrite /vval /val4 /noise_val !ltb_ltn !cfrac_ratE.
-  Qed.
-
-  (* Второй момент шума управления равен Q = 1/10. *)
-  Lemma wvar_eq_Q :
-    (5%:R * (1%:R / 10%:R) ^+ 2 + 3%:R * (1%:R / 2%:R) ^+ 2) / 8%:R
-      = 1%:R / 10%:R :> rat.
-  Proof.
-    by apply/eqP; vm_compute.
-  Qed.
-
-  (* Второй момент шума измерения равен R = 1. *)
-  Lemma vvar_eq_R :
-    (5%:R * (1%:R / 2%:R) ^+ 2 + 3%:R * (3%:R / 2%:R) ^+ 2) / 8%:R
-      = 1%:R :> rat.
-  Proof.
-    by apply/eqP; vm_compute.
-  Qed.
-
-End ConcreteRatSim.
-
-(*
-  Формальная проверка коридора над bigQ.
-
-  Точные вычисления длинного прогона ведутся над `bigQ` (двоичные целые), как и
-  в остальной части проекта: `bigQ` есть вычислимый внутри Rocq аналог
-  применяемого после извлечения zarith `Q.t`. Это тот же обобщённый терм
-  `kalman_sim_run`, который извлекается в OCaml.
-*)
-Section BigQSim.
-
-  (* Обращение матрицы 1 x 1 над bigQ методом Фаддеева-Леверье. *)
-  Definition bigq_cinv (sS : @seqmx bigQ) : @seqmx bigQ :=
-    cinv_fl (C := bigQ) 1 sS.
-
-  Definition bigq_run (T : nat) : seq (sim_row bigQ) :=
-    kalman_sim_run BigQ.inv_norm (fun x : bigQ => x) bigq_cinv T.
-
-  (* Элемент seqmx по индексам. *)
-  Definition sqb_get (s : @seqmx bigQ) (i j : nat) : bigQ :=
-    nth 0%C (nth [::] s i) j.
-
-  (*
-    Проверка коридора для строки прогона: квадрат ошибки по компоненте положения
-    не превосходит четырёх дисперсий, то есть ошибка лежит в коридоре плюс минус
-    два сигма.
-  *)
-  Definition row_in_band (r : sim_row bigQ) : bool :=
-    let: (xt, _, xe, P) := r in
-    let e := (sqb_get xe 0 0 - sqb_get xt 0 0)%C in
-    leq_op (e * e)%C ((cnat 4 : bigQ) * sqb_get P 0 0)%C.
-
-  (*
-    Формальная проверка иллюстрации: на всём прогоне в сорок шагов ошибка оценки
-    положения остаётся в коридоре плюс минус два сигма, построенном по точной
-    ковариации.
-  *)
-  Lemma sim_run_in_band : all row_in_band (bigq_run 40) = true.
-  Proof. by vm_compute. Qed.
-
-  (* Обращение матрицы 3 x 3 над bigQ методом Фаддеева-Леверье. *)
-  Definition bigq_cinv3 (sS : @seqmx bigQ) : @seqmx bigQ :=
-    cinv_fl (C := bigQ) 3 sS.
-
-  Definition bigq_run3 (seed : BinNums.N) (T : nat) : seq (sim_row bigQ) :=
-    kalman_sim3_run BigQ.inv_norm (fun x : bigQ => x) bigq_cinv3 seed T.
-
-  (*
-    Проверка коридора для строки трёхмерного прогона: по каждой из трёх
-    координат положения квадрат ошибки не превосходит четырёх дисперсий, то есть
-    каждая координата ошибки лежит в коридоре плюс минус два сигма.
-  *)
-  Definition row_in_band3 (r : sim_row bigQ) : bool :=
-    let: (xt, _, xe, P) := r in
-    let ex := (sqb_get xe 0 0 - sqb_get xt 0 0)%C in
-    let ey := (sqb_get xe 2 0 - sqb_get xt 2 0)%C in
-    let ez := (sqb_get xe 4 0 - sqb_get xt 4 0)%C in
-    [&& leq_op (ex * ex)%C ((cnat 4 : bigQ) * sqb_get P 0 0)%C,
-        leq_op (ey * ey)%C ((cnat 4 : bigQ) * sqb_get P 2 2)%C
-      & leq_op (ez * ez)%C ((cnat 4 : bigQ) * sqb_get P 4 4)%C].
-
-  (*
-    Формальная проверка иллюстрации: на всём трёхмерном прогоне в сорок шагов
-    каждая координата ошибки оценки положения остаётся в коридоре плюс минус два
-    сигма, построенном по точной ковариации.
-  *)
-  Lemma sim3_run_in_band : all row_in_band3 (bigq_run3 sim3_seed 30) = true.
-  Proof. by vm_compute. Qed.
-
-End BigQSim.

@@ -5,8 +5,8 @@ Compiles the verified Kalman filter programs to C(light) with
 addition to the OCaml extraction in `extraction/ocaml`.
 
 The compiled Gallina terms are the closed `Q` instantiations from
-`theories/seqmx/kalman_sim_q.v` — the same generic seqmx programs of
-`riccati_seqmx.v`/`kalman_sim.v`, only the coefficient type differs:
+`theories/seqmx/inst_Q.v` — the same generic seqmx programs of
+`riccati.v`/`sim.v`, only the coefficient type differs:
 
 - `q_dare_iters 36` — DARE iterations (the data of `dare_convergence.json`);
 - `q_run 40` — the 2D constant-velocity run (`kalman_run.json`);
@@ -28,11 +28,11 @@ The runtime closure of the theory contains no opaque proofs of
 computational sort, so CertiRocq accepts the literally-proven programs.
 This took three source-level choices (all value-preserving, proven so):
 
-- `iscalar_seqmx`/`iseqmx1` (`riccati_seqmx.v`) build scalar matrices by
+- `iscalar_seqmx`/`iseqmx1` (`support.v`) build scalar matrices by
   `iota`/`eqn` instead of CoqEAL's `mkseqmx_ord` ordinal enumeration,
   whose `insub_eq`/`idP` path is opaque `reflect` (Set-sorted, so not
   erasable, and Qed bodies are invisible to MetaRocq quoting);
-- `val4` (`kalman_sim.v`) compares outcomes with `Nat.ltb`: mathcomp's
+- `val4` (`sim.v`) compares outcomes with `Nat.ltb`: mathcomp's
   `ltn` unfolds to `eq_op` on the nat eqType structure with opaque
   `eqnP` (bridge lemma `ltb_ltn`);
 - dimension literals of `@hmul_op` carry `%N`: under `ring_scope` they

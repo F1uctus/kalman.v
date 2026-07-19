@@ -9,7 +9,7 @@
   (комплексный случай, `conj := conjC`) здесь записано как `map_mx conj M^T`,
   поскольку `M^t*` есть обозначение для `map_mx conjC M^T`. Это общий слой:
   `kalman.v` получает свои операторы подстановкой `conj := conjC` над
-  `numClosedFieldType`, а вычислимое уточнение (`seqmx/riccati_seqmx.v`)
+  `numClosedFieldType`, а вычислимое уточнение (`seqmx/riccati.v`)
   подставляет `conj := idfun` над полем `rat` или арифметикой `bigQ`.
 
   Леммы с суффиксом `E` есть определяющие равенства операторов: они

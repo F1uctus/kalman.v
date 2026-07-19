@@ -6,8 +6,8 @@ of the raw-matrix figure data alongside the wired OCaml driver in
 `extraction/ocaml`.
 
 The compiled Gallina terms are the closed `Q` instantiations from
-`theories/seqmx/kalman_sim_q.v`, the same generic seqmx programs of
-`riccati_seqmx.v`/`kalman_sim.v` that `extraction/c` already compiles to
+`theories/seqmx/inst_Q.v`, the same generic seqmx programs of
+`riccati.v`/`sim.v` that `extraction/c` already compiles to
 native C. Only the target changes: the C(light) that CertiRocq emits is
 cross-compiled with clang for `wasm32-wasi` and executed by `wasmtime`
 instead of running natively. See `extraction/c/README.md` for the
@@ -96,8 +96,9 @@ make all       # build and run all eight experiments
 make dare      # or build a single experiment
 ```
 
-For each experiment, `make all` compiles `theories/seqmx/kalman_sim_q.vo`
-and `theories/seqmx/experiments.vo` in the CertiRocq switch, compiles
+For each experiment, `make all` compiles `theories/seqmx/inst_Q.vo`,
+`theories/seqmx/gramian.vo` and `theories/seqmx/closed_loop.vo` in the
+CertiRocq switch, compiles
 `kalman_wasm.v` with `rocq c` to obtain a CertiRocq C term and its glue
 code under `generated/`, cross-compiles that C with clang into a
 `wasm32-wasi` binary linked against CertiRocq's runtime sources, then runs

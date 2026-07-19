@@ -6,7 +6,7 @@
 // trajectory, the noisy measurements, and the filter estimate in space.
 //
 // Data: paper/data/kalman_run_3d.json, emitted by extraction/ocaml/driver.exe
-// from the extracted verified program theories/seqmx/kalman_sim.v
+// from the extracted verified program theories/seqmx/sim.v
 // (kalman_sim3_run). The 6D state is (x, vx, y, vy, z, vz): the velocity rotates
 // in the x-y plane (Pythagorean angle cos = 4/5, sin = 3/5) while position
 // integrates it and z is constant-velocity, so the true path is a helix. Three

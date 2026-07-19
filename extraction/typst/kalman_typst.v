@@ -19,7 +19,7 @@ From Typst Require Export Core Mathcomp Analysis CoqEAL Infotheo.
 From Kalman Require Import mxnotation mxdefinite mxherm mxloewner spectral
   mxfrob mxtopo mxmonotone riccati_def riccati_cont riccati_mono obsv_bound
   lyapunov gramian_infty detectability spec_rad dare kalman duality faddeev.
-From Kalman.seqmx Require Import riccati_seqmx.
+From Kalman.seqmx Require Import support inverse riccati.
 
 Elpi Accumulate typst.db lp:{{
 
@@ -40,7 +40,7 @@ pp-app _ GR Args S :- gsuf "expectation.Exp" GR, std.last Args X, !,
 :before "pp-app.fallback"
 pp-app Ctx GR Args S :- gsuf "mx_mono_lim" GR, std.last Args Seq, !,
   ( Seq = fun N T Bo, !, coq.name->id N Nm, q Nm QNm,
-    @pi-decl N T x\ (name-of x Nm :- !) => pp 41 (Bo x) SB,
+    @pi-decl N T x\ ((name-of x Nm :- !) => pp 41 (Bo x) SB),
     style-fmt "limit" [QNm, SB] RAW
   ; pp 41 Seq SB, RAW is "lim " ^ SB ),
   paren Ctx 25 RAW S.
@@ -62,7 +62,7 @@ pp-app _ GR [_, N, L] S :- gsuf "spectral.diag" GR, !,
   S is DN ^ "(" ^ LL ^ "_1, dots.h, " ^ LL ^ "_" ^ NN ^ ")".
 % вложение натурального числа в абстрактное кольцо  cnat n  ->  n
 :before "pp-app.fallback"
-pp-app Ctx GR Args S :- gsuf "riccati_seqmx.cnat" GR, std.last Args J, !,
+pp-app Ctx GR Args S :- gsuf "support.cnat" GR, std.last Args J, !,
   pp Ctx J S.
 % квадрат нормы Фробениуса  frob_sq M = tr (M† M)  ->  norm(M)_F^2
 % (печатается как единый символ, без раскрытия в форму со следом)
@@ -121,10 +121,10 @@ const-notation "dare.kf_run" "kf_run" ncall 1.
 const-notation "kalman.kf_step" "kf_step" ncall 3.
 const-notation "gramian_infty.ctrl_gram_infty" "W_\"c\"" nbare 0.
 const-notation "riccati_def.riccati_step" "op(\"Ric\")" npartial 1.
-const-notation "riccati_seqmx.fl_M" "M" nsub 1.
-const-notation "riccati_seqmx.cinv_fl" "cinv_fl" ncall 2.
-const-notation "riccati_seqmx.update_cov_seqmx" "update_cov_seqmx" ncall 1.
-const-notation "riccati_seqmx.predict_cov_seqmx" "predict_cov_seqmx" ncall 1.
+const-notation "inverse.fl_M" "M" nsub 1.
+const-notation "inverse.cinv_fl" "cinv_fl" ncall 2.
+const-notation "riccati.update_cov_seqmx" "update_cov_seqmx" ncall 1.
+const-notation "riccati.predict_cov_seqmx" "predict_cov_seqmx" ncall 1.
 
 
 % переопределение обозначений
@@ -239,10 +239,10 @@ target "riccati_mono" "lemma" "riccati_iter0_mono".
 target "riccati_mono" "lemma" "riccati_step_mono".
 target "riccati_mono" "lemma" "riccati_step_psd".
 target "riccati_mono" "lemma" "update_cov_mono".
-target "seqmx/riccati_seqmx" "def" "cinv_fl".
-target "seqmx/riccati_seqmx" "def" "riccati_step_seqmx".
-target "seqmx/riccati_seqmx" "lemma" "cinv_fl_correct".
-target "seqmx/riccati_seqmx" "lemma" "cinv_fl_correct1".
+target "seqmx/inverse" "def" "cinv_fl".
+target "seqmx/inverse" "lemma" "cinv_fl_correct".
+target "seqmx/inverse" "lemma" "cinv_fl_correct1".
+target "seqmx/riccati" "def" "riccati_step_seqmx".
 target "spec_rad" "def" "spec_rad_lt1".
 target "spec_rad" "lemma" "lyap_partial_le_bnd_schur".
 target "spec_rad" "lemma" "schur_stable_pow_cvgn".

@@ -104,7 +104,7 @@
 
 #v(4pt)
 
-#slide-snippet("seqmx/riccati_seqmx.v", "ex_two_val", proof: true)
+#slide-snippet("seqmx/inst_rat.v", "ex_two_val", proof: true)
 
 #note("backup-dare-ex")
 

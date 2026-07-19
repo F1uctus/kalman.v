@@ -33,7 +33,7 @@ smoke:
 
 theories-vo:
 	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
-	    theories/seqmx/kalman_sim_q.vo
+	    theories/seqmx/inst_Q.vo
 
 kalman:
 	mkdir -p generated

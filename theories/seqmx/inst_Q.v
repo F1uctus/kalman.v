@@ -2,34 +2,33 @@
   Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
   SPDX-License-Identifier: GPL-3.0-or-later
 
-  Инстанцирование исполняемых программ фильтра Калмана на рациональных
+  Инстанцирование исполнимых программ фильтра Калмана на рациональных
   числах Q из Stdlib для компиляции в C через CertiRocq.
 
-  Термы те же обобщённые программы из riccati_seqmx.v и kalman_sim.v;
-  меняется только коэффициентный тип. Компилировать прогон прямо на
-  bigQ нельзя: конвейер CertiRocq по умолчанию не переводит
-  коиндуктивные типы (замыкание bigQ содержит поток из StreamMemo,
-  память операций BigN), а необязательный перевод (ключ -unsafe-erasure)
-  делает арифметику Bignums непригодно медленной: ленивые вызовы
-  переводятся простыми замыканиями без запоминания результата.
-  Двоичная арифметика Q компилируется конвейером по умолчанию, в
-  котором верифицированы все проходы стирания. Сложение, вычитание и
-  умножение на Q сокращают дробь через Qred, поэтому размеры числителей
+  Термы те же обобщённые программы из riccati.v и sim.v; меняется только
+  коэффициентный тип. Компилировать прогон прямо на bigQ нельзя: конвейер
+  CertiRocq по умолчанию не переводит коиндуктивные типы, поскольку замыкание
+  bigQ содержит поток из StreamMemo, то есть память операций BigN, а
+  необязательный перевод по ключу -unsafe-erasure делает арифметику Bignums
+  непригодно медленной: ленивые вызовы переводятся простыми замыканиями без
+  запоминания результата. Двоичная арифметика Q компилируется конвейером по
+  умолчанию, в котором верифицированы все проходы стирания. Сложение, вычитание
+  и умножение на Q сокращают дробь через Qred, поэтому размеры числителей
   и знаменателей растут так же, как над bigQ.
 
   Совпадение значений с доказанными термами над bigQ закреплено через
   vm_compute: прогоны сверены леммами q_run_eq_bigq и q_run3_eq_bigq с
-  bigq_run и bigq_run3 (те удовлетворяют проверкам коридора
-  sim_run_in_band и sim3_run_in_band), а итерации ДАУР леммой
+  bigq_run и bigq_run3, которые удовлетворяют проверкам коридора
+  sim_run_in_band и sim3_run_in_band, а итерации ДАУР леммой
   q_dare_iters_eq_bigq с итерациями riccati_step_seqmx на bigQ,
-  уточнение которой доказано в riccati_seqmx.v (riccati_iter_seqmxC).
+  уточнение которой доказано в inst_bigQ.v (riccati_iter_seqmxC).
 *)
 
 From Stdlib Require Import BinNat QArith Qreduction.
 From mathcomp.boot Require Import all_boot.
 From CoqEAL Require Import refinements seqmx binrat.
 From Bignums Require Import BigQ.
-From Kalman.seqmx Require Import riccati_seqmx kalman_sim.
+From Kalman.seqmx Require Import support inverse riccati sim inst_bigQ.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -53,7 +52,7 @@ Section QRun.
 Definition q_cinv  : @seqmx Q -> @seqmx Q := cinv_fl (C := Q) 1.
 Definition q_cinv3 : @seqmx Q -> @seqmx Q := cinv_fl (C := Q) 3.
 
-(* Прогон и трёхмерный прогон из kalman_sim.v при C := Q. *)
+(* Прогон и трёхмерный прогон из sim.v при C := Q. *)
 Definition q_run (T : nat) : seq (sim_row Q) :=
   kalman_sim_run Qinv (fun x : Q => x) q_cinv T.
 
@@ -61,9 +60,8 @@ Definition q_run3 (seed : BinNums.N) (T : nat) : seq (sim_row Q) :=
   kalman_sim3_run Qinv (fun x : Q => x) q_cinv3 seed T.
 
 (*
-  Итерации ДАУР на системе прогона с нулевым начальным условием;
-  тот же расчёт выполняет драйвер extraction/ocaml/driver.ml для
-  фигуры сходимости.
+  Итерации ДАУР на системе прогона с нулевым начальным условием; тот же расчёт
+  питает фигуру сходимости.
 *)
 Definition q_dare_P0 : @seqmx Q := [:: [:: 0%C; 0%C]; [:: 0%C; 0%C]].
 
@@ -107,7 +105,7 @@ Proof. by vm_compute. Qed.
 
 (*
   Итерации ДАУР исходной программы riccati_step_seqmx на bigQ; их
-  уточнение доказано в riccati_seqmx.v (riccati_iter_seqmxC).
+  уточнение доказано в inst_bigQ.v (riccati_iter_seqmxC).
 *)
 Definition bigq_dare_P0 : @seqmx bigQ := [:: [:: 0%C; 0%C]; [:: 0%C; 0%C]].
 

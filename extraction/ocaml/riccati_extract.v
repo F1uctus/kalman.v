@@ -5,10 +5,10 @@
   коэффициентный тип и кольцевые операции - параметры словаря, поэтому в коде
   программы нет `Obj.magic`, а коэффициент подставляется в OCaml (zarith `Q.t`,
   вычислимый аналог `bigQ`). Это тот же терм, который над `bigQ` доказанно
-  уточняет спецификацию (`riccati_seqmx.riccati_iter_seqmxC`).
+  уточняет спецификацию (`inst_bigQ.riccati_iter_seqmxC`).
 *)
 Set Warnings "-all".
-From Kalman.seqmx Require Import riccati_seqmx experiments kalman_sim.
+From Kalman.seqmx Require Import support inverse riccati gramian closed_loop sim.
 Require Extraction.
 
 Extraction Language OCaml.
@@ -27,7 +27,7 @@ Extract Inductive nat => "int" [ "0" "Stdlib.Int.succ" ]
   "(fun fO fS n -> if n=0 then fO () else fS (n-1))".
 
 (*
-  Двоичные числа positive/N/Z генератора Лемера (kalman_sim.v) отображаются
+  Двоичные числа positive/N/Z генератора Лемера (sim.v) отображаются
   в int OCaml; значения генератора не превосходят модуля 65537.
 *)
 From Stdlib Require Import ExtrOcamlZInt.

@@ -41,7 +41,7 @@
 // Live statistics of the formalization
 // сounted at compile time from the sources.
 
-// Module names from the `(modules ...)` stanza of `dune` file. Names like `seqmx/riccati_seqmx` are kept verbatim
+// Module names from the `(modules ...)` stanza of `dune` file. Names like `seqmx/riccati` are kept verbatim
 // (rocq-src resolves them under `/theories/`).
 #let rocq-theory-modules() = {
   let dune = read("/theories/dune")

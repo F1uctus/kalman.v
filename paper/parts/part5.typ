@@ -94,11 +94,11 @@
 исполнимый полушаг предсказания над слоем операций (`hmul_op`, `add_seqmx`,
 `ctr_seqmx`):
 
-#rocq-snippet("seqmx/riccati_seqmx.v", "Definition predict_cov_seqmx ")
+#rocq-snippet("seqmx/riccati.v", "Definition predict_cov_seqmx ")
 
 Полный исполнимый шаг Риккати складывается из таких же полушагов:
 
-#rocq-definition("seqmx/riccati_seqmx.v", "riccati_step_seqmx")
+#rocq-definition("seqmx/riccati.v", "riccati_step_seqmx")
 
 Соответствие спецификации устанавливается теоремой уточнения: при
 `conj := conjC` исполнимый шаг вычисляет в точности `riccati_step` из
@@ -106,7 +106,7 @@
 отношением `Rseqmx`.
 
 #rocq-corollary(
-  "seqmx/riccati_seqmx.v",
+  "seqmx/riccati.v",
   "kalman_riccati_step_seqmx_correct",
   proof: false,
 )
@@ -116,13 +116,13 @@
 $F = 2$, $G = H = Q = R = P_0 = 1$ шаг итерации задаётся подстановкой
 коэффициентов:
 
-#rocq-snippet("seqmx/riccati_seqmx.v", "Definition ex_step ")
+#rocq-snippet("seqmx/inst_rat.v", "Definition ex_step ")
 
 Два шага скалярного ДАУР из $P_0 = 1$ дают $5\/6$, затем $13\/16$; значение
 вычислено `vm_compute` и связано со спецификацией леммой `ex_iter_correct`:
 
-#rocq-snippet("seqmx/riccati_seqmx.v", "Definition ex_two ")
-#rocq-snippet("seqmx/riccati_seqmx.v", "Lemma ex_two_val ", proof: false)
+#rocq-snippet("seqmx/inst_rat.v", "Definition ex_two ")
+#rocq-snippet("seqmx/inst_rat.v", "Lemma ex_two_val ", proof: false)
 
 == Обращение матрицы <sec:extract-types>
 
@@ -167,11 +167,11 @@ $0^(-1) = 0$.
 Исполнимый двойственный `cinv_fl` повторяет ту же рекурренту на слое операций
 CoqEAL и уточняет сначала `fl_inv`, а через него и `invmx`:
 
-#rocq-definition("seqmx/riccati_seqmx.v", "cinv_fl")
+#rocq-definition("seqmx/inverse.v", "cinv_fl")
 
-#rocq-lemma("seqmx/riccati_seqmx.v", "cinv_fl_correct", proof: false)
+#rocq-lemma("seqmx/inverse.v", "cinv_fl_correct", proof: false)
 
-#rocq-lemma("seqmx/riccati_seqmx.v", "cinv_fl_correct1", proof: false)
+#rocq-lemma("seqmx/inverse.v", "cinv_fl_correct1", proof: false)
 
 Сторона `S in unitmx` берётся из спецификации: `kalman.innov_cov_pd` даёт
 обратимость инновационной ковариации. Это не нарушает корректности: уточнение
@@ -210,7 +210,7 @@ CoqEAL и уточняет сначала `fl_inv`, а через него и `i
 
 #pagebreak()
 
-#rocq-snippet("seqmx/experiments.v", "Definition closed_loop_seqmx ")
+#rocq-snippet("seqmx/closed_loop.v", "Definition closed_loop_seqmx ")
 
 Написанная вручную прослойка на #OCaml запускает извлечённые программы и
 сохраняет результат в формате `JSON`:

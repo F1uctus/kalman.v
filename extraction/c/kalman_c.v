@@ -1,13 +1,13 @@
 (*
   Точки входа CertiRocq для фильтра Калмана.
 
-  Компилируются замкнутые термы над Q из theories/seqmx/kalman_sim_q.v:
+  Компилируются замкнутые термы над Q из theories/seqmx/inst_Q.v:
   итерации ДАУР q_dare_iters (37 значений, как в dare_convergence.json),
   прогон q_run в сорок шагов и трёхмерный прогон q_run3 в тридцать
   шагов с посевом sim3_seed. Их значения совпадают с доказанными
   термами над bigQ (леммы q_run_eq_bigq, q_run3_eq_bigq,
   q_dare_iters_eq_bigq), которые удовлетворяют проверкам коридора
-  (sim_run_in_band, sim3_run_in_band) и уточнению из riccati_seqmx.v
+  (sim_run_in_band, sim3_run_in_band) и уточнению из inst_bigQ.v
   (riccati_iter_seqmxC). Конвейер по умолчанию: все проходы стирания
   верифицированы.
 
@@ -20,7 +20,7 @@ From Stdlib Require Import BinNat QArith List Strings.String Strings.Byte.
 From mathcomp.boot Require Import all_boot.
 From CoqEAL Require Import refinements seqmx.
 From Bignums Require Import BigQ.
-From Kalman.seqmx Require Import kalman_sim kalman_sim_q.
+From Kalman.seqmx Require Import sim inst_Q.
 From KalmanShow Require Import show.
 From CertiRocq.Plugin Require Import CertiRocq.
 
