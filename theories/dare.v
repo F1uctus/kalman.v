@@ -9,21 +9,21 @@
   - $ R_e = R + H P_pss H† $
 
   - `P_ss := mx_mono_lim (fun k => iter k riccati_step 0)` - предел монотонной
-    траектории `iter k riccati_step 0` в матричной топологии
-    (получается через `mxmonotone.mx_mono_cvgn`).
+    траектории `iter k riccati_step 0` в матричной топологии (получается через
+    `mxmonotone.mx_mono_cvgn`).
   - `P_ss_cvgn` - сходимость итерации из нуля к $P_ss$.
   - `P_ss_psd` - неотрицательная определённость предельной матрицы.
-  - `P_ss_fix` - $P_ss = "riccati_step" P_ss$
-    (по непрерывности шага Риккати и единственности предела в матричной топологии).
+  - `P_ss_fix` - $P_ss = "riccati_step" P_ss$ (по непрерывности шага Риккати и
+    единственности предела в матричной топологии).
 
   Схема.
   1.  Равномерная верхняя оценка `Pseq_bnd` - для каждой итерации
       $"iter" k "riccati_step" 0 prec.eq P_bnd$ в порядке Лёвнера. Эта оценка
       выводится из спектральной устойчивости по Шуру замкнутого контура
-      $M_c = (E - K_0 H) F$
-      (`spec_rad_lt1 Mc`, для стабилизирующего усиления $K_0$), а не из
-      контракции системной матрицы $"frob_sq" F < 1$: выделение полного квадрата
-      даёт $"riccati_step" Sigma prec.eq M_c Sigma M_c† + W_c$, откуда
+      $M_c = (E - K_0 H) F$ (`spec_rad_lt1 Mc`, для стабилизирующего усиления
+      $K_0$), а не из контракции системной матрицы $"frob_sq" F < 1$: выделение
+      полного квадрата даёт $"riccati_step" Sigma prec.eq M_c Sigma M_c† + W_c$,
+      откуда
       $"iter" k "riccati_step" 0 prec.eq "lyap_partial" M_c W_c k prec.eq P_bnd$,
       где $P_bnd$ - равномерная мажоранта из суммируемости грамиана при
       устойчивости по Шуру - (`lyap_partial_le_bnd_schur`, spec_rad.v);
@@ -104,16 +104,16 @@ Section DARE.
 
     - @kailath2000[App. E, Theorem E.6.2 "Positive Definite Solution"].
 
-    Полная управляемость пары процессного шума `(F, G Q^½)`
-    (через неотрицательно определённый вес $G Q G†$) влечёт положительную
+    Полная управляемость пары процессного шума `(F, G Q^½)` (через
+    неотрицательно определённый вес $G Q G†$) влечёт положительную
     определённость $P_ss$. Существование лишь _неотрицательно_ определённого
     стабилизирующего решения дано в Theorem E.5.1.
   *)
   Hypothesis FG_ctrl : controllable F (G *m Q *m G^t*).
 
   (*
-    Неотрицательная определённость веса процессного шума
-    (из `Q_psd`, без положительно определённого возмущения).
+    Неотрицательная определённость веса процессного шума (из `Q_psd`, без
+    положительно определённого возмущения).
   *)
   Lemma GQGt_psd : psd (G *m Q *m G^t*).
   Proof.
@@ -130,20 +130,19 @@ Section DARE.
     Детектируемость влечёт стабилизирующее усиление и устойчивость по Шуру
     замкнутого контура.
 
-    Требуем детектируемость пары F_detectable : detectable F H
-    (PBH: каждый собственный вектор $F$ с $|λ| >= 1$ наблюдаем через $H$).
-    Отсюда `detectable_stabilizing_filter` даёт стабилизирующее усиление $K_0$,
+    Требуем детектируемость пары F_detectable : detectable F H (PBH: каждый
+    собственный вектор $F$ с $|λ| >= 1$ наблюдаем через $H$). Отсюда
+    `detectable_stabilizing_filter` даёт стабилизирующее усиление $K_0$,
     делающее апостериорный замкнутый контур $M_c := (E - K_0 H) F$ спектрально
     устойчивым по Шуру. Выделение полного квадрата по $K_0$ даёт неравенство
     $"riccati_step" Sigma prec.eq M_c Sigma M_c† + W_c$,
     $W_c := (E - K_0 H) G Q G† (E - K_0 H)† + K_0 R K_0†$, откуда следует
-    равномерная мажоранта $P_bnd$
-    (через суммируемость грамиана при устойчивости по Шуру, `lyap_partial_le_bnd_schur`).
-    Суперрешение
-    (матрица $X$ с $"riccati_step" X prec.eq X$, мажорирующая итерацию сверху)
-    строится как $"lyap_sol" M_c W_c + a ("lyap_sol" M_c E)$ (см. ниже): это
-    возмущение по Ляпунову замкнутого контура, корректное для любого устойчивого
-    по Шуру $M_c$.
+    равномерная мажоранта $P_bnd$ (через суммируемость грамиана при устойчивости
+    по Шуру, `lyap_partial_le_bnd_schur`). Суперрешение (матрица $X$ с
+    $"riccati_step" X prec.eq X$, мажорирующая итерацию сверху) строится как
+    $"lyap_sol" M_c W_c + a ("lyap_sol" M_c E)$ (см. ниже): это возмущение по
+    Ляпунову замкнутого контура, корректное для любого устойчивого по Шуру
+    $M_c$.
 
     - @kailath2000[§ 14.5].
   *)
@@ -379,9 +378,8 @@ Section DARE.
     (*
       Выделение полного квадрата (Lem 14.5.1 для произвольного `K`): один
       предсказательный шаг Риккати мажорируется замкнутым контуром наблюдателя.
-      $"update_cov" <= "alt_update_cov"_K$
-      (разность $(K - K_f) R_e (dot)†$ есть конгруэнция $R_e succ.eq 0$), далее
-      монотонность `predict_cov` и тождество
+      $"update_cov" <= "alt_update_cov"_K$ (разность $(K - K_f) R_e (dot)†$ есть
+      конгруэнция $R_e succ.eq 0$), далее монотонность `predict_cov` и тождество
       $F dot "alt_update_cov"_K (Sigma F† + G Q G†) = M Sigma M† + W$.
     *)
     Lemma pred_update_le (Sigma : 'M[ℂ]_n) :
@@ -454,8 +452,8 @@ Section DARE.
 
     (*
       Факт (b), конечная (грамианная) форма: нулевая Риккати-итерация <=
-      конечный управляемый Грамиан замкнутого контура любого усиления $K$
-      (= ковариация суб-оптимального наблюдателя).
+      конечный управляемый Грамиан замкнутого контура любого усиления $K$ (=
+      ковариация суб-оптимального наблюдателя).
     *)
     Lemma riccati_iter_le_lyap_partial k :
       psd_le (iter k (riccati_step F G H Q R) 0)
@@ -656,7 +654,7 @@ Section DARE.
     exact: P_ss_fix.
   Qed.
 
-  (* Свёртка усиления: F (E - K_f H) = F_p. *)
+  (* Свёртка усиления: $F (E - K_f H) = F_p$. *)
   Lemma F_update_factor : F *m (1%:M - K_f *m H) = F_p.
   Proof.
     by rewrite mulmxBr mulmx1 mulmxA.
@@ -836,8 +834,8 @@ Section DARE.
   Qed.
 
   (*
-    Верхняя траектория из $X_oo + a E$ монотонно убывает к P_ss
-    (через mx_mono_dec_cvgn + P_ss_unique).
+    Верхняя траектория из $X_oo + a E$ монотонно убывает к P_ss (через
+    `mx_mono_dec_cvgn` + `P_ss_unique`).
 
     Неотрицательная определённость и монотонное убывание для любого
     вещественного $a >= 0$.
@@ -935,7 +933,7 @@ Section DARE.
   Qed.
 
   (*
-    Главное следствие: Pup_lim = P_ss. Единственность неотрицательно
+    Главное следствие: $"Pup_lim" = P_ss$. Единственность неотрицательно
     определённой неподвижной точки (`P_ss_unique`) - `Pup_lim` неотрицательно
     определена (`Pup_lim_psd`) и неподвижна (`Pup_lim_fix`).
   *)
@@ -969,26 +967,26 @@ Section DARE.
   Theorem riccati_iter_cvgn (P_0 : 'M[ℂ]_n) (HP_0 : psd P_0) :
     (fun k => iter k (riccati_step F G H Q R) P_0) @ \oo --> P_ss.
   (*
-    Показываем, что $X_oo + a Y_oo$
-    ($X_oo := "lyap_sol" M_c W_c$, $Y_oo := "lyap_sol" M_c E$, $a >= 0$) -
-    суперрешение, то есть $"riccati_step"(X_oo + a Y_oo) <= X_oo + a Y_oo$
-    (`riccati_step_supersol`). Тогда верхняя траектория
-    $"iter"_k "riccati_step"(X_oo + a Y_oo)$ монотонно убывает и сходится к
-    неподвижной точке $L$ (через mxmonotone.mx_mono_dec_cvgn). По единственности
-    положительно определённой неподвижной точки `P_ss_unique` имеем $L = P_ss$.
-    Для произвольного неотрицательно определённого $P_0$ берём $a := "tr" P_0$
-    (тогда $P_0 <= a E <= a Y_oo <= X_oo + a Y_oo$, т.к. $E <= Y_oo$); теорема о
-    двух милиционерах с `iter k r.s. 0` и оценкой $"frob_sq" <= ("tr")^2$ даёт
+    Показываем, что $X_oo + a Y_oo$ ($X_oo := "lyap_sol" M_c W_c$,
+    $Y_oo := "lyap_sol" M_c E$, $a >= 0$) - суперрешение, то есть
+    $"riccati_step"(X_oo + a Y_oo) <= X_oo + a Y_oo$ (`riccati_step_supersol`).
+    Тогда верхняя траектория $"iter"_k "riccati_step"(X_oo + a Y_oo)$ монотонно
+    убывает и сходится к неподвижной точке $L$ (через
+    mxmonotone.mx_mono_dec_cvgn). По единственности положительно определённой
+    неподвижной точки `P_ss_unique` имеем $L = P_ss$. Для произвольного
+    неотрицательно определённого $P_0$ берём $a := "tr" P_0$ (тогда
+    $P_0 <= a E <= a Y_oo <= X_oo + a Y_oo$, т.к. $E <= Y_oo$); теорема о двух
+    милиционерах с `iter k r.s. 0` и оценкой $"frob_sq" <= ("tr")^2$ даёт
     сходимость к $P_ss$. Суперрешение работает при спектральной устойчивости по
-    Шуру замкнутого контура `spec_rad_lt1 Mc`
-    (а не системной $"frob_sq" F < 1$): возмущение по Ляпунову $Y_oo$ заменяет
-    скаляр $E$, не требуя оценки операторной нормы $M_c$.
+    Шуру замкнутого контура `spec_rad_lt1 Mc` (а не системной
+    $"frob_sq" F < 1$): возмущение по Ляпунову $Y_oo$ заменяет скаляр $E$, не
+    требуя оценки операторной нормы $M_c$.
   *)
   Proof.
     pose a : ℂ := \tr P_0.
     have a_ge0 : 0 <= a := psd_tr_ge0 HP_0.
     have a_real : a \is Num.real by exact: ger0_real.
-    (* P_0 <= a E <= a Y_inf <= X_inf + a Y_inf (старт верхней траектории). *)
+    (* $P_0 <= a E <= a Y_inf <= X_inf + a Y_inf$ (старт верхней траектории). *)
     have P_0_le_aI : psd_le P_0 (a *: (1%:M : 'M[ℂ]_n)) := psd_le_trace_id HP_0.
     have HX_inf0 : psd_le 0 X_inf by apply/psd_le0_psd; exact: X_inf_psd.
     have aI_le_aY : psd_le (a *: (1%:M : 'M[ℂ]_n)) (a *: Y_inf)
@@ -1034,7 +1032,7 @@ Section DARE.
                 - iter k (riccati_step F G H Q R) 0) @ \oo --> (0 : 'M[ℂ]_n).
       have := cvgn_submx Ucvg Lcvg.
       by rewrite subrr.
-    (* tr(U_k - L_k) -> 0. *)
+    (* $tr(U_k - L_k) -> 0$. *)
     have trUL_cvg :
         (fun k => \tr (iter k (riccati_step F G H Q R) (X_inf + a *: Y_inf)
                       - iter k (riccati_step F G H Q R) 0))
@@ -1046,7 +1044,7 @@ Section DARE.
           @ \oo --> (0 : ℂ).
       have htr0 : \tr (0 : 'M[ℂ]_n) = (0 : ℂ) by rewrite mxtrace0.
       by rewrite -htr0.
-    (* tr(X_k - L_k) -> 0 через теорему о двух милиционерах. *)
+    (* $tr(X_k - L_k) -> 0$ через теорему о двух милиционерах. *)
     pose XL k := iter k (riccati_step F G H Q R) P_0
                 - iter k (riccati_step F G H Q R) 0.
     pose UL k := iter k (riccati_step F G H Q R) (X_inf + a *: Y_inf)
@@ -1070,13 +1068,13 @@ Section DARE.
       - by move=> k; apply: psd_tr_ge0; exact: XL_psd.
       - exact: XL_le_UL.
       - exact: trUL_cvg0.
-    (* frob_sq (XL k) <= (tr(XL k))² -> 0. *)
+    (* $frob_sq (X_k - L_k) <= (tr(X_k - L_k))² -> 0$. *)
     have frob_XL_cvg0 :
         (fun k => frob_sq (XL k)) @ \oo --> (0 : ℂ).
       apply: (cvgC_le0_squeeze (t := fun k => (\tr (XL k)) ^+ 2)).
       - by move=> k; exact: frob_sq_ge0.
       - by move=> k; apply: frob_sq_le_tr_sq; exact: XL_psd.
-      - (* (tr(XL k))² -> 0² = 0. *)
+      - (* $(tr(X_k - L_k))² -> 0² = 0$. *)
         have trXL_cvg0_o :
             ((fun k => \tr (XL k)) : nat -> ℂ^o) @ \oo --> (0 : ℂ^o)
           := trXL_cvg0.
@@ -1087,13 +1085,15 @@ Section DARE.
         suff -> : (fun k : nat => (\tr (XL k)) ^+ 2)
                 = (fun k => \tr (XL k) * \tr (XL k)) by exact: H_mul0.
         by apply/funext=> k; rewrite expr2.
-    (* X_k - L_k -> 0 в матричной топологии. *)
+    (* $X_k - L_k -> 0$ в матричной топологии. *)
     have XL_cvg :
         (fun k => XL k) @ \oo --> (0 : 'M[ℂ]_n).
       have := @frob_sq_cvgn0_to_mxcvgn ℂ n n XL (0 : 'M[ℂ]_n).
       apply.
       by under eq_cvg=> k do rewrite subr0.
-    (* iter k r.s. P_0 = XL k + iter k r.s. 0 -> 0 + P_ss = P_ss. *)
+    (*
+      $"iter" k "r.s". P_0 = X_k - L_k + "iter" k "r.s". 0 -> 0 + P_ss = P_ss$.
+    *)
     have decomp :
         (fun k => iter k (riccati_step F G H Q R) P_0)
       = (fun k => XL k + iter k (riccati_step F G H Q R) 0).
@@ -1337,11 +1337,11 @@ Section DARE.
   (*
     Стабильность замкнутого контура F_p.
     $P_pss = F_p dot P_pss dot F_p† + K_p dot R dot K_p† + G dot Q dot G†$. где:
-    - P_pss = predict_cov P_ss = F P_ss F† + GQG†
-      (предсказательная ss-ковариация),
-    - K_f = filter_gain P_pss (усиление фильтра),
-    - K_p = F ⋅ K_f (предсказательное усиление),
-    - F_p = F - K_p ⋅ H (замкнутый контур в предикторной форме).
+    - $P_pss = "predict_cov" P_ss = F P_ss F† + G Q G†$ (предсказательная
+      ss-ковариация),
+    - $K_f = "filter_gain" P_pss$ (усиление фильтра),
+    - $K_p = F ⋅ K_f$ (предсказательное усиление),
+    - $F_p = F - K_p ⋅ H$ (замкнутый контур в предикторной форме).
 
     Откуда непосредственно следует сжатие в порядке Лёвнера.
 
@@ -1406,8 +1406,8 @@ Section DARE.
     obsv_gram_infty_w F_p (H^t* *m invmx R *m H).
 
   (*
-    Вес $H† R^(-1) H$ неотрицательно определён
-    ($R^(-1)$ положительно определена, конгруэнция сохраняет знак).
+    Вес $H† R^(-1) H$ неотрицательно определён ($R^(-1)$ положительно
+    определена, конгруэнция сохраняет знак).
   *)
   Lemma OP_weight_psd :
     psd (H^t* *m invmx R *m H).

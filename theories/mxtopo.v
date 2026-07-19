@@ -12,7 +12,7 @@
     следа.
 
   Норма Фробениуса используется как мост между скалярной и матричной топологией:
-  frob_sq (M_k - L) -> 0 => M_k -> L. Это нужно для монотонной сходимости
+  $frob_sq (M_k - L) -> 0 => M_k -> L$. Это нужно для монотонной сходимости
   последовательностей неотрицательно определённых матриц.
 *)
 
@@ -49,8 +49,8 @@ Section Entrywise.
     forall i j, (fun k => M k i j) @ \oo --> L i j.
 
   (*
-    Из сходимости матричной посл-ти следует сходимость каждого элемента
-    (по непрерывности проекции).
+    Из сходимости матричной посл-ти следует сходимость каждого элемента (по
+    непрерывности проекции).
   *)
   Lemma cvgn_to_mxcvgn M L :
     M @ \oo --> L -> mxcvgn M L.
@@ -90,7 +90,7 @@ Section FrobeniusBridge.
 
   Implicit Types (M N : 'M[ℂ]_(r, c)).
 
-  (* Для каждого элемента: |M_ij|² <= frob_sq M. *)
+  (* Для каждого элемента: $|M_(i j)|² <= frob_sq M$. *)
   Lemma frob_sq_entry_ge M (i : 'I_r) (j : 'I_c) :
     `|M i j| ^+ 2 <= frob_sq M.
   Proof.
@@ -110,12 +110,12 @@ Section FrobeniusBridge.
 End FrobeniusBridge.
 
 (*
-  Обратное направление: $frob_sq (P_f k - L) -> 0$ => Pf @ ∞ --> L.
+  Обратное направление: $frob_sq (P_f k - L) -> 0$ $=> "Pf" @ ∞ --> L$.
 
-  Достаточно показать поэлементную сходимость $P^f_k i j -> L_(i j)$
-  (через `mxcvgn_to_cvgn`). Из $|M_(i j)|^2 <= "frob_sq" M$
-  (`frob_sq_entry_ge` выше) и $"frob_sq" -> 0$
-  (вместе с $0 <= |P^f_k i j - L_(i j)|^2 <= "frob_sq"(P^f_k - L)$) получаем
+  Достаточно показать поэлементную сходимость $P^f_k i j -> L_(i j)$ (через
+  `mxcvgn_to_cvgn`). Из $|M_(i j)|^2 <= "frob_sq" M$ (`frob_sq_entry_ge` выше) и
+  $"frob_sq" -> 0$ (вместе с
+  $0 <= |P^f_k i j - L_(i j)|^2 <= "frob_sq"(P^f_k - L)$) получаем
   $|P^f_k i j - L_(i j)|^2 -> 0$, откуда $|dot| -> 0$ и $(P^f_k - L)_(i j) -> 0$
   поэлементно - что и даёт $P^f_k i j -> L_(i j)$.
 *)
@@ -246,8 +246,8 @@ End FrobToMxCvg.
   Вспомогательный факт: изометрия непрерывна.
 
   Доказывается в абстрактном контексте - иначе тайпклассы автоматически не
-  находят фильтр `nbhs x` для конкретного `ℂ^o`
-  (это известная проблема при работе с `regular_topology`).
+  находят фильтр `nbhs x` для конкретного `ℂ^o` (это известная проблема при
+  работе с `regular_topology`).
 *)
 Section IsometryContinuous.
 
@@ -472,7 +472,7 @@ Section MxCvgArchi.
   Variable (ℂ : numClosedFieldType).
   Hypothesis ℂ_archi : Num.archimedean_axiom ℂ.
 
-  (* Натуральный мажорант: для $0 <= x$ существует $N$ с x < N%:R. *)
+  (* Натуральный мажорант: для $0 <= x$ существует $N$ с $x < N%:R$. *)
   Lemma archi_natbound {x : ℂ} : 0 <= x -> exists N : nat, x < N%:R.
   Proof.
     by move=> x_ge0; have [N hN] := ℂ_archi x; exists N;

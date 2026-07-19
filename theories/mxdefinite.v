@@ -4,11 +4,11 @@
 
   Положительная и неотрицательная определённость над алг. замкнутым полем.
 
-  Эрмитова матрица: $A = A†$
-  (где Rocq-нотация `^t*` означает `(^T)^conjC` из `mathcomp.algebra.sesquilinear`).
+  Эрмитова матрица: $A = A†$ (где Rocq-нотация `^t*` означает `(^T)^conjC` из
+  `mathcomp.algebra.sesquilinear`).
 
-  Доказательства адаптированы из `CoqQ/src/mxpred.v`
-  (`psdmxD`, `psdmx_bimap_closed_gen`, `psdmx_dot`).
+  Доказательства адаптированы из `CoqQ/src/mxpred.v` (`psdmxD`,
+  `psdmx_bimap_closed_gen`, `psdmx_dot`).
 *)
 
 From HB Require Import structures.
@@ -147,8 +147,8 @@ Section MatrixDefiniteness.
 
   (*
     Обращение в ноль квадратичной формы положительно определённой матрицы влечёт
-    обращение в ноль вектора: $"pd" R and u† R u = 0 => u = 0$
-    (контрапозиция определения `pd`).
+    обращение в ноль вектора: $"pd" R and u† R u = 0 => u = 0$ (контрапозиция
+    определения `pd`).
   *)
   Lemma pd_qf0_col0 p (R : 'M[ℂ]_p) (u : 'cV[ℂ]_p) :
     pd R -> \tr (u^t* *m R *m u) = 0 -> u = 0.

@@ -46,10 +46,10 @@ Section RiccatiUnique.
   Hypothesis R_pd : pd R.
 
   (*
-    Стабилизируемость пары процессного шума $(F, G Q^(1/2))$
-    (через неотрицательно определённый вес $G Q G†$). Достаточна для
-    устойчивости предсказательного контура `F_p` и единственности
-    стабилизирующего (неотрицательно определённого) решения ДАУР.
+    Стабилизируемость пары процессного шума $(F, G Q^(1/2))$ (через
+    неотрицательно определённый вес $G Q G†$). Достаточна для устойчивости
+    предсказательного контура `F_p` и единственности стабилизирующего
+    (неотрицательно определённого) решения ДАУР.
 
     - @kailath2000[App. E, Theorem E.5.1 "Algebraic Riccati Equation"].
   *)
@@ -61,8 +61,8 @@ Section RiccatiUnique.
   Local Notation predM M := (predict_cov F G Q (update_cov H R M)).
 
   (*
-    Тождество для коэффициента усиления: $F_p(M) M H† = K_p(M) R$
-    (ср. `dare.Fp_Ppss_Ht`).
+    Тождество для коэффициента усиления: $F_p(M) M H† = K_p(M) R$ (ср.
+    `dare.Fp_Ppss_Ht`).
   *)
   Lemma Fp_M_Ht (M : 'M[ℂ]_n) :
     psd M ->
@@ -90,15 +90,15 @@ Section RiccatiUnique.
 
   (*
     Тождество замкнутого контура для предсказанной ковариации, для произвольной
-    неотрицательно определённой предсказанной точки M
-    (форма Ляпунова для замкнутого контура на шаге Риккати):
+    неотрицательно определённой предсказанной точки M (форма Ляпунова для
+    замкнутого контура на шаге Риккати):
     $P_(i+1) = F_p P_i F_p† + K_p R K_p† + G Q G†$.
 
     - @kailath2000[§ 9.3, Lemma 9.3.2 "Measurement Updates"]: апостериорное
       обновление (9.3.4); форма Джозефа, эквивалентная `update_cov`, первый шаг
       в доказательстве;
-    - @kailath2000[§ 9.3, Lemma 9.3.3 "Time Updates"]: шаг предсказания
-      (9.3.8 при S=0), т.е. `predict_cov`; в связке с 9.3.2 даёт закрытую форму;
+    - @kailath2000[§ 9.3, Lemma 9.3.3 "Time Updates"]: шаг предсказания (9.3.8
+      при S=0), т.е. `predict_cov`; в связке с 9.3.2 даёт закрытую форму;
     - @kailath2000[§ 9.2, Theorem 9.2.1 "The Innovations Recursions"]:
       стандартная рекурсия Риккати (9.2.33); алгебраически эквивалентно тому же
       шагу;
@@ -162,12 +162,16 @@ Section RiccatiUnique.
       by rewrite {1}f1 pred_closed_loop_id.
     have id2 : M2 = A2 *m M2 *m A2^t* + P2 *m R *m P2^t* + G *m Q *m G^t*.
       by rewrite {1}f2 pred_closed_loop_id.
-    (* R1: A1 M2 A1† − A1 M2 A2† = P1 R P2† − P1 R P1†. *)
+    (*
+      $"R1": "A1" "M2" "A1"† − "A1" "M2" "A2"† = "P1" R "P2"† − "P1" R "P1"†$.
+    *)
     have R1 : A1 *m M1 *m A1^t* - A1 *m M1 *m A2^t*
             = P1 *m R *m P2^t* - P1 *m R *m P1^t*.
       rewrite -mulmxBr -trmxCB dA trmxCB !trmxC_mul mulmxBr !mulmxA !c1.
       by [].
-    (* R2: A2 M2 A2† − A1 M2 A2† = P1 R P2† − P2 R P2†. *)
+    (*
+      $"R2": "A2" "M2" "A2"† − "A1" "M2" "A2"† = "P1" R "P2"† − "P2" R "P2"†$.
+    *)
     have R2 : A2 *m M2 *m A2^t* - A1 *m M2 *m A2^t*
             = P1 *m R *m P2^t* - P2 *m R *m P2^t*.
       rewrite -mulmxBl -mulmxBl dA2 mulmxBl mulmxBl.
@@ -176,7 +180,9 @@ Section RiccatiUnique.
       have f2b : P2 *m H *m M2 *m A2^t* = P2 *m (H *m M2 *m A2^t*).
         by rewrite !mulmxA.
       by rewrite f2a f2b c2 !mulmxA.
-    (* key1: A1 M2 A1† + P1 R P1† = A1 M2 A2† + P1 R P2†. *)
+    (*
+      $"key1": "A1" "M2" "A1"† + "P1" R "P1"† = "A1" "M2" "A2"† + "P1" R "P2"†$.
+    *)
     have key1 : A1 *m M1 *m A1^t* + P1 *m R *m P1^t*
               = A1 *m M1 *m A2^t* + P1 *m R *m P2^t*.
       by apply/eqP; rewrite -subr_eq0 opprD addrACA R1 addrA subrK subrr.
@@ -205,10 +211,10 @@ Section RiccatiUnique.
     M = predict_cov F G Q (update_cov H R M) ->
     spec_rad_lt1 (F - F *m K_f M *m H).
   (*
-    Схема: баланс по Ляпунову $M = F_p M F_p† + W$
-    ($W := K_p R K_p† + G Q G†$, лишь неотрицательно определён) + перенос
-    стабилизируемости на коррекцию по выходу (`stabilizable_oi_reduce`) =>
-    устойчивость по Шуру через `lyap_inv_spec_rad_stab`.
+    Схема: баланс по Ляпунову $M = F_p M F_p† + W$ ($W := K_p R K_p† + G Q G†$,
+    лишь неотрицательно определён) + перенос стабилизируемости на коррекцию по
+    выходу (`stabilizable_oi_reduce`) => устойчивость по Шуру через
+    `lyap_inv_spec_rad_stab`.
   *)
   Proof.
     move=> Mpsd Mfix.

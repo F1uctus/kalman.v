@@ -114,7 +114,7 @@ Section EffPrograms.
 
 End EffPrograms.
 
-(* Корректность: подстановка C := R и уточнения. *)
+(* Корректность: подстановка $C := R$ и уточнения. *)
 Section RefineRiccati.
 
   Variable R : comUnitRingType.
@@ -248,7 +248,9 @@ Section RefineRiccati.
 
 End RefineRiccati.
 
-(* Мост к kalman.v: при conj := conjC возвращаемся к спецификации над $ℂ$. *)
+(*
+  Мост к kalman.v: при $"conj" := "conjC"$ возвращаемся к спецификации над $ℂ$.
+*)
 Section BridgeC.
 
   Variable ℂ : numClosedFieldType.

@@ -52,7 +52,7 @@ Section EffPrograms.
 
 End EffPrograms.
 
-(* Корректность: подстановка C := R и теоремы refines. *)
+(* Корректность: подстановка $C := R$ и теоремы refines. *)
 Section Refine.
 
   Variable R : comUnitRingType.
@@ -112,7 +112,7 @@ Section Refine.
 
 End Refine.
 
-(* Мост к спецификациям при conj := conjC. *)
+(* Мост к спецификациям при $"conj" := "conjC"$. *)
 Section BridgeC.
 
   Variable ℂ : numClosedFieldType.

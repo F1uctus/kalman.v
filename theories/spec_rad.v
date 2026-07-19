@@ -8,13 +8,12 @@
   верхнетреугольной (теорема Шура, mathcomp 2.x `algebra/spectral.v`). Диагональ
   $T = U A U†$ содержит собственные значения $A$;
   $"spec_rad" A := max_i norm(T_(i i))$ - спектральный радиус. Здесь введён
-  Prop-предикат `spec_rad_lt1 A`
-  (разложение Шура, у которого вся диагональ строго внутри открытого единичного диска)
-  и доказана достаточность сжатия по норме Фробениуса:
-  $"frob_sq" A < 1 -> "spec_rad_lt1" A$.
+  Prop-предикат `spec_rad_lt1 A` (разложение Шура, у которого вся диагональ
+  строго внутри открытого единичного диска) и доказана достаточность сжатия по
+  норме Фробениуса: $"frob_sq" A < 1 -> "spec_rad_lt1" A$.
 
   - @kailath2000[App. E]: устойчивость по Шуру - настоящее условие сходимости
-    итераций A^k, более слабое чем frob_sq A < 1, но достаточное для всего
+    итераций A^k, более слабое чем $frob_sq A < 1$, но достаточное для всего
     аппарата ДАУР.
 *)
 
@@ -45,7 +44,7 @@ Section FrobUnitary.
 
   Variable (ℂ : numClosedFieldType).
 
-  (* Унитарная `U` слева: frob_sq (U M) = frob_sq M. *)
+  (* Унитарная `U` слева: $frob_sq (U M) = frob_sq M$. *)
   Lemma frob_sq_unitary_left n m (U : 'M[ℂ]_n) (M : 'M[ℂ]_(n, m)) :
     U \is unitarymx -> frob_sq (U *m M) = frob_sq M.
   Proof.
@@ -57,7 +56,7 @@ Section FrobUnitary.
     by rewrite [U^t* *m _]mulmxA hUCU mul1mx.
   Qed.
 
-  (* Унитарная `U` справа: frob_sq (M U) = frob_sq M. *)
+  (* Унитарная `U` справа: $frob_sq (M U) = frob_sq M$. *)
   Lemma frob_sq_unitary_right n m (U : 'M[ℂ]_n) (M : 'M[ℂ]_(m, n)) :
     U \is unitarymx -> frob_sq (M *m U) = frob_sq M.
   Proof.
@@ -68,7 +67,7 @@ Section FrobUnitary.
     by rewrite trmxC_unitary.
   Qed.
 
-  (* Сопряжение унитарными: frob_sq (U M U†) = frob_sq M. *)
+  (* Сопряжение унитарными: $frob_sq (U M U†) = frob_sq M$. *)
   Lemma frob_sq_conj_unitary n (U M : 'M[ℂ]_n) :
     U \is unitarymx -> frob_sq (U *m M *m U^t*) = frob_sq M.
   Proof.
@@ -98,7 +97,7 @@ Section DiagBound.
       by move=> j k; rewrite mulrC; exact: mul_conjC_ge0.
     rewrite (bigD1 i) //=.
     rewrite (bigD1 i) //=.
-    (* Цель: X <= (X + S_inner) + S_outer; разделяем lerD на две части. *)
+    (* Цель: $X <= (X + S_"inner") + S_"outer"$; разделяем lerD на две части. *)
     rewrite -[X in X <= _]addr0.
     apply: lerD; last by apply: sumr_ge0=> j _; apply: sumr_ge0=> k _; exact: h_nn.
     rewrite lerDl.
@@ -133,18 +132,21 @@ Section SpecRad.
   Theorem frob_sq_contract_spec_rad_lt1 n (A : 'M[ℂ]_n.+1) :
     frob_sq A < 1 -> spec_rad_lt1 A.
   (*
-    Для n+1: устраняем граничный случай n = 0
-    (устойчивость по Шуру требует n > 0).
+    Для n+1: устраняем граничный случай n = 0 (устойчивость по Шуру требует n >
+    0).
   *)
   Proof.
     move=> Ac.
     (* Шаг 1: теорема Шура даёт унитарную U и треугольную conjmx U A. *)
     have HSchur : (0 < n.+1)%N := isT.
     have [U Uunit Atrig] := Schur A HSchur.
-    (* Atrig : is_trig_mx (conjmx U A); conjmx U A = U A U† при унитарной U. *)
+    (*
+      $"Atrig" : "is_trig_mx" ("conjmx" U A); "conjmx" U A = U A U†$ при
+      унитарной U.
+    *)
     have HTeq : conjmx U A = U *m A *m U^t* := conjymx A Uunit.
     set T := conjmx U A.
-    (* Шаг 2: A = U† T U (обратное разложение Шура). *)
+    (* Шаг $2: A = U† T U$ (обратное разложение Шура). *)
     have hUUC : U *m U^t* = 1%:M by apply/unitarymxP.
     have hUCU : U^t* *m U = 1%:M.
       rewrite -invmx_unitary //.
@@ -156,7 +158,7 @@ Section SpecRad.
         by rewrite !mulmxA.
       rewrite hUCU mul1mx -mulmxA hUCU.
       by rewrite mulmx1.
-    (* Шаг 3: frob_sq T = frob_sq A (унитарная инвариантность). *)
+    (* Шаг $3: frob_sq T = frob_sq A$ (унитарная инвариантность). *)
     have HfrobEq : frob_sq T = frob_sq A.
       by rewrite /T HTeq; exact: frob_sq_conj_unitary.
     (* Шаг 4: для каждого i диагональный элемент в модуле < 1. *)
@@ -166,7 +168,9 @@ Section SpecRad.
       have step1 : `|T i i| ^+ 2 <= frob_sq T := diag_normCK_le_frob_sq T i.
       rewrite HfrobEq in step1.
       exact: le_lt_trans step1 Ac.
-    (* ‖Tᵢᵢ‖² < 1 => ‖Tᵢᵢ‖ < 1 - через mono `ltr_pXn2r` на Num.nneg. *)
+    (*
+      $‖T_(i i)‖² < 1 => ‖T_(i i)‖ < 1$ - через mono `ltr_pXn2r` на Num.nneg.
+    *)
     rewrite -(@ltr_pXn2r _ 2 isT _ _ _ _) ?nnegrE //.
     by rewrite expr1n; exact: Hsq.
   Qed.
@@ -185,10 +189,10 @@ Section SpecRad.
   Lemma spec_rad_lt1_det_eig n (A : 'M[ℂ]_n) (lam : ℂ) :
     spec_rad_lt1 A -> \det (lam%:M - A) == 0 -> `|lam| < 1.
   (*
-    Схема: A = U† T U (разложение Шура), унитарное сопряжение сохраняет
-    определитель, поэтому det (λE − A) = det (λE − T); матрица λE − T
-    треугольна, её det = ∏ᵢ (λ − Tᵢᵢ). Если det = 0, то λ = Tᵢᵢ для некоторого
-    i, откуда |λ| = |Tᵢᵢ| < 1.
+    Схема: $A = U† T U$ (разложение Шура), унитарное сопряжение сохраняет
+    определитель, поэтому $det (λ E − A) = det (λ E − T)$; матрица λE − T
+    треугольна, её $det = ∏_i (λ − T_(i i))$. Если det = 0, то $λ = T_(i i)$ для
+    некоторого i, откуда $|λ| = |T_(i i)| < 1$.
   *)
   Proof.
     move=> [U [T [Uunit Adec Ttrig Tdiag]]] Hdet.
@@ -205,7 +209,7 @@ Section SpecRad.
       rewrite -conj_id !det_mulmx -mulrA [\det (lam%:M - T) * \det U]mulrC mulrA.
       by rewrite [\det (U^t*) * \det U]mulrC hdetU mul1r.
     rewrite detEq in Hdet.
-    (* λE − T треугольна => det = ∏ᵢ (λ − Tᵢᵢ). *)
+    (* λE − T треугольна $=> det = ∏_i (λ − T_(i i))$. *)
     have htrig : is_trig_mx (lam%:M - T : 'M[ℂ]_n).
       apply/is_trig_mxP=> i j ltij.
       have ij : (i == j) = false by apply: ltn_eqF.
@@ -219,8 +223,8 @@ Section SpecRad.
 
   (*
     Правый собственный вектор: $A v = λ v, v != 0 => |λ| < 1$. Через
-    вырожденность $λ E − A$ ($ker ∋ v != 0$) и `det0P`
-    (транспонируем к строчной форме det0P).
+    вырожденность $λ E − A$ ($ker ∋ v != 0$) и `det0P` (транспонируем к строчной
+    форме det0P).
   *)
   Lemma spec_rad_lt1_eigval n (A : 'M[ℂ]_n) (lam : ℂ) (v : 'cV[ℂ]_n) :
     spec_rad_lt1 A -> v != 0 -> A *m v = lam *: v -> `|lam| < 1.
@@ -234,8 +238,8 @@ Section SpecRad.
   Qed.
 
   (*
-    Левый собственный вектор: w A = λ w, w != 0 => |λ| < 1. Прямо через строчную
-    форму `det0P` (без транспонирования). Нужна для стабилизируемости
+    Левый собственный вектор: $w A = λ w, w != 0 => |λ| < 1$. Прямо через
+    строчную форму `det0P` (без транспонирования). Нужна для стабилизируемости
     (двойственной детектируемости).
   *)
   Lemma spec_rad_lt1_left_eigval n (A : 'M[ℂ]_n) (lam : ℂ)
@@ -248,9 +252,9 @@ Section SpecRad.
   Qed.
 
   (*
-    Обратная характеризация: если все корни характеристического многочлена
-    (т.е. все собственные значения) лежат строго внутри единичного диска, то
-    выполнено `spec_rad_lt1 A` - строится разложение Шура. Любая `'M_n.+1` имеет
+    Обратная характеризация: если все корни характеристического многочлена (т.е.
+    все собственные значения) лежат строго внутри единичного диска, то выполнено
+    `spec_rad_lt1 A` - строится разложение Шура. Любая `'M_n.+1` имеет
     разложение Шура $A = U† T U$ ($T$ треугольна); диагональ $T_(i i)$ - корни
     характеристического многочлена ($det(T_(i i) E - A) = 0$), откуда по
     гипотезе $|T_(i i)| < 1$. Двойственно к `spec_rad_lt1_det_eig`.
@@ -317,7 +321,7 @@ End SpecRad.
 (*
   Степени матрицы при устойчивости по Шуру.
 
-  Алгебраическая часть пути к сходимости A^k -> 0 при spec_rad_lt1 A:
+  Алгебраическая часть пути к сходимости $A^k -> 0$ при spec_rad_lt1 A:
   субмультипликативность Фробениуса, оценка степени, выражение A^k через
   унитарное сопряжение $T^k$. Конкретное предельное утверждение $A^k -> 0$
   требует архимедова замыкания (для доказательства $r^k -> 0$ при $0 <= r < 1$).
@@ -404,8 +408,8 @@ End SchurPow.
   $A^k -> 0$ при $frob_sq A < 1$. Объединяет алгебраические оценки
   frob_sq_exp_le со сходимостью геометрической прогрессии $r^k -> 0$
   (mxtopo.r_pow_cvgn0) через теорему о двух милиционерах и переход к норме
-  Фробениуса (`frob_sq_cvgn0_to_mxcvgn`). Архимедовость - явная гипотеза
-  (см. mxtopo: над numClosedFieldType cvg_expr неприменима).
+  Фробениуса (`frob_sq_cvgn0_to_mxcvgn`). Архимедовость - явная гипотеза (см.
+  mxtopo: над numClosedFieldType cvg_expr неприменима).
 *)
 Section SchurPowCvg.
 
@@ -416,8 +420,8 @@ Section SchurPowCvg.
   (*
     Сходимость квадрата нормы Фробениуса степени: $frob_sq (A^(k+1)) -> 0$
     (теорема о двух милиционерах): $0 <= frob_sq (A^(k+1)) <= (frob_sq A)^(k+1)$
-    (frob_sq_exp_le), и $(frob_sq A)^(k+1) -> 0$
-    (r_pow_cvgn0, т.к. $0 <= frob_sq A < 1$).
+    (frob_sq_exp_le), и $(frob_sq A)^(k+1) -> 0$ (r_pow_cvgn0, т.к.
+    $0 <= frob_sq A < 1$).
   *)
   Lemma frob_sq_pow_cvgn0 n (A : 'M[ℂ]_n.+1) :
     frob_sq A < 1 ->
@@ -466,16 +470,17 @@ End SchurPowCvg.
   $spec_rad_lt1 A -> A^k -> 0$.
 
   Схема @kailath2000[App. E, шаг 2]: через разложение Шура для $A = U† T U$
-  сводим к $T$ (треугольной). Для верхнетреугольной формы
-  (транспонируем `is_trig_mx`) ведём индукцию по размеру, выделяя первый индекс
-  блоком 1+n. Диагональ T^k и нижний правый блок сходятся к нулю по
-  предположению индукции, а наддиагональный блок `ursubmx (T^k)` подчиняется
-  скалярной ISS-рекурсии $S_(k+1) = a S_k + r (T')^k$ (поэлементно), которую
-  замыкает `lin_filter_cvgn0` (lyapunov.v). Архимедовость нужна только для
-  геометрической сходимости $r^k -> 0$.
+  сводим к $T$ (треугольной). Для верхнетреугольной формы (транспонируем
+  `is_trig_mx`) ведём индукцию по размеру, выделяя первый индекс блоком 1+n.
+  Диагональ T^k и нижний правый блок сходятся к нулю по предположению индукции,
+  а наддиагональный блок `ursubmx (T^k)` подчиняется скалярной ISS-рекурсии
+  $S_(k+1) = a S_k + r (T')^k$ (поэлементно), которую замыкает
+  `lin_filter_cvgn0` (lyapunov.v). Архимедовость нужна только для геометрической
+  сходимости $r^k -> 0$.
 
-  Степени верхнетреугольного блока block_mx a r 0 T': T^k = block_mx (a^k) (S k)
-  0 (T'^k), где наддиагональный блок S = ursubmx подчиняется рекурсии
+  Степени верхнетреугольного блока
+  $"block_mx" a r 0 T': T^k = "block_mx" (a^k) (S k)$ $0 (T'^k)$, где
+  наддиагональный блок $S = "ursubmx"$ подчиняется рекурсии
   $S(k+1) = a S k + r T'^k$.
 *)
 Section BlockPowUpper.
@@ -606,7 +611,7 @@ Section SchurStablePowCvg.
     all: by end_near.
   Qed.
 
-  (* Бесконечно убывающая геометрическая прогрессия: |z| < 1 => z^k -> 0. *)
+  (* Бесконечно убывающая геометрическая прогрессия: $|z| < 1 => z^k -> 0$. *)
   Lemma cpow_cvgn0 (z : ℂ) :
     `|z| < 1 -> (fun k => z ^+ k) @ \oo --> (0 : ℂ).
   Proof.
@@ -743,8 +748,9 @@ Section SchurStablePowCvg.
     Двусторонняя единственность: при устойчивости по Шуру обеих матриц
     однородное уравнение $D = A D B†$ имеет лишь нулевое решение.
     Доказательство: $D = A^k D (B^k)†$ (lyap_hom_pow), а правая часть $-> 0$
-    (степени устойчивых по Шуру матриц сходятся к нулю, `schur_stable_pow_cvgn`).
-    Постоянная последовательность $D$ сходится к $0$, откуда $D = 0$ (Хаусдорф).
+    (степени устойчивых по Шуру матриц сходятся к нулю,
+    `schur_stable_pow_cvgn`). Постоянная последовательность $D$ сходится к $0$,
+    откуда $D = 0$ (Хаусдорф).
 
     - @kailath2000[App. D, Lemma D.1.1].
   *)
@@ -772,8 +778,8 @@ Section SchurStablePowCvg.
 
   (*
     Единственность эрмитова решения уравнения Ляпунова $X = A X A† + Q$ при
-    устойчивости по Шуру `spec_rad_lt1 A`
-    (двойственно `lyap_fix_unique` для сжатия по норме Фробениуса).
+    устойчивости по Шуру `spec_rad_lt1 A` (двойственно `lyap_fix_unique` для
+    сжатия по норме Фробениуса).
 
     - @kailath2000[App. D, Lemma D.1.1].
   *)
@@ -797,10 +803,10 @@ End SchurStablePowCvg.
   Решение уравнения Ляпунова при устойчивости по Шуру.
 
   Через блочную декомпозицию: из $A^k -> 0$ (schur_stable_pow_cvgn) есть $N_0$ с
-  $"frob_sq"(A^(N_0)) < 1$, и lyap_partial A Q (N0 k) = lyap_partial (A^N0)
-  (lyap_partial A Q N0) k (lyap_partial_block) сводит равномерную оценку к уже
-  доказанной оценке `lyap_partial_le_bnd` для сжатия по норме Фробениуса на
-  $B = A^(N_0)$.
+  $"frob_sq"(A^(N_0)) < 1$, и
+  $"lyap_partial" A Q (N_0 k) = "lyap_partial" (A^(N_0)) ("lyap_partial" A Q N_0) k$
+  (`lyap_partial_block`) сводит равномерную оценку к уже доказанной оценке
+  `lyap_partial_le_bnd` для сжатия по норме Фробениуса на $B = A^(N_0)$.
 *)
 Section SchurLyapunov.
 
@@ -814,7 +820,7 @@ Section SchurLyapunov.
   Hypothesis ℂ_archi : Num.archimedean_axiom ℂ.
 
   (*
-    Из устойчивости по Шуру степень < 1 по норме Фробениуса (через A^k -> 0).
+    Из устойчивости по Шуру степень < 1 по норме Фробениуса (через $A^k -> 0$).
   *)
   Lemma exists_frob_pow_lt1 n (A : 'M[ℂ]_n.+1) :
     spec_rad_lt1 A -> exists N, frob_sq (A^+N.+1) < 1.
@@ -904,7 +910,7 @@ Section SchurLyapunov.
     Qed.
 
     (*
-      Неподвижная точка: lyap_sol = (A (lyap_sol) A†) + Q.
+      Неподвижная точка: $lyap_sol = (A (lyap_sol) A†) + Q$.
 
       - @kailath2000[App. D, Lemma D.1.2].
     *)

@@ -52,7 +52,7 @@ Section QRun.
 Definition q_cinv  : @seqmx Q -> @seqmx Q := cinv_fl (C := Q) 1.
 Definition q_cinv3 : @seqmx Q -> @seqmx Q := cinv_fl (C := Q) 3.
 
-(* Прогон и трёхмерный прогон из sim.v при C := Q. *)
+(* Прогон и трёхмерный прогон из sim.v при $C := Q$. *)
 Definition q_run (T : nat) : seq (sim_row Q) :=
   kalman_sim_run Qinv (fun x : Q => x) q_cinv T.
 

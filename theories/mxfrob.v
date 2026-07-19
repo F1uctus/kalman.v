@@ -72,7 +72,7 @@ Section Frob.
     by move/eqP->; rewrite mxE.
   Qed.
 
-  (* View: ‖M‖ꜰ² = 0 <=> M = 0. *)
+  (* $"View": ‖M‖ꜰ² = 0 <=> M = 0$. *)
   Lemma frob_sq_eq0P r c (M : 'M[ℂ]_(r, c)) :
     reflect (M = 0) (frob_sq M == 0).
   Proof.
@@ -82,8 +82,8 @@ Section Frob.
   Qed.
 
   (*
-    Если для любого eps > 0 имеем frob_sq < eps, то frob_sq = 0, откуда будет M
-    = 0. Это нужно для отделимости метрики Фробениуса: разные матрицы лежат на
+    Если для любого eps > 0 имеем $frob_sq < eps$, то frob_sq = 0, откуда будет
+    M = 0. Это нужно для отделимости метрики Фробениуса: разные матрицы лежат на
     положительном расстоянии.
   *)
   Lemma frob_sq_lt_eps_eq0 r c (M : 'M[ℂ]_(r, c)) :
@@ -297,7 +297,7 @@ Section Frob.
       rewrite /mxtrace; apply: eq_bigr=> i _.
       by rewrite !mxE eqxx /= -expr2.
     rewrite frob_sq_eq trM_eq.
-    (* Цель: ∑ l_i² <= (∑ l_i)², раскрываем справа как сумму множителей. *)
+    (* Цель: $∑ l_i² <= (∑ l_i)²$, раскрываем справа как сумму множителей. *)
     rewrite expr2 mulr_suml.
     apply: ler_sum=> i _.
     rewrite expr2 mulr_sumr.
@@ -353,14 +353,14 @@ Section Frob.
     $"frob_sq"(F_m D F_m†) = "tr"((F_m D F_m†)^2)$. Применяем `tr_conj_frob_le`
     ($"psd"(D F_m† F_m D)$) и `tr_conj_frob_le` ($"psd"(F_m† F_m)$) - каждое
     даёт коэффициент $"frob_sq" F_m$. Итого
-    $("frob_sq" F_m)^2 dot "tr"(D^2) = ("frob_sq" F_m)^2 dot "frob_sq" D$
-    ($D$ эрмитова $=> "frob_sq" D = "tr" D^2$).
+    $("frob_sq" F_m)^2 dot "tr"(D^2) = ("frob_sq" F_m)^2 dot "frob_sq" D$ ($D$
+    эрмитова $=> "frob_sq" D = "tr" D^2$).
   *)
   Proof.
     move=> Dherm.
     have FDFherm : (Fm *m D *m Fm^t*) \is hermsymmx := herm_conj Fm Dherm.
     rewrite (frob_sq_herm FDFherm).
-    (* Шаг 1: tr((F D F†) (F D F†)) = tr(F (D F† F D) F†). *)
+    (* Шаг $1: tr((F D F†) (F D F†)) = tr(F (D F† F D) F†)$. *)
     have step1 : (Fm *m D *m Fm^t*) *m (Fm *m D *m Fm^t*)
               = Fm *m (D *m Fm^t* *m Fm *m D) *m Fm^t*.
       by rewrite !mulmxA.
@@ -368,7 +368,7 @@ Section Frob.
     (* Шаг 2: `tr_conj_frob_le` с неотрицательно определённой $D F† F D$. *)
     have psd_DFtFD : psd (D *m Fm^t* *m Fm *m D) := psd_conj_herm_FtF Fm Dherm.
     apply: (le_trans (tr_conj_frob_le Fm psd_DFtFD)).
-    (* Цель: frob_sq Fm * tr(D F† F D) <= (frob_sq Fm)² * frob_sq D. *)
+    (* Цель: $frob_sq F_m * tr(D F† F D) <= (frob_sq F_m)² * frob_sq D$. *)
     rewrite expr2 -mulrA.
     apply: ler_pM; first by exact: frob_sq_ge0.
     - by apply: psd_tr_ge0; exact: psd_DFtFD.
@@ -384,7 +384,7 @@ Section Frob.
       rewrite rewriteDFtFD.
       apply: (le_trans (tr_conj_frob_le D (psd_frob Fm))).
       rewrite (frob_sq_herm Dherm).
-      (* Цель: frob_sq D * tr(Fm† Fm) <= frob_sq Fm * tr(D D). *)
+      (* Цель: $frob_sq D * tr(F_m† F_m) <= frob_sq F_m * tr(D D)$. *)
       have e1 : \tr (Fm^t* *m Fm) = frob_sq Fm by [].
       rewrite e1 [_ * \tr _]mulrC; exact: lexx.
   Qed.

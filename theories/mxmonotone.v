@@ -242,8 +242,8 @@ Section MxSeqMonotoneCvg.
               limn (fun k => \tr (vi^t* *m S k *m vi)).
       exact: (@qf_seq_cvgn vi).
     (*
-      В каждом k: 2 * S k i j = (qf1 - S k i i - S k j j) - 'i *
-      (qf2 - S k i i - S k j j)
+      В каждом k:
+      `2 * S k i j = (qf1 - S k i i - S k j j) - 'i * (qf2 - S k i i - S k j j)`
     *)
     have Hentry_eq : forall k,
       2%:R * (S k) i j =
@@ -263,7 +263,7 @@ Section MxSeqMonotoneCvg.
       rewrite mulrA -expr2 sqrCi mulN1r opprK.
       rewrite addrACA subrr addr0.
       by rewrite -mulr2n mulr_natl.
-    (* Сходимость (2 * S k i j) через cvgC_D/cvgC_M в ℂ *)
+    (* Сходимость $(2 * S k i j)$ через cvgC_D/cvgC_M в ℂ *)
     pose target : ℂ := (limn (fun k => \tr (vp^t* *m S k *m vp))
                         - limn (fun k => (S k) i i)
                         - limn (fun k => (S k) j j))
@@ -279,7 +279,7 @@ Section MxSeqMonotoneCvg.
     have Htwosij : (fun k => 2%:R * (S k) i j) @ \oo --> target.
       have := cvgC_B HBR1 HiBR2.
       by under eq_cvg=> k do rewrite -(Hentry_eq k).
-    (* Делим на 2: (S k) i j = (2 * (S k) i j) / 2. *)
+    (* Делим на $2: (S k) i j = (2 * (S k) i j) / 2$. *)
     have H2neq : (2%:R : ℂ) != 0 by rewrite pnatr_eq0.
     have Hsij : (fun k => (S k) i j) @ \oo --> target / 2%:R.
       have Hinv : (fun _ : nat => (2%:R : ℂ)^-1) @ \oo --> (2%:R : ℂ)^-1.
@@ -421,9 +421,8 @@ End MxSeqMonotoneCvg.
   Монотонно убывающая сходимость неотрицательно определённых матриц.
 
   Двойственно к `MxSeqMonotoneCvg`: для убывающей посл-ти $S_(k+1) <= S_k$
-  доказываем сходимость через подстановку $T_k := S_0 - S_k$
-  (возрастающая, ограниченная сверху `S 0`). Затем переносим результаты обратно
-  на `S`.
+  доказываем сходимость через подстановку $T_k := S_0 - S_k$ (возрастающая,
+  ограниченная сверху `S 0`). Затем переносим результаты обратно на `S`.
 *)
 Section MxSeqMonotoneCvgDec.
 
@@ -503,7 +502,7 @@ Section MxSeqMonotoneCvgDec.
       exact: (@mx_mono_cvgn ℝ ℂ r2c c2r
                 ler_r2c c2rK r2c_continuous
                 n T (S 0%N) T_psd T_mono T_bnd).
-    (* S k = S 0 - T k *)
+    (* $S k = S 0 - T k$ *)
     have eq_S : S = (fun k => S 0%N - T k).
       apply/funext=> k.
       rewrite /T.
@@ -524,8 +523,8 @@ Section MxSeqMonotoneCvgDec.
   Lemma mx_mono_dec_lim_psd :
     psd mx_mono_dec_lim.
   (*
-    $"mx_mono_dec_lim" = S_0 - "mx_mono_lim" T$. Поскольку $lim T <= S_0$
-    (через `mx_mono_lim_le`), $"psd"(S_0 - lim T)$.
+    $"mx_mono_dec_lim" = S_0 - "mx_mono_lim" T$. Поскольку $lim T <= S_0$ (через
+    `mx_mono_lim_le`), $"psd"(S_0 - lim T)$.
   *)
   Proof.
     rewrite /mx_mono_dec_lim.
@@ -540,7 +539,7 @@ Section MxSeqMonotoneCvgDec.
   Lemma mx_mono_dec_lim_le_term (k0 : nat) :
     psd_le mx_mono_dec_lim (S k0).
   Proof.
-    (* Через возрастание T: T k0 <= lim T. *)
+    (* Через возрастание $T: T "k0" <= lim T$. *)
     have HT_term : psd_le (T k0) (mx_mono_lim T).
       exact: (@mx_mono_lim_ge_term ℝ ℂ r2c c2r
                 ler_r2c c2rK c2r_continuous r2c_continuous

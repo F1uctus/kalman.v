@@ -10,9 +10,9 @@
     $F (P_2 - P_1) F†$.
   - `update_cov_mono` - монотонность шага обновления на всём конусе
     неотрицательно определённых матриц. Доказывается через тождество
-    оптимальности `alt_update_cov_diff`: update_cov(P1) <=
-    alt_update_cov(K2, P1) <= alt_update_cov(K2, P2) = update_cov(P2), где
-    `K2 := filter_gain(P2)`. Линейность `alt_update_cov` в `P` даёт среднее
+    оптимальности `alt_update_cov_diff`: $"update_cov"("P1") <=$
+    $"alt_update_cov"("K2", "P1") <= "alt_update_cov"("K2", "P2") = "update_cov"("P2")$,
+    где `K2 := filter_gain(P2)`. Линейность `alt_update_cov` в `P` даёт среднее
     неравенство.
   - `riccati_step_mono` - комбинация двух монотонностей; монотонна на конусе
     неотрицательно определённых матриц.
@@ -86,17 +86,17 @@ Section RiccatiMonotone.
     $"alt_update_cov" K' P_2 - "alt_update_cov" K' P_1 = (E - K' H)(P_2 - P_1)(E - K' H)†$
     неотрицательно определена, то есть $"alt_update_cov" K' (dot)$ монотонен по
     $P$. Положив $K_2 := "filter_gain" P_2$, имеем
-    $"alt_update_cov" K_2 P_2 = "update_cov" P_2$
-    (член $(K_2 - K_2) R_(e,2) (K_2 - K_2)†$ исчезает) и
-    $"update_cov" P_1 prec.eq "alt_update_cov" K_2 P_1$
-    (член $(K_2 - K_1) R_(e,1) (K_2 - K_1)†$ неотрицательно определён); здесь
-    $K_i$ и $R_(e,i)$ обозначают усиление и инновационную ковариацию для $P_i$.
+    $"alt_update_cov" K_2 P_2 = "update_cov" P_2$ (член
+    $(K_2 - K_2) R_(e,2) (K_2 - K_2)†$ исчезает) и
+    $"update_cov" P_1 prec.eq "alt_update_cov" K_2 P_1$ (член
+    $(K_2 - K_1) R_(e,1) (K_2 - K_1)†$ неотрицательно определён); здесь $K_i$ и
+    $R_(e,i)$ обозначают усиление и инновационную ковариацию для $P_i$.
     Транзитивностью $"update_cov" P_1 prec.eq "update_cov" P_2$.
   *)
   Proof.
     move=> psd1 psd2 hLe.
     set K2 := filter_gain H R P2.
-    (* Шаг 1: update_cov P1 <= alt_update_cov K2 P1 *)
+    (* Шаг $1: "update_cov" "P1" <= "alt_update_cov" "K2" "P1"$ *)
     have alt_P1_eq : alt_update_cov H R K2 P1 =
         update_cov H R P1
         + (K2 - filter_gain H R P1) *m innov_cov H R P1
@@ -107,15 +107,18 @@ Section RiccatiMonotone.
       have S1_psd : psd (innov_cov H R P1)
         := pd_psd (innov_cov_pd H R_pd psd1).
       exact: psd_lcongr S1_psd.
-    (* Шаг 2: alt_update_cov K2 P2 = update_cov P2 (член с K2 - K2 = 0) *)
+    (*
+      Шаг $2: "alt_update_cov" "K2" "P2" = "update_cov" "P2"$ (член с
+      $"K2" - "K2" = 0$)
+    *)
     have alt_P2_eq : alt_update_cov H R K2 P2 = update_cov H R P2.
       rewrite (alt_update_cov_diff H R_pd K2 psd2) -/K2.
       rewrite subrr mul0mx mul0mx addr0.
       by [].
     (*
-      Шаг 3: alt_update_cov K2 P1 <= alt_update_cov K2 P2 (линейно в P).
-      Доказываем через `psd_le_congr` (конгруэнция сохраняет порядок Лёвнера) и
-      `psd_le_add2l` (сдвиг на константу).
+      Шаг $3: "alt_update_cov" "K2" "P1" <= "alt_update_cov" "K2" "P2"$ (линейно
+      в P). Доказываем через `psd_le_congr` (конгруэнция сохраняет порядок
+      Лёвнера) и `psd_le_add2l` (сдвиг на константу).
     *)
     have step3 : psd_le (alt_update_cov H R K2 P1) (alt_update_cov H R K2 P2).
       rewrite !alt_update_covE.
@@ -161,9 +164,9 @@ Section RiccatiMonotone.
   Lemma riccati_step_psd (P : 'M[ℂ]_n) :
     psd P -> psd (riccati_step F G H Q R P).
   (*
-    Шаг Риккати равен форме Джозефа предсказанной ковариации
-    (лемма $"joseph_formE"$), которая сохраняет неотрицательную определённость
-    (лемма $"update_cov_psd"$).
+    Шаг Риккати равен форме Джозефа предсказанной ковариации (лемма
+    $"joseph_formE"$), которая сохраняет неотрицательную определённость (лемма
+    $"update_cov_psd"$).
   *)
   Proof.
     move=> psdP.
@@ -191,8 +194,8 @@ Section RiccatiMonotone.
       rewrite /=.
       apply/psd_le0_psd.
       exact: (riccati_step_psd psd0n).
-    - (* IH: psd_le (iter k ...) (iter k.+1 ...).
-        Goal: psd_le (iter k.+1 ...) (iter k.+2 ...).
+    - (* `IH: psd_le (iter k ...) (iter k.+1 ...)`.
+        `Goal: psd_le (iter k.+1 ...) (iter k.+2 ...)`.
         Применяем `riccati_step_mono` к IH; используем
         `iter k.+1 f x = f (iter k f x)` для отождествления. *)
       have psdK : psd (iter k (riccati_step F G H Q R) 0)

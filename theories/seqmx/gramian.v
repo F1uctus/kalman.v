@@ -39,7 +39,7 @@ Section EffPrograms.
 
   Variable conj : C -> C.
 
-  (* Грамиан наблюдаемости: sum_{j<k} (F^j)^t* H^t* W H F^j. *)
+  (* Грамиан наблюдаемости: $sum_(j<k) (F^j)^t* H^t* W H F^j$. *)
   Fixpoint obsv_gram_seqmx (n p : nat) (sF sH sW : @seqmx C) (k : nat)
       : @seqmx C :=
     if k is k'.+1 then
@@ -55,7 +55,7 @@ Section EffPrograms.
           Fj)
     else seqmx0 n n.
 
-  (* Грамиан управляемости: sum_{j<k} F^j G Q G^t* (F^j)^t*. *)
+  (* Грамиан управляемости: $sum_(j<k) F^j G Q G^t* (F^j)^t*$. *)
   Fixpoint ctrl_gram_seqmx (n m : nat) (sF sG sQ : @seqmx C) (k : nat)
       : @seqmx C :=
     if k is k'.+1 then
@@ -71,7 +71,7 @@ Section EffPrograms.
 
 End EffPrograms.
 
-(* Корректность: подстановка C := R и теоремы refines. *)
+(* Корректность: подстановка $C := R$ и теоремы refines. *)
 Section Refine.
 
   Variable R : comUnitRingType.
@@ -138,7 +138,7 @@ Section Refine.
 
 End Refine.
 
-(* Мост к спецификациям при conj := conjC. *)
+(* Мост к спецификациям при $"conj" := "conjC"$. *)
 Section BridgeC.
 
   Variable ℂ : numClosedFieldType.

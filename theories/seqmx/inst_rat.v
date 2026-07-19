@@ -28,7 +28,7 @@ Import GRing.Theory Num.Theory Num.Def.
 Import Refinements.Op.
 Local Open Scope ring_scope.
 
-(* Скалярная система: конкретное исполнение при conj := idfun и p = 1. *)
+(* Скалярная система: конкретное исполнение при $"conj" := "idfun"$ и p = 1. *)
 Section ConcreteRat.
 
   Existing Instance Rseqmx_map_seqmx.

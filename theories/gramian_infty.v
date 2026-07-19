@@ -12,9 +12,9 @@
   $"ctrl_gram_infty" F G Q := "lyap_sol" F (G Q G†) <=> X = F X F† + G Q G†$
 
   Положительная определённость бесконечных грамианов выводится из положительной
-  определённости их конечных предшественников
-  (`obsv_gram_pd_of_observable`, `ctrl_gram_pd_of_controllable` из `obsv_bound.v`)
-  и нижней оценки через `mx_mono_lim_ge_term`
+  определённости их конечных предшественников (`obsv_gram_pd_of_observable`,
+  `ctrl_gram_pd_of_controllable` из `obsv_bound.v`) и нижней оценки через
+  `mx_mono_lim_ge_term`
 *)
 
 From Stdlib.Unicode Require Import Utf8.
@@ -217,10 +217,9 @@ End GramianInf.
 
   $"obsv_gram_infty_w" F W := "lyap_sol" (F†) W <=> X = F† X F + W$
 
-  Обобщение `obsv_gram_infty`
-  (который = $"obsv_gram_infty_w" F (H† H)$ по определению): вес $W$ отвязан от
-  формы $M† M$. Нужен для меры `O_P`, вес которой $W := H† ("invmx" R) H$ не
-  имеет вида $M† M$.
+  Обобщение `obsv_gram_infty` (который = $"obsv_gram_infty_w" F (H† H)$ по
+  определению): вес $W$ отвязан от формы $M† M$. Нужен для меры `O_P`, вес
+  которой $W := H† ("invmx" R) H$ не имеет вида $M† M$.
 *)
 Section GramianInfWeighted.
 
@@ -288,8 +287,8 @@ Section ClosedLoopCtrlGramPd.
     Критерий положительной определённости для неподвижной точки Ляпунова
     замкнутого контура коррекции по выходу $F_p = A - K_p H$ с весом
     $W = K_p R K_p† + Z$, выводимый из полной управляемости исходной пары
-    $(A, Z)$
-    (а не замкнутого контура - коррекция по выходу управляемость не сохраняет).
+    $(A, Z)$ (а не замкнутого контура - коррекция по выходу управляемость не
+    сохраняет).
 
     - @kailath2000[App. D, Lemma D.1.2 v "Properties of the Lyapunov Equation"]:
       управляемость пары $(F, Q^(1/2))$ влечёт положительную определённость
@@ -318,8 +317,8 @@ Section ClosedLoopCtrlGramPd.
       apply: psd_add; last exact: Zpsd.
       exact: psd_lcongr K_p (pd_psd R_pd).
     (*
-      Извлечение $K_p† u = 0$ и $Z u = 0$ из $W u = 0$
-      (разложение неотрицательно определённого веса).
+      Извлечение $K_p† u = 0$ и $Z u = 0$ из $W u = 0$ (разложение
+      неотрицательно определённого веса).
     *)
     have splitWu : forall u : 'cV[ℂ]_N, W *m u = 0 ->
         K_p^t* *m u = 0 /\ Z *m u = 0.
@@ -342,8 +341,8 @@ Section ClosedLoopCtrlGramPd.
     rewrite lt0r; apply/andP; split; last by case: Ppsd => _ /(_ v).
     apply/negP=> /eqP qf0.
     (*
-      Конечная Лёвнер-оценка: lyap_partial F_p W N <= P, форма при v обращается
-      в ноль.
+      Конечная Лёвнер-оценка: $"lyap_partial" F_p W N <= P$, форма при v
+      обращается в ноль.
     *)
     have Lle : psd_le (lyap_partial F_p W N) P
       := lyap_partial_fix_le Ppsd Pfix N.
@@ -365,7 +364,7 @@ Section ClosedLoopCtrlGramPd.
       by apply: sumr_ge0 => i _; exact: ge0 i.
     have Wu0 : forall j, (j < N)%N -> W *m ((F_p^t*)^+j *m v) = 0.
       by move=> j hj; exact: psd_qf0_mul0 Wpsd (termW0 (Ordinal hj)).
-    (* (Fp†)^j v = (A†)^j v (распространение Kp† (A†)^j v = 0). *)
+    (* $(F_p†)^j v = (A†)^j v$ (распространение $K_p† (A†)^j v = 0$). *)
     have keyEq : forall j, (j <= N)%N -> (F_p^t*)^+j *m v = (A^t*)^+j *m v.
       elim => [|j IH] hj; first by rewrite !expr0.
       have IHj : (F_p^t*)^+j *m v = (A^t*)^+j *m v := IH (ltnW hj).

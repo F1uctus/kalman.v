@@ -62,7 +62,7 @@ Section FloatRun.
 Definition f_cinv  : @seqmx float -> @seqmx float := cinv_fl (C := float) 1.
 Definition f_cinv3 : @seqmx float -> @seqmx float := cinv_fl (C := float) 3.
 
-(* Прогон и трёхмерный прогон из sim.v при C := float. *)
+(* Прогон и трёхмерный прогон из sim.v при $C := "float"$. *)
 Definition f_run (T : nat) : seq (sim_row float) :=
   kalman_sim_run finv (fun x : float => x) f_cinv T.
 

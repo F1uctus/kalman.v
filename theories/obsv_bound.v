@@ -5,10 +5,10 @@
   Грамианы наблюдаемости и управляемости.
 
   В этом файле:
-  - $"obsv_gram" k := sum_(j < k) (F^j)† H† "invR" H F^j$
-    (грамиан наблюдаемости с весом `invR`).
-  - $"ctrl_gram" k := sum_(j < k) F^j G Q G† (F^j)†$
-    (грамиан управляемости по состоянию).
+  - $"obsv_gram" k := sum_(j < k) (F^j)† H† "invR" H F^j$ (грамиан наблюдаемости
+    с весом `invR`).
+  - $"ctrl_gram" k := sum_(j < k) F^j G Q G† (F^j)†$ (грамиан управляемости по
+    состоянию).
 
   Основные результаты:
   - `obsv_gram_psd`, `ctrl_gram_psd` - безусловная неотрицательная
@@ -139,7 +139,7 @@ Section ObsvBound.
       0 <= \tr ((H *m F^+j *m v)^t* *m invmx R *m (H *m F^+j *m v)).
       move=> j; apply: psd_tr_ge0.
       exact: psd_congr psd_invR.
-    (* по наблюдаемости: ∃ j : 'I_n, H ⋅ F^j ⋅ v != 0 *)
+    (* по наблюдаемости: `∃ j : 'I_n, H ⋅ F^j ⋅ v != 0` *)
     have [j0 Hj0] : exists j : 'I_n, H *m F^+j *m v != 0.
       case: (boolP [forall j : 'I_n, H *m F^+j *m v == 0]) => [/forallP Hall|HnotAll].
       - exfalso; apply: (negP vNZ); apply/eqP; apply: Hobs => i.
@@ -327,9 +327,8 @@ Section ObsvBound.
   Lemma riccati_iter_le_ctrl_gram (k : nat) :
     psd_le (iter k (riccati_step F G H Q R) 0) (ctrl_gram k).
   (*
-    Для оптимального усиления Калмана $"update_cov" P prec.eq P$
-    (лемма $"update_cov_le"$). По тождеству сдвига грамиана и предположению
-    индукции
+    Для оптимального усиления Калмана $"update_cov" P prec.eq P$ (лемма
+    $"update_cov_le"$). По тождеству сдвига грамиана и предположению индукции
     $"riccati_step" P prec.eq "predict_cov" P prec.eq "predict_cov"("ctrl_gram" k) = G Q G† + F ("ctrl_gram" k) F† = "ctrl_gram"(k+1)$.
   *)
   Proof.
@@ -340,14 +339,14 @@ Section ObsvBound.
     set Pk := iter k _ _.
     have Pk_psd : psd Pk := riccati_iter0_psd F G H Q_psd R_pd k.
     have Ppred_psd : psd (predict_cov F G Q Pk) := predict_cov_psd F G Q_psd Pk_psd.
-    (* Шаг 1: riccati_step Pk <= predict_cov Pk *)
+    (* Шаг $1: "riccati_step" "Pk" <= "predict_cov" "Pk"$ *)
     have step1 : psd_le (riccati_step F G H Q R Pk) (predict_cov F G Q Pk).
       rewrite /psd_le !riccati_stepE.
       apply: (update_cov_le H R_pd Ppred_psd).
-    (* Шаг 2: predict_cov Pk <= predict_cov (ctrl_gram k) *)
+    (* Шаг $2: "predict_cov" "Pk" <= "predict_cov" ("ctrl_gram" k)$ *)
     have step2 : psd_le (predict_cov F G Q Pk) (predict_cov F G Q (ctrl_gram k)).
       apply: (predict_cov_mono F G Q IH).
-    (* Шаг 3: predict_cov (ctrl_gram k) = ctrl_gram k.+1 *)
+    (* Шаг `3: predict_cov (ctrl_gram k) = ctrl_gram k.+1` *)
     have step3 : predict_cov F G Q (ctrl_gram k) = ctrl_gram k.+1.
       by rewrite !predict_covE ctrl_gram_shift addrC.
     rewrite -step3.
