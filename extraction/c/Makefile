@@ -18,7 +18,6 @@ CFLAGS  := -Wno-everything -O2 -fomit-frame-pointer -I$(RUNTIME) -I$(OUT)
 RTOBJS  := $(RUNTIME)/gc_stack.o $(RUNTIME)/rocq_c_ffi.o \
            $(RUNTIME)/prim_int63.o $(RUNTIME)/prim_floats.o
 
-# Имена совпадают с extraction/wasm: те же документы, другая цель сборки.
 EXPERIMENTS := dare gramian schur run run3 orthogonality lyapunov spectral
 dare_JSON         := dare_convergence.json
 gramian_JSON      := gramian.json

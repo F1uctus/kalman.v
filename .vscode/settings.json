@@ -16,6 +16,10 @@
     "Asym",
     "Aunit",
     "Bherm",
+    "foldr",
+    "fmax",
+    "fabs",
+    "finv",
     "Bignums",
     "bigq",
     "bigr",
@@ -34,6 +38,7 @@
     "cinv",
     "clearbody",
     "clib",
+    "cnat",
     "codly",
     "cofactor",
     "coker",
@@ -58,6 +63,7 @@
     "Entrywise",
     "eqtype",
     "eqxx",
+    "erefl",
     "esym",
     "exfalso",
     "exprn",
@@ -158,7 +164,9 @@
     "mxred",
     "mxtopo",
     "mxtrace",
+    "nbare",
     "nbhs",
+    "ncall",
     "negb",
     "NIXPKGS",
     "nneg",
@@ -170,11 +178,14 @@
     "normedtype",
     "norml",
     "normr",
+    "npartial",
+    "nsub",
     "nums",
     "Objs",
     "obsv",
     "ondemand",
     "oner",
+    "oneside",
     "opam",
     "oppmx",
     "oppr",
@@ -214,6 +225,7 @@
     "rpred",
     "Rseqmx",
     "Sayed",
+    "scalarmx",
     "scalemx",
     "schur",
     "semidefinite",
@@ -439,23 +451,13 @@
   "vsrocq.goals.auto": true,
   "vsrocq.path": "./_opam/bin/vsrocqtop",
   "vsrocq.proof.mode": 1,
-  "scopeMath.languages": [
+  "inlineTypst.languages": [
     "rocq",
     "coq",
     "coqc"
   ],
-  "scopeMath.scopes": [
+  "inlineTypst.scopes": [
     "comment"
   ],
-  "scopeMath.engine.default": "typst",
-  "scopeMath.engine.byLanguage": {
-    "rocq": "typst",
-    "coq": "typst",
-    "coqc": "typst"
-  },
-  "scopeMath.engine.byExtension": {
-    ".v": "typst"
-  },
-  "scopeMath.typstPath": "typst",
-  "scopeMath.typst.preamble": "paper/common/preamble.typ"
+  //"inlineTypst.typst.preamble": "paper/common/preamble.typ"
 }

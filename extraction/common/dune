@@ -1,7 +1,6 @@
 ; Общие модули печати и набор документов JSON с сырыми данными фигур.
 ; Каталог собирается и dune (для генератора данных в extraction/data), и
-; вручную Makefile-ами extraction/c и extraction/wasm в переключателе opam с
-; CertiRocq.
+; вручную Makefile-ом extraction/c в переключателе opam с CertiRocq.
 (rocq.theory
  (name KalmanShow)
  (package kalman)

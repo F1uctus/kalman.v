@@ -8,7 +8,7 @@ The compiled Gallina terms are the eight figure documents of
 `extraction/common/figures.v`, instantiated at the exact rational type
 `Q` in `extraction/common/figures_Q.v` — the same documents the
 dune-native generator instantiates at `float64`, and the same ones
-`extraction/wasm` compiles. `kalman_c.v` therefore holds nothing but
+the dune generator instantiates at `float64`. `kalman_c.v` holds nothing but
 `CertiRocq Compile` commands: the JSON printing is defined once, in
 `figures.v`, so no output format lives in this directory.
 
@@ -121,6 +121,6 @@ the active opam switch).
 - `smoke.v` — smoke tests with `vm_compute`-pinned expected strings;
 - `kalman_c.v` — `CertiRocq Compile` commands only;
 - `../common/figures.v`, `../common/figures_Q.v` — the eight documents
-  and their `Q` instantiation, shared with `extraction/wasm`;
+  and their `Q` instantiation;
 - `main.c` — walks the returned byte list and prints it;
 - `generated/` — CertiRocq output, binaries and JSON (git-ignored).
