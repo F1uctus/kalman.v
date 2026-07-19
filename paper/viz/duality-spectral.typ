@@ -4,7 +4,7 @@
 // viz/duality-spectral.typ — PBH spectral mirror of estimation/control duality.
 //
 // Data: paper/viz/wire.typ `pbh-duality`, a Typst port of the former
-// extraction/ocaml/driver.ml `gen_duality`.
+// wire.typ `pbh-duality`.
 // A didactic 2×2 real-spectrum system. For each eigenmode the PBH criterion asks
 // two questions:
 //   • detectability  — does the output see it?    (H v ≠ 0, right eigenvector v)

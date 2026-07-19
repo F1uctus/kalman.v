@@ -3,7 +3,7 @@
 //
 // viz/spectral.typ — the antitone inverse figure.
 //
-// Data: paper/data/spectral.json, emitted by extraction/ocaml/driver.exe
+// Data: paper/data/spectral.json, emitted by extraction/data/gen_data.v
 // (gen_spectral). Matrices and their inverses are the extracted, verified core
 // (cinv_fl = invmx, Faddeev-LeVerrier); the driver self-checks A ⪯ B and B⁻¹ ⪯ A⁻¹ on the exact
 // rationals and emits float eigenvalues + quadratic-form ellipse axes.

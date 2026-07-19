@@ -2,8 +2,8 @@
 
 Compiles the same verified Kalman filter programs as `extraction/c` to
 WebAssembly, running under `wasmtime`, as a second, independent execution
-of the raw-matrix figure data alongside the wired OCaml driver in
-`extraction/ocaml`.
+of the raw-matrix figure data alongside the wired, dune-native generator
+in `extraction/data`.
 
 The compiled Gallina terms are the closed `Q` instantiations from
 `theories/seqmx/inst_Q.v`, the same generic seqmx programs of
@@ -115,33 +115,42 @@ pipeline implements exact `Q` arithmetic without a GMP-backed fast path;
 budget on the order of fifteen to twenty minutes for the full `make all`
 run.
 
-`paper/data` itself is produced by the wired OCaml driver in
-`extraction/ocaml`, the primary path that dune and CI keep current. This
-WASM directory is the cross-checked verified alternative: it recompiles
-the identical Gallina terms through a completely different backend and
-runtime, so agreement between the two confirms the figure data
-independently of any single extraction pipeline rather than adding a
-route CI depends on.
+`paper/data` itself is produced by `extraction/data`, the primary path
+that dune and CI keep current: the same documents of
+`extraction/common/figures.v`, instantiated on primitive `float64` and
+written out by a coq-elpi command. That path rounds at every operation.
+This WASM directory is the exact cross-check: it compiles the *same*
+document terms at the exact rational type `Q`, through a completely
+different backend and runtime, so agreement between the two confirms the
+figure data independently of both the arithmetic and the pipeline.
+Values agree to double-precision rounding rather than byte for byte,
+since one path prints exact rationals and the other prints rounded
+`float64`.
 
-## Schur stability: `A_cl` only
+## Schur stability: `A_cl` only on this path
 
-Both drivers emit only the closed-loop matrix `A_cl` for the Schur
-stability experiment, not its powers or their Frobenius norms. Computing
-`A_cl^k` exactly in rationals for `k` up to 30 is intractable under
-`wasmtime`, which has no GMP-backed bignum arithmetic behind the default
-CertiRocq erasure pipeline; an earlier version of this experiment that
-also computed the power sequence exceeded forty minutes on that step
-alone. `kalman_wasm.v`'s `schur_json` and `driver.ml`'s `gen_schur` were
-both simplified to emit `A_cl` alone so the two drivers keep an identical
-schema. Typst computes the powers of `A_cl` and their norms from this
-single matrix when it renders the figure.
+This directory emits only the closed-loop matrix `A_cl` for the Schur
+stability experiment (`figures.v` `schur_doc`), not its powers or their
+Frobenius norms. Computing `A_cl^k` exactly in rationals for `k` up to 30
+is intractable: the denominators of `A_cl` are already large after 200
+DARE iterations, and `wasmtime` has no GMP-backed bignum arithmetic
+behind the default CertiRocq erasure pipeline. An earlier version of this
+experiment that also computed the power sequence exceeded forty minutes
+on that step alone.
+
+The `float64` path has no such cost and does emit the powers and their
+squared norms (`figures.v` `schur_pow_doc`), which is what the figure
+reads. Cross-checking `A_cl` alone is enough: the powers are a
+deterministic function of it.
 
 ## Layout
 
 - `kalman_wasm.v`: entry points and `CertiRocq Compile` commands for all
   eight experiments;
-- `show_json.v`: `Q` to fixed 20-digit decimal string, matrix and JSON
-  object combinators;
+- `../common/show_json.v`: `Q` to fixed 20-digit decimal string, matrix
+  and JSON object combinators;
+- `../common/figures.v`: the eight figure documents, generic in the
+  coefficient type;
 - `wasi_main.c`: WASI driver that calls the compiled `body` and prints
   the returned byte list to standard output;
 - `Makefile`: builds every experiment through the CertiRocq switch,

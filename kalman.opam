@@ -47,8 +47,6 @@ depends: [
   "rocq2typst-analysis" {>= "0.1.0"}
   "rocq2typst-coqeal" {>= "0.1.0"}
   "rocq2typst-infotheo" {>= "0.1.0"}
-  "zarith"
-  "yojson" {>= "2.0.0"}
 ]
 
 tags: [

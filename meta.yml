@@ -158,15 +158,6 @@ dependencies:
       version: '{>= "0.1.0"}'
     description: |-
       [rocq2typst](https://github.com/F1uctus/rocq2typst) Infotheo notation dictionary
-  - opam:
-      name: zarith
-    description: |-
-      [Zarith](https://github.com/ocaml/Zarith) for exact rational arithmetic in the extracted driver
-  - opam:
-      name: yojson
-      version: '{>= "2.0.0"}'
-    description: |-
-      [Yojson](https://github.com/ocaml-community/yojson) for JSON output of numerical experiments
 
 build: |-
   ## Building and installation instructions

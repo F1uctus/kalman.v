@@ -1,0 +1,15 @@
+; Общие модули печати и набор документов JSON с сырыми данными фигур.
+; Каталог собирается и dune (для генератора данных в extraction/data), и
+; вручную Makefile-ами extraction/c и extraction/wasm в переключателе opam с
+; CertiRocq.
+(rocq.theory
+ (name KalmanShow)
+ (package kalman)
+ (flags :standard -w -all)
+ (modules show show_json figures)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
+           Kalman Bignums Stdlib infotheo mathcomp.ssreflect
+           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
+           Interval Flocq Coquelicot))

@@ -50,11 +50,6 @@ mkCoqDerivation {
     rocq2typst-infotheo
   ];
 
-  nativeBuildInputs = with coq.ocamlPackages; [
-    zarith
-    yojson
-  ];
-
   meta = {
     description = "Kalman filter implementation using Rocq, MathComp, and CoqEAL";
     license = lib.licenses.gpl3Plus;

@@ -3,7 +3,7 @@
 //
 // viz/gramian.typ — observability / controllability gramian ellipses.
 //
-// Data: paper/data/gramian.json, emitted by extraction/ocaml/driver.exe from the
+// Data: paper/data/gramian.json, emitted by extraction/data/gen_data.v from the
 // extracted, verified seqmx programs theories/seqmx/gramian.v
 // (`obsv_gram_seqmx` / `ctrl_gram_seqmx`, proven equal to theories/obsv_bound.v
 // `obsv_gram` / `ctrl_gram`). The picture is the

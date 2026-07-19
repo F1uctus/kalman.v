@@ -39,6 +39,9 @@ vo:
 	    theories/seqmx/inst_Q.vo theories/seqmx/gramian.vo theories/seqmx/closed_loop.vo
 	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show.v
 	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show_json.v
+	$(OPAM) rocq c -w -all \
+	    -Q $(ROOT)/_build_certirocq/default/theories Kalman \
+	    $(SHOWQ) ../common/figures.v
 
 compile: vo
 	mkdir -p $(OUT)

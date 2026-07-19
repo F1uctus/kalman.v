@@ -21,7 +21,7 @@
 (rule
  (target paper_data.stamp)
  (package kalman)
- (deps (alias %{project_root}/extraction/ocaml/paper_data)
+ (deps (alias %{project_root}/extraction/data/paper_data)
        (alias %{project_root}/extraction/typst/paper_data))
  (action
   (write-file %{target} "generated")))

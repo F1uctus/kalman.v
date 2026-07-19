@@ -18,7 +18,7 @@
 // exact extracted numbers: the perpendicular height is √Tr(P⁺) and the in-plane
 // base is √(Tr(P⁻) − Tr(P⁺)), so the slanted error is literally √Tr(P⁻).
 //
-// Data: paper/data/orthogonality.json (extracted seqmx programs; see driver.ml).
+// Data: paper/data/orthogonality.json (extracted seqmx programs; see extraction/common/figures.v).
 
 #import "@preview/cetz:0.5.2"
 #import "proj3.typ": proj

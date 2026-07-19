@@ -31,6 +31,7 @@ Definition q_dec (p : nat) (q : Q) : string :=
   s ++ string_of_Z (a / d)%Z ++ "." ++ frac_digits p (a mod d)%Z d.
 
 Definition jnum (q : Q) : string := q_dec 20 q.
+Definition jnat (n : nat) : string := string_of_Z (Z.of_nat n).
 Definition jarr (xs : list string) : string := "[" ++ String.concat "," xs ++ "]".
 Definition jrow (r : list Q) : string := jarr (map jnum r).
 Definition jmat (m : @seqmx Q) : string := jarr (map jrow m).

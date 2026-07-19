@@ -2,7 +2,7 @@
 
 Compiles the verified Kalman filter programs to C(light) with
 [CertiRocq](https://github.com/CertiRocq/certirocq) **0.9.1+9.1**, in
-addition to the OCaml extraction in `extraction/ocaml`.
+addition to the dune-native figure-data generator in `extraction/data`.
 
 The compiled Gallina terms are the closed `Q` instantiations from
 `theories/seqmx/inst_Q.v` — the same generic seqmx programs of

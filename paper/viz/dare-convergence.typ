@@ -3,7 +3,7 @@
 //
 // viz/dare-convergence.typ — the DARE / Riccati convergence figure.
 //
-// Data: paper/data/dare_convergence.json, emitted by extraction/ocaml/driver.exe
+// Data: paper/data/dare_convergence.json, emitted by extraction/data/gen_data.v
 // (the faithful port of theories/kalman.v `riccati_step` iterated from 0, i.e.
 // the `Pseq` of theories/dare.v whose limit is `P_ss`).
 //

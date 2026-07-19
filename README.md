@@ -45,8 +45,6 @@ CoqEAL refinements.
   - [Infotheo](https://github.com/affeldt-aist/infotheo) finite distributions and expectation
   - [Bignums](https://github.com/coq-community/bignums) binary arithmetic for `bigQ` execution
   - [CoqEAL](https://github.com/coq-community/coqeal) refinements for seqmx extraction
-  - [Zarith](https://github.com/ocaml/Zarith) for exact rational arithmetic in the extracted driver
-  - [Yojson](https://github.com/ocaml-community/yojson) for JSON output of numerical experiments
 - Rocq/Coq namespace: `Kalman`
 - Related publication(s): none
 

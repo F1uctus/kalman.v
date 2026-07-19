@@ -3,12 +3,20 @@
 //
 // viz/schur-stability.typ — Schur stability of the closed loop.
 //
-// Data: paper/data/schur_stability.json, emitted by extraction/ocaml/driver.exe
+// Data: paper/data/schur_stability.json, emitted by extraction/data/gen_data.v
 // from the extracted, verified theories/seqmx/closed_loop.v
 // `closed_loop_seqmx`. The closed-loop matrix A_cl = F - F K_f H = F(I - K_f H)
 // (the predicted-covariance form F_p of dare.v `riccati_closed_loop_identity`)
 // has spectral radius rho < 1 — the classical condition behind DARE convergence
-// (theories/spec_rad.v `spec_rad_lt1`, detectability.v `schur_stable`). Two panels:
+// (theories/spec_rad.v `spec_rad_lt1`, detectability.v `schur_stable`).
+//
+// The powers A_cl^k and their squared Frobenius norms tr(M† M) are computed in
+// Rocq as well (extraction/common/figures.v `schur_doc`), so this file only
+// takes a square root: log10 ||M||_F = log10 tr(M† M) / 2. The square root
+// stays here because it is not defined on the exact rationals of the
+// cross-checked Q path.
+//
+// Two panels:
 //   (a) the eigenvalues of A_cl, the spectral-radius circle of radius rho, and
 //       the unit circle in the complex plane;
 //   (b) ||A_cl^k||_F -> 0 (geometric decay) — the dynamical meaning of rho < 1,
@@ -16,7 +24,7 @@
 
 #import "@preview/cetz:0.5.2"
 #import "@preview/cetz-plot:0.1.4"
-#import "wire.typ": load, frob, mat-pow, spectral-radius, eig2-general
+#import "wire.typ": load, spectral-radius, eig2-general
 #import "style.typ": viz-canvas, viz-resolve
 
 #let raw = load("/paper/data/schur_stability.json")
@@ -24,8 +32,8 @@
 #let schur-data = (
   A_cl: raw.A_cl, spectral_radius: spectral-radius(raw.A_cl),
   eigenvalues: ((re: r1, im: i1), (re: r2, im: i2)),
-  // The raw JSON carries only A_cl. Typst computes A_cl^k and its Frobenius norm here.
-  power_norms: range(31).map(k => (k: k, frob: frob(mat-pow(raw.A_cl, k)))),
+  // Rocq emits A_cl^k and tr((A_cl^k)† A_cl^k); the norm is its square root.
+  power_norms: raw.powers.map(p => (k: p.k, frob: calc.sqrt(p.frob_sq))),
 )
 
 #let circle-curve(r) = t => (r * calc.cos(t), r * calc.sin(t))

@@ -98,9 +98,9 @@
   if sys.inputs.at("assert-pages", default: "on") != "off" {
     let heads = query(heading.where(level: 1))
     let pages = heads.map(h => h.location().page())
-    let frozen = (2, 4, 5, 6, 13, 20, 27, 37, 66, 73, 74)
+    let frozen = (2, 4, 5, 6, 13, 20, 27, 37, 66, 74, 75)
     let total = query(<thesis-end>).first().location().page()
-    let frozen-total = 74
+    let frozen-total = 75
     let msg = (
       "Печатная раскладка сместилась."
       + " Число страниц: " + str(total)

@@ -1,0 +1,54 @@
+; Генерация сырых данных фигур средствами Rocq.
+; kalman_data.v инстанцирует документы extraction/common/figures.v на float64 и
+; объявляет команду elpi WriteJson; правило ниже компилирует gen_data.v, который
+; пишет восемь файлов JSON, и продвигает их в paper/data (их читают фигуры
+; paper/viz).
+(rocq.theory
+ (name KalmanData)
+ (package kalman)
+ (flags :standard -w -all)
+ (modules kalman_data)
+ (plugins rocq-elpi.elpi)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
+           Kalman KalmanShow Bignums Stdlib infotheo mathcomp.ssreflect
+           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
+           Interval Flocq Coquelicot))
+
+(rule
+ (targets
+  dare_convergence.json
+  gramian.json
+  schur_stability.json
+  kalman_run.json
+  kalman_run_3d.json
+  orthogonality.json
+  lyapunov.json
+  spectral.json
+  gen_data.vo
+  gen_data.glob)
+ (mode
+  (promote
+   (until-clean)
+   (into ../../paper/data)
+   (only
+    dare_convergence.json
+    gramian.json
+    schur_stability.json
+    kalman_run.json
+    kalman_run_3d.json
+    orthogonality.json
+    lyapunov.json
+    spectral.json)))
+ (package kalman)
+ (deps gen_data.v kalman_data.vo)
+ (action
+  (run rocq c -w -all -Q %{project_root}/theories Kalman
+       -Q %{project_root}/extraction/common KalmanShow
+       -Q . KalmanData gen_data.v)))
+
+(alias
+ (name paper_data)
+ (package kalman)
+ (deps dare_convergence.json))

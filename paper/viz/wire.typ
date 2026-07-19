@@ -4,7 +4,7 @@
 // viz/wire.typ. Derived-math library for the figures. Loads the raw verified
 // matrices emitted by the extracted drivers under paper/data/*.json and
 // provides the eigenvalue, ellipse, Frobenius, spectral-radius, PD/PSD, and
-// PBH functions the figures apply. Ports extraction/ocaml/driver.ml's former
+// PBH functions the figures apply. Holds the former driver-side
 // float math.
 
 // Parse a JSON file at `path` into a Typst dictionary.
@@ -57,21 +57,6 @@
   calc.max(calc.sqrt(r1*r1 + i1*i1), calc.sqrt(r2*r2 + i2*i2))
 }
 
-// Frobenius norm of a matrix.
-#let frob(M) = calc.sqrt(M.map(r => r.map(x => x*x).sum()).sum())
-
-// Square matrix multiply, in float arithmetic, for the Schur power-decay figure.
-#let mat-mul(A, B) = range(A.len()).map(i => range(B.at(0).len()).map(j =>
-  range(B.len()).fold(0.0, (s, l) => s + A.at(i).at(l) * B.at(l).at(j))))
-
-// Matrix power by repeated multiplication, starting from the identity.
-#let mat-pow(M, k) = {
-  let n = M.len()
-  let acc = range(n).map(i => range(n).map(j => if i == j { 1.0 } else { 0.0 }))
-  for _ in range(k) { acc = mat-mul(acc, M) }
-  acc
-}
-
 // Frobenius distance between two equal-shape matrices.
 #let frob-dist(P, Q) = {
   let s = 0.0
@@ -100,7 +85,7 @@
 // PBH spectral mirror of estimation and control duality, for a fixed
 // didactic 2x2 system. For each eigenmode, tests whether it is detectable,
 // seen by the output, and stabilizable, reached by the input, then repeats
-// the test on the transposed dual system. Ports driver.ml's gen_duality,
+// the test on the transposed dual system. Replaces the former driver-side gen_duality,
 // dl_mode, reig2, and leig2. Takes no arguments, the system is hardcoded to
 // match the former driver's dl_F, dl_H, dl_G.
 #let pbh-duality() = {
