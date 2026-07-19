@@ -9,7 +9,7 @@
           kalman duality faddeev
           seqmx/support seqmx/inverse seqmx/riccati seqmx/gramian
           seqmx/closed_loop seqmx/sim
-          seqmx/inst_rat seqmx/inst_bigQ seqmx/inst_Q)
+          seqmx/inst_rat seqmx/inst_bigQ seqmx/inst_Q seqmx/inst_Float64)
  (plugins rocq-elpi.elpi)
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
            mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable

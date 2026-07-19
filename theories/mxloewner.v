@@ -60,7 +60,7 @@ Section LoewnerOrder.
     exact: psd_congr hAB.
   Qed.
 
-  (* Монотонность левой конгруэнции: A <= B ⇒ M A M† <= M B M†. *)
+  (* Монотонность левой конгруэнции: $A <= B ⇒ M A M† <= M B M†$. *)
   Lemma psd_le_lcongr (Mx A B : 'M[ℂ]_n) :
     psd_le A B -> psd_le (Mx *m A *m Mx^t*) (Mx *m B *m Mx^t*).
   Proof.
