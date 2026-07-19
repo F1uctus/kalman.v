@@ -63,8 +63,8 @@ dune build -p kalman
 dune install
 ```
 
-Building the `kalman` package extracts verified seqmx programs to OCaml,
-runs the driver, and promotes `paper/data/*.json` for Typst figures.
+Building the `kalman` package runs the verified seqmx programs inside Rocq
+and promotes `paper/data/*.json` for Typst figures.
 These JSON files are generated at build time and are not tracked in VCS.
 
 
