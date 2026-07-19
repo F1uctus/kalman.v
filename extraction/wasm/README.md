@@ -106,33 +106,13 @@ into the matching JSON file under `generated/`.
 
 `SWITCH=<path-or-name>` overrides the opam switch, matching
 `extraction/c`'s convention, and defaults to
-`/mnt/d/Dev/rocq/certirocq-datetime-demo`. `WASMTIME=<path>` overrides the
+the active opam switch. `WASMTIME=<path>` overrides the
 wasmtime binary if it is not on `PATH` under that name. The four iter-200
 steady-state terms, `dare`, `schur`, `orthogonality`, and `lyapunov`, each
 take several minutes under `wasmtime`, since the default CertiRocq erasure
 pipeline implements exact `Q` arithmetic without a GMP-backed fast path;
 budget on the order of fifteen to twenty minutes for the full `make all`
 run.
-
-## Verifying parity with `check.py`
-
-```bash
-python3 check.py generated ../../paper/data
-```
-
-`check.py` loads the matching pair of JSON files, one from the WASM
-output directory and one from `paper/data`, for each of the eight
-experiments and recursively compares every numeric leaf. It walks
-dictionaries by comparing key sets and recursing into their values, walks
-lists by comparing length and recursing elementwise, and compares
-remaining scalars, strings, and null values directly. Numeric leaves are
-checked to a tolerance of `1e-9` that scales with the reference value's
-magnitude, so both small and large matrix entries are held to a
-comparable relative accuracy. A `FAIL` on any file points to a wrong
-literal or dimension in `kalman_wasm.v` relative to `driver.ml`; fix the
-mismatched definition and rebuild that experiment. On a clean run the
-script prints `OK` for every file, then a final `PARITY OK` line, and
-exits `0`; any `FAIL` produces `PARITY FAILED` and exit code `1`.
 
 `paper/data` itself is produced by the wired OCaml driver in
 `extraction/ocaml`, the primary path that dune and CI keep current. This
@@ -165,7 +145,5 @@ single matrix when it renders the figure.
   the returned byte list to standard output;
 - `Makefile`: builds every experiment through the CertiRocq switch,
   clang, and wasmtime;
-- `check.py`: compares `generated/*.json` with `paper/data/*.json` to a
-  `1e-9` tolerance;
 - `generated/`: CertiRocq output, wasm binaries, and captured JSON;
   git-ignored.

@@ -2,14 +2,17 @@
 # скомпилированный в wasm32-wasi и исполняемый wasmtime. Каталог не в dune
 # и не в CI; сборка только вручную (см. README.md). Прямой backend Wasm
 # непригоден: он без сборки мусора и переполняет память на этих термах.
-# Результат сверяется с сырым выводом драйвера OCaml (check.py).
 
-SWITCH  ?= /mnt/d/Dev/rocq/certirocq-datetime-demo
-OPAM    := opam exec --switch $(SWITCH) --
+# Переключатель opam с CertiRocq. Пустое значение означает активный
+# переключатель. Задайте SWITCH=<имя или путь>, если CertiRocq стоит в другом.
+SWITCH  ?=
+OPAM    := opam exec $(if $(SWITCH),--switch $(SWITCH)) --
 ROOT    := $(abspath ../..)
+# Общие модули печати живут в extraction/common.
+SHOWQ   := -Q ../common KalmanShow
 OUT     := generated
 RT      := $(shell $(OPAM) rocq c -where)/user-contrib/CertiRocq/Plugin/runtime
-SYSROOT := /usr/share/wasi-sysroot
+SYSROOT ?= /usr/share/wasi-sysroot
 CC      := clang
 CFLAGS  := --target=wasm32-wasi --sysroot=$(SYSROOT) -O2 -Wno-everything -I$(RT) -I$(OUT) -I. -I../c
 LDFLAGS := -Wl,-z,stack-size=268435456
@@ -34,14 +37,14 @@ all: $(EXPERIMENTS)
 vo:
 	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
 	    theories/seqmx/kalman_sim_q.vo theories/seqmx/experiments.vo
-	$(OPAM) rocq c -w -all -Q ../c KalmanC ../c/show.v
-	$(OPAM) rocq c -w -all -Q ../c KalmanC -Q . KalmanC show_json.v
+	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show.v
+	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show_json.v
 
 compile: vo
 	mkdir -p $(OUT)
 	$(OPAM) rocq c -w -all \
 	    -Q $(ROOT)/_build_certirocq/default/theories Kalman \
-	    -Q ../c KalmanC -Q . KalmanC kalman_wasm.v
+	    $(SHOWQ) -Q . KalmanWasm kalman_wasm.v
 
 define RUN_ONE
 $(1): compile
@@ -53,3 +56,4 @@ $(foreach e,$(EXPERIMENTS),$(eval $(call RUN_ONE,$(e))))
 
 clean:
 	rm -rf $(OUT) *.vo *.vok *.vos *.glob *.aux
+	rm -f ../common/*.vo ../common/*.vok ../common/*.vos ../common/*.glob

@@ -21,7 +21,7 @@ From mathcomp.boot Require Import all_boot.
 From CoqEAL Require Import refinements seqmx.
 From Bignums Require Import BigQ.
 From Kalman.seqmx Require Import kalman_sim kalman_sim_q.
-From KalmanC Require Import show.
+From KalmanShow Require Import show.
 From CertiRocq.Plugin Require Import CertiRocq.
 
 Set CertiRocq Build Directory "generated".

@@ -16,7 +16,7 @@
 Set Warnings "-all".
 From Stdlib Require Import ZArith QArith Qreduction List Strings.String Strings.Byte.
 From Bignums Require Import BigQ.
-From KalmanC Require Import show.
+From KalmanShow Require Import show.
 From CertiRocq.Plugin Require Import CertiRocq.
 
 Set CertiRocq Build Directory "generated".

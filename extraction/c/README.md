@@ -65,7 +65,7 @@ Two CertiRocq 0.9.1 limitations block the `bigQ` instantiation:
 
 CertiRocq needs OCaml 4.14.3 (CompCert 3.17), while the project switch
 runs OCaml 5.4.1, so this directory builds against the local switch of
-`/mnt/d/Dev/rocq/certirocq-datetime-demo`. To recreate it:
+a dedicated opam switch. To create it:
 
 ```bash
 opam switch create <dir> ocaml-base-compiler.4.14.3
@@ -101,7 +101,7 @@ make check        # run the binary, compare with paper/data JSONs
 ```
 
 `SWITCH=<path-or-name>` overrides the opam switch (default:
-`/mnt/d/Dev/rocq/certirocq-datetime-demo`).
+the active opam switch).
 
 ## Layout
 

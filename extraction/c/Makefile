@@ -1,9 +1,13 @@
 # Сборка C-версии исполняемых программ фильтра Калмана через CertiRocq.
 # Каталог не участвует в dune и CI; сборка только вручную (см. README.md).
 
-SWITCH ?= /mnt/d/Dev/rocq/certirocq-datetime-demo
-OPAM   := opam exec --switch $(SWITCH) --
+# Переключатель opam с CertiRocq. Пустое значение означает активный
+# переключатель. Задайте SWITCH=<имя или путь>, если CertiRocq стоит в другом.
+SWITCH ?=
+OPAM   := opam exec $(if $(SWITCH),--switch $(SWITCH)) --
 ROOT   := $(abspath ../..)
+# Общие модули печати живут в extraction/common.
+SHOWQ  := -Q ../common KalmanShow
 
 RUNTIME := $(shell $(OPAM) rocq c -where)/user-contrib/CertiRocq/Plugin/runtime
 CC      := clang
@@ -15,8 +19,8 @@ RTOBJS  := $(RUNTIME)/gc_stack.o $(RUNTIME)/rocq_c_ffi.o \
 
 smoke:
 	mkdir -p generated
-	$(OPAM) rocq c -w -all -Q . KalmanC show.v
-	$(OPAM) rocq c -w -all -Q . KalmanC smoke.v
+	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show.v
+	$(OPAM) rocq c -w -all $(SHOWQ) -Q . KalmanC smoke.v
 	$(CC) $(CFLAGS) -c generated/smoke.c -o generated/smoke.o
 	$(CC) $(CFLAGS) -c generated/smoke_bq.c -o generated/smoke_bq.o
 	$(CC) $(CFLAGS) -c generated/glue_smoke.c -o generated/glue_smoke.o
@@ -33,10 +37,10 @@ theories-vo:
 
 kalman:
 	mkdir -p generated
-	$(OPAM) rocq c -w -all -Q . KalmanC show.v
+	$(OPAM) rocq c -w -all $(SHOWQ) ../common/show.v
 	$(OPAM) rocq c -w -all \
 	    -Q $(ROOT)/_build_certirocq/default/theories Kalman \
-	    -Q . KalmanC kalman_c.v
+	    $(SHOWQ) -Q . KalmanC kalman_c.v
 	$(CC) $(CFLAGS) -c generated/kalman_c.c -o generated/kalman_c.o
 	$(CC) $(CFLAGS) -c generated/glue_kalman.c -o generated/glue_kalman.o
 	$(CC) $(CFLAGS) -o generated/kalman_c_bin main.c \
@@ -48,3 +52,4 @@ check:
 
 clean:
 	rm -rf generated *.vo *.vok *.vos *.glob *.aux
+	rm -f ../common/*.vo ../common/*.vok ../common/*.vos ../common/*.glob
