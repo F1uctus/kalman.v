@@ -38,7 +38,7 @@ all: $(EXPERIMENTS)
 
 vo:
 	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
-	    theories/seqmx/inst_Q.vo extraction/common/figures.vo
+	    theories/seqmx/inst_Q.vo extraction/common/figures_Q.vo
 
 compile: vo
 	mkdir -p $(OUT)

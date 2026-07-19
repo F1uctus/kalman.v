@@ -5,17 +5,21 @@ WebAssembly, running under `wasmtime`, as a second, independent execution
 of the raw-matrix figure data alongside the wired, dune-native generator
 in `extraction/data`.
 
-The compiled Gallina terms are the closed `Q` instantiations from
-`theories/seqmx/inst_Q.v`, the same generic seqmx programs of
-`riccati.v`/`sim.v` that `extraction/c` already compiles to
-native C. Only the target changes: the C(light) that CertiRocq emits is
-cross-compiled with clang for `wasm32-wasi` and executed by `wasmtime`
-instead of running natively. See `extraction/c/README.md` for the
-CertiRocq switch setup and the value-preserving shims that make the
-theory extractable at all; this directory reuses the same closed terms
-unchanged and adds only the wasm32-wasi backend.
+The compiled Gallina terms are the eight figure documents of
+`extraction/common/figures.v` instantiated at `Q` in
+`extraction/common/figures_Q.v` — literally the same definitions
+`extraction/c` compiles, so `kalman_wasm.v` and `kalman_c.v` differ only
+in their `-file` targets. Only the backend target changes: the C(light)
+that CertiRocq emits is cross-compiled with clang for `wasm32-wasi` and
+executed by `wasmtime` instead of running natively. See
+`extraction/c/README.md` for the CertiRocq switch setup and the
+value-preserving shims that make the theory extractable at all.
 
-`kalman_wasm.v` defines eight entry points, `dare gramian schur run run3
+Since both directories compile the same terms, their outputs are byte
+identical; `extraction/c` is the faster way to produce them, and this
+directory additionally exercises the wasm32-wasi backend and runtime.
+
+`kalman_wasm.v` compiles eight entry points, `dare gramian schur run run3
 orthogonality lyapunov spectral`, each producing one JSON file under
 `generated/` that names the matching file under `paper/data`:
 `dare_convergence.json gramian.json schur_stability.json kalman_run.json
@@ -145,12 +149,12 @@ deterministic function of it.
 
 ## Layout
 
-- `kalman_wasm.v`: entry points and `CertiRocq Compile` commands for all
-  eight experiments;
-- `../common/show_json.v`: `Q` to fixed 20-digit decimal string, matrix
+- `kalman_wasm.v`: `CertiRocq Compile` commands for all eight
+  experiments, and nothing else;
+- `../common/figures.v`, `../common/figures_Q.v`: the eight documents and
+  their `Q` instantiation, shared with `extraction/c`;
+- `../common/show_json.v`: `Q` to fixed 20-digit decimal string, array
   and JSON object combinators;
-- `../common/figures.v`: the eight figure documents, generic in the
-  coefficient type;
 - `wasi_main.c`: WASI driver that calls the compiled `body` and prints
   the returned byte list to standard output;
 - `Makefile`: builds every experiment through the CertiRocq switch,

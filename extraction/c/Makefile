@@ -10,49 +10,59 @@ ROOT   := $(abspath ../..)
 # каталоге сборки, чтобы не оставлять .vo рядом с исходниками.
 COMMON := $(abspath ../../_build_certirocq/default/extraction/common)
 SHOWQ  := -Q $(COMMON) KalmanShow
+OUT    := generated
 
 RUNTIME := $(shell $(OPAM) rocq c -where)/user-contrib/CertiRocq/Plugin/runtime
 CC      := clang
-CFLAGS  := -Wno-everything -O2 -fomit-frame-pointer -I$(RUNTIME) -Igenerated
+CFLAGS  := -Wno-everything -O2 -fomit-frame-pointer -I$(RUNTIME) -I$(OUT)
 RTOBJS  := $(RUNTIME)/gc_stack.o $(RUNTIME)/rocq_c_ffi.o \
            $(RUNTIME)/prim_int63.o $(RUNTIME)/prim_floats.o
 
-.PHONY: smoke common-vo theories-vo kalman check clean
+# Имена совпадают с extraction/wasm: те же документы, другая цель сборки.
+EXPERIMENTS := dare gramian schur run run3 orthogonality lyapunov spectral
+dare_JSON         := dare_convergence.json
+gramian_JSON      := gramian.json
+schur_JSON        := schur_stability.json
+run_JSON          := kalman_run.json
+run3_JSON         := kalman_run_3d.json
+orthogonality_JSON:= orthogonality.json
+lyapunov_JSON     := lyapunov.json
+spectral_JSON     := spectral.json
 
-smoke: common-vo
-	mkdir -p generated
+.PHONY: all smoke vo compile clean $(EXPERIMENTS)
+
+all: $(EXPERIMENTS)
+
+smoke: vo
+	mkdir -p $(OUT)
 	$(OPAM) rocq c -w -all $(SHOWQ) -Q . KalmanC smoke.v
-	$(CC) $(CFLAGS) -c generated/smoke.c -o generated/smoke.o
-	$(CC) $(CFLAGS) -c generated/smoke_bq.c -o generated/smoke_bq.o
-	$(CC) $(CFLAGS) -c generated/glue_smoke.c -o generated/glue_smoke.o
-	$(CC) $(CFLAGS) -o generated/smoke_bin main.c \
-	    generated/smoke.o generated/glue_smoke.o $(RTOBJS) -lm
-	$(CC) $(CFLAGS) -o generated/smoke_bq_bin main.c \
-	    generated/smoke_bq.o generated/glue_smoke.o $(RTOBJS) -lm
-	./generated/smoke_bin; echo
-	./generated/smoke_bq_bin; echo
+	$(CC) $(CFLAGS) -c $(OUT)/smoke.c -o $(OUT)/smoke.o
+	$(CC) $(CFLAGS) -c $(OUT)/smoke_bq.c -o $(OUT)/smoke_bq.o
+	$(CC) $(CFLAGS) -c $(OUT)/glue_smoke.c -o $(OUT)/glue_smoke.o
+	$(CC) $(CFLAGS) -o $(OUT)/smoke_bin main.c \
+	    $(OUT)/smoke.o $(OUT)/glue_smoke.o $(RTOBJS) -lm
+	$(CC) $(CFLAGS) -o $(OUT)/smoke_bq_bin main.c \
+	    $(OUT)/smoke_bq.o $(OUT)/glue_smoke.o $(RTOBJS) -lm
+	./$(OUT)/smoke_bin; echo
+	./$(OUT)/smoke_bq_bin; echo
 
-common-vo:
+vo:
 	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
-	    extraction/common/figures.vo
+	    theories/seqmx/inst_Q.vo extraction/common/figures_Q.vo
 
-theories-vo:
-	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
-	    theories/seqmx/inst_Q.vo
-
-kalman: common-vo theories-vo
-	mkdir -p generated
+compile: vo
+	mkdir -p $(OUT)
 	$(OPAM) rocq c -w -all \
 	    -Q $(ROOT)/_build_certirocq/default/theories Kalman \
 	    $(SHOWQ) -Q . KalmanC kalman_c.v
-	$(CC) $(CFLAGS) -c generated/kalman_c.c -o generated/kalman_c.o
-	$(CC) $(CFLAGS) -c generated/glue_kalman.c -o generated/glue_kalman.o
-	$(CC) $(CFLAGS) -o generated/kalman_c_bin main.c \
-	    generated/kalman_c.o generated/glue_kalman.o $(RTOBJS) -lm
 
-check:
-	./generated/kalman_c_bin > generated/kalman_c.out
-	python3 check.py generated/kalman_c.out $(ROOT)/paper/data
+define RUN_ONE
+$(1): compile
+	$(CC) $(CFLAGS) -o $(OUT)/$(1)_bin main.c \
+	    $(OUT)/$(1).c $(OUT)/glue_$(1).c $(RTOBJS) -lm
+	./$(OUT)/$(1)_bin > $(OUT)/$($(1)_JSON)
+endef
+$(foreach e,$(EXPERIMENTS),$(eval $(call RUN_ONE,$(e))))
 
 clean:
-	rm -rf generated *.vo *.vok *.vos *.glob *.aux
+	rm -rf $(OUT) *.vo *.vok *.vos *.glob *.aux

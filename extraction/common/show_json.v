@@ -9,7 +9,7 @@
 Set Warnings "-all".
 From Stdlib Require Import ZArith QArith List Strings.String Strings.Ascii.
 From mathcomp.boot Require Import all_boot.
-From KalmanShow Require Import show. (* string_of_Z, nl, bytes_of_string *)
+From KalmanShow Require Import show. (* string_of_Z *)
 
 Local Open Scope string_scope.
 

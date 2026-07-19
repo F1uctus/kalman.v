@@ -4,13 +4,19 @@ Compiles the verified Kalman filter programs to C(light) with
 [CertiRocq](https://github.com/CertiRocq/certirocq) **0.9.1+9.1**, in
 addition to the dune-native figure-data generator in `extraction/data`.
 
-The compiled Gallina terms are the closed `Q` instantiations from
-`theories/seqmx/inst_Q.v` — the same generic seqmx programs of
-`riccati.v`/`sim.v`, only the coefficient type differs:
+The compiled Gallina terms are the eight figure documents of
+`extraction/common/figures.v`, instantiated at the exact rational type
+`Q` in `extraction/common/figures_Q.v` — the same documents the
+dune-native generator instantiates at `float64`, and the same ones
+`extraction/wasm` compiles. `kalman_c.v` therefore holds nothing but
+`CertiRocq Compile` commands: the JSON printing is defined once, in
+`figures.v`, so no output format lives in this directory.
 
-- `q_dare_iters 36` — DARE iterations (the data of `dare_convergence.json`);
-- `q_run 40` — the 2D constant-velocity run (`kalman_run.json`);
-- `q_run3 sim3_seed 30` — the 3D helix run (`kalman_run_3d.json`).
+Each experiment builds its own binary and writes the file that
+`paper/data` would hold, so the two paths can be compared directly.
+Values agree to double-precision rounding rather than byte for byte,
+since this path prints exact rationals and the dune path prints rounded
+`float64`.
 
 All `CertiRocq Compile` commands here use the **default pipeline**, in
 which every erasure pass is verified. Correctness is pinned in the main
@@ -20,7 +26,7 @@ development by `vm_compute` lemmas checked in CI: `q_run_eq_bigq` /
 satisfy the two-sigma band lemmas `sim_run_in_band` / `sim3_run_in_band`
 and the refinement `riccati_iter_seqmxC`. CoqEAL remains the layer that
 makes the terms executable; only the backend changes (Gallina to C
-instead of Gallina to OCaml).
+instead of the `vm_compute` used inside `dune`).
 
 ## Theory is compiled as is — no extraction-side shims
 
@@ -95,10 +101,16 @@ This directory is not part of dune or CI; it is built manually:
 make smoke        # gates: Q arithmetic (default pipeline) and bigQ
                   # arithmetic (-unsafe-erasure), byte-compared with
                   # vm_compute-pinned Examples in smoke.v
-make theories-vo  # Kalman .vo in the CertiRocq switch (_build_certirocq)
-make kalman       # kalman_c.v -> generated/kalman_c.c -> kalman_c_bin
-make check        # run the binary, compare with paper/data JSONs
+make vo           # Kalman and KalmanShow .vo in the CertiRocq switch
+make compile      # kalman_c.v -> generated/*.c for all eight experiments
+make spectral     # build and run one experiment -> generated/spectral.json
+make all          # build and run all eight experiments
 ```
+
+The four iter-200 steady-state terms, `dare`, `schur`, `orthogonality`
+and `lyapunov`, are the slow ones: the default CertiRocq erasure
+pipeline implements exact `Q` arithmetic with no GMP-backed fast path.
+The cheap experiments are `spectral`, `gramian`, `run` and `run3`.
 
 `SWITCH=<path-or-name>` overrides the opam switch (default:
 the active opam switch).
@@ -107,8 +119,8 @@ the active opam switch).
 
 - `show.v` — Q/bigQ to "num/den" decimal string, string to `list byte`;
 - `smoke.v` — smoke tests with `vm_compute`-pinned expected strings;
-- `kalman_c.v` — entry points and `CertiRocq Compile` commands;
+- `kalman_c.v` — `CertiRocq Compile` commands only;
+- `../common/figures.v`, `../common/figures_Q.v` — the eight documents
+  and their `Q` instantiation, shared with `extraction/wasm`;
 - `main.c` — walks the returned byte list and prints it;
-- `check.py` — compares the binary output with `paper/data/*.json`
-  (tolerance 1e-9) and re-checks the two-sigma band on exact fractions;
-- `generated/` — CertiRocq output and binaries (git-ignored).
+- `generated/` — CertiRocq output, binaries and JSON (git-ignored).
