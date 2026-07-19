@@ -13,9 +13,9 @@
   $A^(-1) = - c_0^(-1) M_n$.
 
   Совпадение с `invmx` доказано на обратимой матрице (`cinv_fl_correct`);
-  сторона `S \in unitmx` берётся из спецификации, поскольку `kalman.innov_cov_pd`
-  даёт `innov_cov ... \in unitmx`. При $p = 1$ совпадение верно безусловно
-  (`cinv_fl_correct1`), так как в поле $0^(-1) = 0$.
+  сторона `S \in unitmx` берётся из спецификации, поскольку
+  `kalman.innov_cov_pd` даёт `innov_cov ... \in unitmx`. При $p = 1$ совпадение
+  верно безусловно (`cinv_fl_correct1`), так как в поле $0^(-1) = 0$.
 *)
 
 From mathcomp.boot Require Import all_boot.

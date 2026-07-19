@@ -114,8 +114,8 @@ Section RiccatiMonotone.
       by [].
     (*
       Шаг 3: alt_update_cov K2 P1 <= alt_update_cov K2 P2 (линейно в P).
-      Доказываем через `psd_le_congr` (конгруэнция сохраняет порядок Лёвнера)
-      и `psd_le_add2l` (сдвиг на константу).
+      Доказываем через `psd_le_congr` (конгруэнция сохраняет порядок Лёвнера) и
+      `psd_le_add2l` (сдвиг на константу).
     *)
     have step3 : psd_le (alt_update_cov H R K2 P1) (alt_update_cov H R K2 P2).
       rewrite !alt_update_covE.
