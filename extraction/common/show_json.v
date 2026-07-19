@@ -1,14 +1,14 @@
 (*
   Печать рациональных чисел десятичной дробью и сборка документа JSON
-  для драйвера на WebAssembly. Значение Q выводится с фиксированным
-  числом дробных знаков (20), чего достаточно для точного восстановления
-  числа двойной точности при чтении в Typst. Матрицы и массивы собираются
-  простыми строковыми комбинаторами.
+  фигур. Значение Q выводится с фиксированным числом дробных знаков (20),
+  чего достаточно для точного восстановления числа двойной точности при
+  чтении в Typst. Массивы и объекты собираются простыми строковыми
+  комбинаторами; печать матрицы строится из печати коэффициента в
+  figures.v, поэтому она не зависит от коэффициентного типа.
 *)
 Set Warnings "-all".
 From Stdlib Require Import ZArith QArith List Strings.String Strings.Ascii.
 From mathcomp.boot Require Import all_boot.
-From CoqEAL Require Import refinements seqmx.
 From KalmanShow Require Import show. (* string_of_Z, nl, bytes_of_string *)
 
 Local Open Scope string_scope.
@@ -33,8 +33,6 @@ Definition q_dec (p : nat) (q : Q) : string :=
 Definition jnum (q : Q) : string := q_dec 20 q.
 Definition jnat (n : nat) : string := string_of_Z (Z.of_nat n).
 Definition jarr (xs : list string) : string := "[" ++ String.concat "," xs ++ "]".
-Definition jrow (r : list Q) : string := jarr (map jnum r).
-Definition jmat (m : @seqmx Q) : string := jarr (map jrow m).
 Definition jobj (kvs : list (string * string)) : string :=
   "{" ++ String.concat ","
         (map (fun kv => """" ++ fst kv ++ """:" ++ snd kv) kvs) ++ "}".
