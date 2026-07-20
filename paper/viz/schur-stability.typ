@@ -3,7 +3,7 @@
 //
 // viz/schur-stability.typ — Schur stability of the closed loop.
 //
-// Data: paper/data/schur_stability.json, emitted by extraction/data/gen_data.v
+// Data: paper/data/schur_stability.json, emitted by extraction/ocaml/figures/gen_data.ml
 // from the extracted, verified theories/seqmx/closed_loop.v
 // `closed_loop_seqmx`. The closed-loop matrix A_cl = F - F K_f H = F(I - K_f H)
 // (the predicted-covariance form F_p of dare.v `riccati_closed_loop_identity`)

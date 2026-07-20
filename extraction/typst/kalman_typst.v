@@ -2,16 +2,15 @@
   Copyright (C) 2026 Ilya I. Nikitin <ilya.i.nikitin@proton.me>
   SPDX-License-Identifier: GPL-3.0-or-later
 
-  Слой нотаций этого проекта для рендеринга Rocq -> Typst.
+  The notation layer of this project for Rocq -> Typst rendering.
 
-  Движок печати и словари стандартной библиотеки, mathcomp,
-  mathcomp-analysis, CoqEAL и infotheo приходят из пакетов rocq2typst
-  (база typst.db, см. Typst.Core). Здесь добавляются только клаузы для
-  определений этого проекта: определённость и порядок Лёвнера, норма
-  Фробениуса, спектральные обозначения, таблица именных констант,
-  перечень печатаемых утверждений и переопределение обозначения
-  единичной матрицы. Команду RenderTypst запускает gen.v по правилу dune
-  (см. dune в этом каталоге).
+  The printing engine and the dictionaries of the standard library, mathcomp,
+  mathcomp-analysis, CoqEAL and infotheo come from the rocq2typst packages (the
+  typst.db base, see Typst.Core). Only the clauses for this project's
+  definitions are added here: definiteness and the Loewner order, the Frobenius
+  norm, spectral notations, the table of named constants, the list of printed
+  statements and the redefinition of the identity matrix notation. gen.v runs
+  the RenderTypst command via the dune rule.
 *)
 
 From elpi Require Import elpi.
@@ -23,20 +22,20 @@ From Kalman.seqmx Require Import support inverse riccati.
 
 Elpi Accumulate typst.db lp:{{
 
-% словарь pp-app проекта
-% аргумент математического ожидания: лямбда по точке выборки скрывается
+% the project's pp-app dictionary
+% expectation argument: the lambda over the sample point is hidden
 pred exp-arg i:term, o:string.
 exp-arg (fun N T Bo) S :- !, coq.name->id N Nm,
   @pi-decl N T x\ (name-of x Nm :- !) => (hidden-var x :- !) =>
     pp 0 (Bo x) S.
 exp-arg X S :- pp 0 X S.
 
-% математическое ожидание  Exp μ X  ->  EE[X]; связанная точка выборки ω
-% скрывается в индексах случайных величин (см. hidden-var)
+% expectation  Exp μ X  ->  EE[X]; the bound sample point ω
+% is hidden in the random variable indices (see hidden-var)
 :before "pp-app.fallback"
 pp-app _ GR Args S :- gsuf "expectation.Exp" GR, std.last Args X, !,
   exp-arg X SX, style-fmt "expectation" [SX] S.
-% предел монотонной матричной последовательности  mx_mono_lim u -> lim u_k
+% limit of a monotone matrix sequence  mx_mono_lim u -> lim u_k
 :before "pp-app.fallback"
 pp-app Ctx GR Args S :- gsuf "mx_mono_lim" GR, std.last Args Seq, !,
   ( Seq = fun N T Bo, !, coq.name->id N Nm, q Nm QNm,
@@ -44,35 +43,35 @@ pp-app Ctx GR Args S :- gsuf "mx_mono_lim" GR, std.last Args Seq, !,
     style-fmt "limit" [QNm, SB] RAW
   ; pp 41 Seq SB, RAW is "lim " ^ SB ),
   paren Ctx 25 RAW S.
-% psd M -> M succ.eq 0 ; pd M -> M succ 0   (определённость по Лёвнеру)
+% psd M -> M succ.eq 0 ; pd M -> M succ 0   (Loewner definiteness)
 :before "pp-app.fallback"
 pp-app Ctx GR [_, _, M] S :- gsuf "mxdefinite.psd" GR, !,
   pp 11 M SM, style-fmt "psd" [] C, RAW is SM ^ " " ^ C, paren Ctx 10 RAW S.
 :before "pp-app.fallback"
 pp-app Ctx GR [_, _, M] S :- gsuf "mxdefinite.pd" GR, !,
   pp 11 M SM, style-fmt "pd" [] C, RAW is SM ^ " " ^ C, paren Ctx 10 RAW S.
-% порядок Лёвнера  psd_le A B  ->  A prec.eq B
+% Loewner order  psd_le A B  ->  A prec.eq B
 :before "pp-app.fallback"
 pp-app Ctx GR [_, A, B] S :- gsuf "mxloewner.psd_le" GR, !,
   style-fmt "loewner-le" [] Op, pp-rel Ctx Op A B S.
-% диагональная матрица из семейства  diag l  ->  "diag"(l_1, ..., l_n)
+% diagonal matrix from a family  diag l  ->  "diag"(l_1, ..., l_n)
 :before "pp-app.fallback"
 pp-app _ GR [_, N, L] S :- gsuf "spectral.diag" GR, !,
   pp 50 N NN, pp 50 L LL, style-fmt "op-diag" [] DN,
   S is DN ^ "(" ^ LL ^ "_1, dots.h, " ^ LL ^ "_" ^ NN ^ ")".
-% вложение натурального числа в абстрактное кольцо  cnat n  ->  n
+% embedding of a natural number into an abstract ring  cnat n  ->  n
 :before "pp-app.fallback"
 pp-app Ctx GR Args S :- gsuf "support.cnat" GR, std.last Args J, !,
   pp Ctx J S.
-% квадрат нормы Фробениуса  frob_sq M = tr (M† M)  ->  norm(M)_F^2
-% (печатается как единый символ, без раскрытия в форму со следом)
+% square of the Frobenius norm  frob_sq M = tr (M† M)  ->  norm(M)_F^2
+% (printed as a single symbol, without expansion into the trace form)
 :before "pp-app.fallback"
 pp-app Ctx GR Args S :- gsuf "mxfrob.frob_sq" GR, std.last Args M, !,
   pp 0 M SM, style-fmt "frob-sq" [SM] RAW, paren Ctx 40 RAW S.
 
 
-% прочие точки расширения
-% перечёркнутые отношения проекта
+% other extension points
+% the project's negated relations
 neg-rel Ctx T S :- head T GR [_, A, B], gsuf "mxloewner.psd_le" GR, !,
   style-fmt "loewner-le-not" [] Op, pp-rel Ctx Op A B S.
 neg-rel Ctx T S :- head T GR [_, _, M], gsuf "mxdefinite.psd" GR, !,
@@ -82,30 +81,30 @@ neg-rel Ctx T S :- head T GR [_, _, M], gsuf "mxdefinite.pd" GR, !,
   pp 11 M SM, style-fmt "pd-not" [] C,
   RAW is SM ^ " " ^ C, paren Ctx 10 RAW S.
 
-% подгибаемые ограничения на переменную
+% foldable constraints on a variable
 var-constraint1 T Nm C :- head T GR [_, _, X],
   gsuf "mxdefinite.psd" GR, name-of X Nm, !, style-fmt "psd" [] C.
 var-constraint1 T Nm C :- head T GR [_, _, X],
   gsuf "mxdefinite.pd" GR, name-of X Nm, !, style-fmt "pd" [] C.
 
-% головы-операторы структуры не раскрываются структурным разбором
+% structure operator heads are not expanded by structural parsing
 struct-head G :- gsuf "mxdefinite.psd" G.
 struct-head G :- gsuf "mxdefinite.pd" G.
 struct-head G :- gsuf "mxloewner.psd_le" G.
 struct-head G :- gsuf "mxfrob.frob_sq" G.
 
-% одностороннее отношение в заключении: знак определённости
+% one-sided relation in the conclusion: the definiteness sign
 concl-oneside T M C :- head T GR [_, _, M], gsuf "mxdefinite.psd" GR, !,
   style-fmt "psd" [] C.
 concl-oneside T M C :- head T GR [_, _, M], gsuf "mxdefinite.pd" GR, !,
   style-fmt "pd" [] C.
 
-% матрица под именованным квадратом нормы Фробениуса
+% the matrix under the named square of the Frobenius norm
 frob-inner T M :- head T GR Args, gsuf "mxfrob.frob_sq" GR, !,
   std.last Args M.
 
 
-% таблица именных констант
+% table of named constants
 const-notation "kalman.x_true" "x" nsub 2.
 const-notation "kalman.x_hat" "hat(x)" nsub 2.
 const-notation "kalman.x_err" "tilde(x)" nsub 2.
@@ -127,14 +126,14 @@ const-notation "riccati.update_cov_seqmx" "update_cov_seqmx" ncall 1.
 const-notation "riccati.predict_cov_seqmx" "predict_cov_seqmx" ncall 1.
 
 
-% переопределение обозначений
-% единичная матрица с размером в индексе: E_n вместо bb(1)
+% redefinition of notations
+% identity matrix with the size in the index: E_n instead of bb(1)
 :before "style.default"
 style "identity" "E_{}".
 
 
-% перечень печатаемых утверждений
-% порядок клауз задаёт порядок ключей в JSON
+% list of printed statements
+% the clause order sets the key order in JSON
 target "dare" "def" "K_0".
 target "dare" "def" "OP".
 target "dare" "def" "P_bnd".

@@ -1,11 +1,4 @@
-(*
-  Печать рациональных чисел десятичной дробью и сборка документа JSON
-  фигур. Значение Q выводится с фиксированным числом дробных знаков (20),
-  чего достаточно для точного восстановления числа двойной точности при
-  чтении в Typst. Массивы и объекты собираются простыми строковыми
-  комбинаторами; печать матрицы строится из печати коэффициента в
-  figures.v, поэтому она не зависит от коэффициентного типа.
-*)
+(* Decimal printing of rationals (q_dec) and JSON array/object combinators *)
 Set Warnings "-all".
 From Stdlib Require Import ZArith QArith List Strings.String Strings.Ascii.
 From mathcomp.boot Require Import all_boot.

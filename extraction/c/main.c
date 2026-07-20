@@ -1,13 +1,13 @@
-/* Драйвер: вызывает скомпилированную CertiRocq программу (body) и
- * печатает возвращённый список байтов. Список обходится через функции
- * сгенерированной склейки: тег конструктора list (nil = 0, cons = 1),
- * аргументы конструктора и ординал беззнакового конструктора byte. */
+/* Driver: calls the compiled CertiRocq program (body) and prints the returned
+ * byte list. The list is traversed through the functions of the generated
+ * glue: the list constructor tag (nil = 0, cons = 1), the constructor arguments
+ * and the ordinal of the unboxed byte constructor. */
 
 #include <stdio.h>
 #include "gc_stack.h"
 
 extern value body(struct thread_info *);
-/* Функции из сгенерированной склейки. */
+/* Functions from the generated glue. */
 extern value *get_args(value);
 extern unsigned long long get_unboxed_ordinal(value);
 extern unsigned long long get_Corelib_Init_Datatypes_list_tag(value);

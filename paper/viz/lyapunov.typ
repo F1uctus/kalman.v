@@ -3,7 +3,7 @@
 //
 // viz/lyapunov.typ — the Lyapunov partial-sum convergence figure.
 //
-// Data: paper/data/lyapunov.json, emitted by extraction/data/gen_data.v
+// Data: paper/data/lyapunov.json, emitted by extraction/ocaml/figures/gen_data.ml
 // (gen_lyapunov). The exact matrices are the extracted controllability gramian
 // ctrl_gram_seqmx run with G = I_2, Q = W, which equals the Lyapunov partial sum
 // lyap_partial A W N = Σ_{k<N} A^k W (A†)^k by gramian_infty.ctrl_gram_eq_partial.

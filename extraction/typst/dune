@@ -1,8 +1,8 @@
-; Рендеринг утверждений Rocq в математическую разметку Typst.
-; kalman_typst.v добавляет к базе typst.db пакетов rocq2typst клаузы
-; нотаций этого проекта и перечень печатаемых утверждений; правило ниже
-; компилирует gen.v, который пишет rocq2typst.json, и продвигает файл в
-; paper/data (его читает paper/common/rocq.typ).
+; Rendering Rocq statements into Typst mathematical markup.
+; kalman_typst.v adds to the typst.db base of the rocq2typst packages the
+; notation clauses of this project and the list of printed statements; the rule
+; below compiles gen.v, which writes rocq2typst.json, and promotes the file into
+; paper/data (read by paper/common/rocq.typ).
 (rocq.theory
  (name KalmanTypst)
  (flags :standard -w -all)

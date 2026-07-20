@@ -1,0 +1,45 @@
+; Assembling figure data in OCaml.
+; rocq.extraction produces the generic module figures.ml; the executable
+; gen_data instantiates it at the float ring (ring_F64.ml), prints the JSON
+; documents and writes them into the build directory; the rule promotes
+; the files into paper/data, from which the paper/viz figures read them.
+(rocq.extraction
+ (prelude figures_extract)
+ (extracted_modules figures)
+ (flags :standard -w -all)
+ (plugins rocq-elpi.elpi)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
+           Kalman KalmanShow Bignums Stdlib infotheo mathcomp.ssreflect
+           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
+           Interval Flocq Coquelicot))
+
+(executable
+ (name gen_data)
+ (modules figures ring_F64 gen_data)
+ (flags (:standard -w -a)))
+
+(rule
+ (targets
+  dare_convergence.json
+  gramian.json
+  schur_stability.json
+  kalman_run.json
+  kalman_run_3d.json
+  orthogonality.json
+  lyapunov.json
+  spectral.json)
+ (mode
+  (promote
+   (until-clean)
+   (into ../../../paper/data)))
+ (package kalman)
+ (deps gen_data.exe)
+ (action
+  (run ./gen_data.exe .)))
+
+(alias
+ (name paper_data)
+ (package kalman)
+ (deps dare_convergence.json))

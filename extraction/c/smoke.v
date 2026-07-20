@@ -1,16 +1,16 @@
 (*
-  Дымовые тесты конвейера CertiRocq
+  Smoke tests of the CertiRocq pipeline.
 
-  Замкнутые выражения форматируются в строки и компилируются в C;
-  эталонные строки закреплены доказательством через vm_compute, вывод
-  скомпилированных программ сверяется с ними побайтно.
+  Closed expressions are formatted into strings and compiled to C; the reference
+  strings are pinned by a proof through vm_compute, and the output of the
+  compiled programs is checked against them byte for byte.
 
-  Первый тест (Q, конвейер по умолчанию) покрывает арифметику Z и Q с
-  сокращением дробей, путь Decimal и String и обход списка байтов из C;
-  это рабочий конвейер каталога. Второй тест (bigQ, ключ
-  -unsafe-erasure) фиксирует поддержку коиндуктивных типов: замыкание
-  bigQ содержит поток из StreamMemo (память операций BigN), конвейер
-  по умолчанию такой программы не переводит.
+  The first test (Q, the default pipeline) covers Z and Q arithmetic with
+  reduction of fractions, the Decimal and String path and the traversal of a
+  byte list from C; this is the working pipeline of the directory. The second
+  test (bigQ, the -unsafe-erasure option) exercises support for coinductive
+  types: the bigQ closure contains a stream from StreamMemo (the memo of BigN
+  operations), which the default pipeline does not translate.
 *)
 
 Set Warnings "-all".
@@ -21,7 +21,7 @@ From CertiRocq.Plugin Require Import CertiRocq.
 
 Set CertiRocq Build Directory "generated".
 
-(* (2/7)^2 + (3)^(-1) = 4/49 + 1/3 = 61/147, затем глубокая арифметика. *)
+(* (2/7)^2 + (3)^(-1) = 4/49 + 1/3 = 61/147, then deep arithmetic. *)
 Definition smoke_q : Q := Qred ((2 # 7) * (2 # 7) + / 3)%Q.
 Definition smoke_deep : Q :=
   Qred (Qpower (44 # 14) 17 + Qpower (3 # 9) 23 - 1)%Q.
@@ -39,7 +39,7 @@ Proof. vm_compute. split; reflexivity. Qed.
 CertiRocq Compile -O 1 -file "smoke" smoke_out.
 CertiRocq Generate Glue -file "glue_smoke" [ list, byte ].
 
-(* Та же проверка над bigQ с многословным целым уровня zn2z. *)
+(* The same check over bigQ with a multi-word integer at the zn2z level. *)
 Local Open Scope bigQ_scope.
 
 Definition smoke_bq : bigQ :=

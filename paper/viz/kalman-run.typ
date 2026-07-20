@@ -3,7 +3,7 @@
 //
 // viz/kalman-run.typ — a Kalman filter run over synthetic data.
 //
-// Data: paper/data/kalman_run.json, emitted by extraction/data/gen_data.v. The
+// Data: paper/data/kalman_run.json, emitted by extraction/ocaml/figures/gen_data.ml. The
 // whole run is the extracted verified program theories/seqmx/sim.v: the
 // noises come from the four-point model of theories/noise.v, the sample path is
 // the Lehmer generator defined inside Rocq, and the covariance band is the

@@ -1,6 +1,8 @@
-; Общие модули печати и набор документов JSON с сырыми данными фигур.
-; Каталог собирается и dune (для генератора данных в extraction/data), и
-; вручную Makefile-ом extraction/c в переключателе opam с CertiRocq.
+; Shared printing modules and the set of JSON documents of raw figure data.
+; The generic documents figures.v are extracted to OCaml by the subdirectory
+; extraction/ocaml/figures. They are also instantiated at the exact rationals Q
+; (figures_Q) and at float64 (figures_F64) for compilation through CertiRocq,
+; driven manually by the extraction/c Makefile.
 (rocq.theory
  (name KalmanShow)
  (package kalman)

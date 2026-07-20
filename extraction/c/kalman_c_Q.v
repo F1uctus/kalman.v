@@ -1,18 +1,4 @@
-(*
-  Точки входа CertiRocq для сырых данных фигур фильтра Калмана.
-
-  Компилируются документы из extraction/common/figures_Q.v, то есть те же
-  восемь документов, что собирает генератор данных в extraction/data, но
-  инстанцированные на точных рациональных числах Q. Значения совпадают с
-  доказанными термами над bigQ (леммы q_run_eq_bigq, q_run3_eq_bigq,
-  q_dare_iters_eq_bigq), которые удовлетворяют проверкам коридора
-  (sim_run_in_band, sim3_run_in_band) и уточнению из inst_bigQ.v
-  (riccati_iter_seqmxC). Конвейер по умолчанию: все проходы стирания
-  верифицированы.
-
-  Печать документа определена в figures.v и figures_Q.v; здесь остаются только
-  команды компиляции.
-*)
+(* CertiRocq compile commands for the Q (verified) figure documents *)
 
 Set Warnings "-all".
 From Stdlib Require Import List Strings.Byte.

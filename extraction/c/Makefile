@@ -1,16 +1,30 @@
-# Сборка C-версии исполняемых программ фильтра Калмана через CertiRocq.
-# Каталог не участвует в dune и CI; сборка только вручную (см. README.md).
+# Building the C version of the Kalman filter executable programs through CertiRocq.
+# The directory is not part of dune or CI; it is built manually (see README.md).
 
-# Переключатель opam с CertiRocq. Пустое значение означает активный
-# переключатель. Задайте SWITCH=<имя или путь>, если CertiRocq стоит в другом.
+# The opam switch with CertiRocq. An empty value means the active switch. Set
+# SWITCH=<name or path> if CertiRocq lives in another one.
 SWITCH ?=
 OPAM   := opam exec $(if $(SWITCH),--switch $(SWITCH)) --
 ROOT   := $(abspath ../..)
-# Общие модули печати живут в extraction/common и собираются dune в отдельном
-# каталоге сборки, чтобы не оставлять .vo рядом с исходниками.
+# The shared printing modules live in extraction/common and are built by dune in
+# a separate build directory, so as not to leave .vo next to the sources.
 COMMON := $(abspath ../../_build_certirocq/default/extraction/common)
 SHOWQ  := -Q $(COMMON) KalmanShow
 OUT    := generated
+
+# The coefficient ring of the instantiation: Q gives verified numeric values,
+# F64 gives unverified values over double precision numbers. Both sides are
+# compiled by one pipeline; the instantiation module and the driver differ.
+NUMERICS ?= Q
+ifeq ($(NUMERICS),F64)
+  INST    := inst_Float64
+  FIGURES := figures_F64
+  DRIVER  := kalman_c_F64
+else
+  INST    := inst_Q
+  FIGURES := figures_Q
+  DRIVER  := kalman_c_Q
+endif
 
 RUNTIME := $(shell $(OPAM) rocq c -where)/user-contrib/CertiRocq/Plugin/runtime
 CC      := clang
@@ -47,13 +61,13 @@ smoke: vo
 
 vo:
 	cd $(ROOT) && $(OPAM) dune build --build-dir _build_certirocq \
-	    theories/seqmx/inst_Q.vo extraction/common/figures_Q.vo
+	    theories/seqmx/$(INST).vo extraction/common/$(FIGURES).vo
 
 compile: vo
 	mkdir -p $(OUT)
 	$(OPAM) rocq c -w -all \
 	    -Q $(ROOT)/_build_certirocq/default/theories Kalman \
-	    $(SHOWQ) -Q . KalmanC kalman_c.v
+	    $(SHOWQ) -Q . KalmanC $(DRIVER).v
 
 define RUN_ONE
 $(1): compile

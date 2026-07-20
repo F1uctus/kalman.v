@@ -1,0 +1,21 @@
+; Extraction of the proven generic Kalman filtering building blocks to OCaml.
+; rocq.extraction produces riccati.ml with a term generic over the coefficient
+; ring; the library checks that the module compiles as self-contained OCaml code
+; with no external dependencies. The project that links the library supplies the
+; ring; the figures subdirectory assembles figure data over the same layer.
+(rocq.extraction
+ (prelude riccati_extract)
+ (extracted_modules riccati)
+ (flags :standard -w -all)
+ (plugins rocq-elpi.elpi)
+ (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
+           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
+           Kalman Bignums Stdlib infotheo mathcomp.ssreflect
+           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
+           Interval Flocq Coquelicot))
+
+(library
+ (name kalman_filter)
+ (modules riccati)
+ (flags (:standard -w -a)))

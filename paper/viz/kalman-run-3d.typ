@@ -5,7 +5,7 @@
 // analogue of kalman-run.typ panel (a). An axonometric projection shows the true
 // trajectory, the noisy measurements, and the filter estimate in space.
 //
-// Data: paper/data/kalman_run_3d.json, emitted by extraction/data/gen_data.v
+// Data: paper/data/kalman_run_3d.json, emitted by extraction/ocaml/figures/gen_data.ml
 // from the extracted verified program theories/seqmx/sim.v
 // (kalman_sim3_run). The 6D state is (x, vx, y, vy, z, vz): the velocity rotates
 // in the x-y plane (Pythagorean angle cos = 4/5, sin = 3/5) while position

@@ -2,21 +2,31 @@
 
 Compiles the verified Kalman filter programs to C(light) with
 [CertiRocq](https://github.com/CertiRocq/certirocq) **0.9.1+9.1**, in
-addition to the dune-native figure-data generator in `extraction/data`.
+addition to the dune-native figure-data generator in `extraction/ocaml/figures`.
 
-The compiled Gallina terms are the eight figure documents of
-`extraction/common/figures.v`, instantiated at the exact rational type
-`Q` in `extraction/common/figures_Q.v` — the same documents the
-dune-native generator instantiates at `float64`, and the same ones
-the dune generator instantiates at `float64`. `kalman_c.v` holds nothing but
-`CertiRocq Compile` commands: the JSON printing is defined once, in
-`figures.v`, so no output format lives in this directory.
+The compiled Gallina terms are the figure documents of
+`extraction/common/figures.v`. The same generic documents are
+instantiated at two coefficient rings, and `NUMERICS` selects which:
+
+- `NUMERICS=Q` (default) uses `figures_Q.v` and driver `kalman_c_Q.v`:
+  exact rationals, **verified** numerics.
+- `NUMERICS=F64` uses `figures_F64.v` and driver `kalman_c_F64.v`:
+  primitive `float64`, **unverified** numerics, the same values the OCaml
+  generator in `extraction/ocaml/figures` produces. CertiRocq compiles the
+  `PrimFloat` operations through its `prim_floats` runtime, so `schur`
+  carries the `A_cl` powers (`schur_pow_doc`), which are infeasible over
+  exact `Q`.
+
+Both sides run the identical erasure pipeline; only the coefficient ring
+and the leaf printer change. The drivers hold nothing but `CertiRocq
+Compile` commands: the JSON printing is defined once, in `figures.v`, so
+no output format lives in this directory.
 
 Each experiment builds its own binary and writes the file that
-`paper/data` would hold, so the two paths can be compared directly.
-Values agree to double-precision rounding rather than byte for byte,
-since this path prints exact rationals and the dune path prints rounded
-`float64`.
+`paper/data` would hold, so the paths can be compared directly. The
+`float64` output is byte-identical to the OCaml generator (same IEEE
+arithmetic, same truncating `q_dec` printer); the exact-`Q` output agrees
+with it only to double-precision rounding.
 
 All `CertiRocq Compile` commands here use the **default pipeline**, in
 which every erasure pass is verified. Correctness is pinned in the main
@@ -28,11 +38,12 @@ and the refinement `riccati_iter_seqmxC`. CoqEAL remains the layer that
 makes the terms executable; only the backend changes (Gallina to C
 instead of the `vm_compute` used inside `dune`).
 
-## Theory is compiled as is — no extraction-side shims
+## The theory is compiled as is, with no shims on the extraction side
 
 The runtime closure of the theory contains no opaque proofs of
-computational sort, so CertiRocq accepts the literally-proven programs.
-This took three source-level choices (all value-preserving, proven so):
+computational sort, so CertiRocq accepts the programs exactly as they are
+proven. This took three choices at the source level, each of them proven
+to preserve the values:
 
 - `iscalar_seqmx`/`iseqmx1` (`support.v`) build scalar matrices by
   `iota`/`eqn` instead of CoqEAL's `mkseqmx_ord` ordinal enumeration,
@@ -45,33 +56,34 @@ This took three source-level choices (all value-preserving, proven so):
   would elaborate as `2%:R` in nat's semiring structure, pulling the
   bundled nat algebra (with `eqnP` and choice mixins) into the term.
 
-## Why Q and not bigQ
+## Limits of the bigQ instantiation
 
 Two CertiRocq 0.9.1 limitations block the `bigQ` instantiation:
 
-1. The default pipeline does not translate coinductive types — and
+1. The default pipeline does not translate coinductive types, and it
    silently emits C that calls an erased term as a closure, segfaulting
    at startup. Bignums memoizes the BigN operation tower through
    Stdlib's `StreamMemo` (`make_op_list` in `NMake_gen.v`), a top-level
-   coinductive stream, so any program touching `bigQ` crashes (minimal
-   reproducers: any `CoFixpoint` stream, or `BigN.eqb 147 0`).
+   coinductive stream, so any program touching `bigQ` crashes. Minimal
+   reproducers are any `CoFixpoint` stream, or `BigN.eqb 147 0`.
 2. Since upstream PR #98 the `-unsafe-erasure` option enables MetaRocq's
-   cofixpoint-to-fixpoint translation (the one erasure pass not yet
-   verified, per upstream PR #152) with lazy/force compiled to thunks.
-   This is correct — `make smoke` includes a `bigQ` case compiled this
-   way — but the thunks are naive (non-memoizing), and the compiled
-   Kalman/DARE arithmetic over `bigQ` slows down about two orders of
-   magnitude per DARE iteration (5 iterations 0.01 s, 6 iterations
-   1.9 s, 7 iterations over 90 s), while the identical program over `Q`
-   finishes all 109 checked rows in about half a minute. Value sizes
-   are small (9-27 digits) and isolated bigQ arithmetic is fast, so the
-   blowup is recomputation inside the lazily-translated Bignums closure.
+   cofixpoint-to-fixpoint translation with lazy/force compiled to
+   thunks; this is the one erasure pass not yet verified, per upstream
+   PR #152. The translation is correct, and `make smoke` includes a
+   `bigQ` case compiled this way, yet the thunks recompute instead of
+   memoizing, and the compiled Kalman/DARE arithmetic over `bigQ` slows
+   down about two orders of magnitude per DARE iteration: 5 iterations
+   0.01 s, 6 iterations 1.9 s, 7 iterations over 90 s, while the
+   identical program over `Q` finishes all 109 checked rows in about
+   half a minute. Value sizes stay small at 9 to 27 digits and isolated
+   bigQ arithmetic is fast, so the blowup is recomputation inside the
+   lazily translated Bignums closure.
 
 ## Toolchain (separate opam switch)
 
 CertiRocq needs OCaml 4.14.3 (CompCert 3.17), while the project switch
-runs OCaml 5.4.1, so this directory builds against the local switch of
-a dedicated opam switch. To create it:
+runs OCaml 5.4.1, so this directory builds against a dedicated opam
+switch. To create it:
 
 ```bash
 opam switch create <dir> ocaml-base-compiler.4.14.3
@@ -89,9 +101,9 @@ opam install --ignore-constraints-on coq-mathcomp-ssreflect,rocq-mathcomp-ssrefl
 ```
 
 Do not run `opam upgrade` in that switch: the constraint override is
-not remembered, an upgrade would roll mathcomp back to 2.4.
+not remembered, so an upgrade would roll mathcomp back to 2.4.
 
-Requires `clang` (the generated C is compiled with `-Wno-everything`).
+Requires `clang`; the generated C is compiled with `-Wno-everything`.
 
 ## Build and run
 
@@ -102,25 +114,37 @@ make smoke        # gates: Q arithmetic (default pipeline) and bigQ
                   # arithmetic (-unsafe-erasure), byte-compared with
                   # vm_compute-pinned Examples in smoke.v
 make vo           # Kalman and KalmanShow .vo in the CertiRocq switch
-make compile      # kalman_c.v -> generated/*.c for all eight experiments
+make compile      # driver -> generated/*.c for all experiments
 make spectral     # build and run one experiment -> generated/spectral.json
-make all          # build and run all eight experiments
+make all          # build and run all experiments
+
+make NUMERICS=F64 all   # the float64 side (unverified numerics)
 ```
 
-The four iter-200 steady-state terms, `dare`, `schur`, `orthogonality`
-and `lyapunov`, are the slow ones: the default CertiRocq erasure
-pipeline implements exact `Q` arithmetic with no GMP-backed fast path.
-The cheap experiments are `spectral`, `gramian`, `run` and `run3`.
+`NUMERICS` selects the coefficient ring: `Q` (default, verified) or
+`F64` (primitive `float64`, unverified). Both write the same output
+filenames, so a `float64` run can be diffed straight against the OCaml
+generator's `paper/data/*.json`; they are byte-identical.
 
-`SWITCH=<path-or-name>` overrides the opam switch (default:
-the active opam switch).
+Over exact `Q` the four iter-200 steady-state terms, `dare`, `schur`,
+`orthogonality` and `lyapunov`, are the slow ones at runtime: the default
+CertiRocq erasure pipeline implements exact `Q` arithmetic with no
+GMP-backed fast path. The cheap experiments are `spectral`, `gramian`,
+`run` and `run3`. Over `float64` all run in constant time.
+
+`SWITCH=<path-or-name>` overrides the opam switch; by default the active
+opam switch is used.
 
 ## Layout
 
-- `show.v` — Q/bigQ to "num/den" decimal string, string to `list byte`;
-- `smoke.v` — smoke tests with `vm_compute`-pinned expected strings;
-- `kalman_c.v` — `CertiRocq Compile` commands only;
-- `../common/figures.v`, `../common/figures_Q.v` — the eight documents
-  and their `Q` instantiation;
-- `main.c` — walks the returned byte list and prints it;
-- `generated/` — CertiRocq output, binaries and JSON (git-ignored).
+- `show.v` prints a `Q` or `bigQ` value as a `num/den` decimal string and
+  turns a string into a `list byte`.
+- `smoke.v` holds the smoke tests with `vm_compute`-pinned expected strings.
+- `kalman_c_Q.v` and `kalman_c_F64.v` hold `CertiRocq Compile` commands only,
+  for the `Q` and the `float64` sides.
+- `../common/figures.v` holds the generic documents, and
+  `../common/figures_Q.v` with `../common/figures_F64.v` hold their `Q` and
+  `float64` instantiations.
+- `main.c` walks the returned byte list and prints it.
+- `generated/` collects the CertiRocq output, the binaries and the JSON; it
+  is ignored by git.
