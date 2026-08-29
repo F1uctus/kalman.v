@@ -15,8 +15,8 @@ mkCoqDerivation {
   inherit version;
   defaultVersion = "0.1.0";
   release."0.1.0" = {
-    rev = "ad99f4e3610030283e984bc48b73e51b7648c9dd";
-    sha256 = "1gphvn6f756q24jipvfrmp3yz1dlc2gras29j02hgjada7hvg44q";
+    rev = "71b4026c992defd19a428ea39905adebb5fa9730";
+    sha256 = "0110zxl4xfars5dncxy8cd8fwk5gn9zby91x540akdlphrq7104m";
   };
   useDune = true;
 
