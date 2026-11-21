@@ -446,7 +446,9 @@
     "-w",
     "-notation-overridden",
     "-w",
-    "-ambiguous-paths"
+    "-ambiguous-paths",
+    "-w",
+    "-rewrite-rw"
   ],
   "vsrocq.completion.enable": true,
   "vsrocq.goals.auto": true,

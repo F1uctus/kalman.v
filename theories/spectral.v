@@ -11,7 +11,7 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra mxpoly.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
@@ -63,9 +63,9 @@ Section Spectral.
     diag f *m diag g = diag (fun i => f i * g i).
   Proof.
     apply/matrixP=> i j; rewrite !mxE.
-    rewrite (bigD1 i) //= big1 ?addr0; last first.
-      by move=> k /negbTE neki; rewrite !mxE eq_sym neki mul0r.
-    rewrite !mxE eqxx.
+    have offdiag : \sum_(k | k != i) diag f i k * diag g k j = 0.
+      by apply: big1 => k /negbTE neki; rewrite !mxE eq_sym neki mul0r.
+    rewrite (bigD1 i) //= offdiag addr0 !mxE eqxx.
     by case: eqP=> [->|_]; rewrite ?mulr0.
   Qed.
 
@@ -123,7 +123,7 @@ Section Spectral.
     rewrite trace_mx11 mxE.
     apply: eq_bigr => i _.
     rewrite !mxE.
-    rewrite (bigD1 i) //= !mxE eqxx big1 ?addr0; last first.
+    rewrite (bigD1 i) //= !mxE eqxx big1 ?addr0.
       move=> k neki.
       by rewrite !mxE (negbTE neki) mulr0.
     by rewrite mulrA [_ * l i]mulrC -!mulrA.
@@ -136,7 +136,7 @@ Section Spectral.
     move=> hreal; split.
     - case=> _ hQ i.
       have hi := hQ (delta_mx i ord0).
-      rewrite diag_qform (bigD1 i) //= big1 ?addr0 in hi; last first.
+      rewrite diag_qform (bigD1 i) //= big1 ?addr0 in hi.
         move=> j /negbTE neji.
         by rewrite !mxE neji /= conjC0 mul0r mulr0.
       have del1 : (delta_mx i ord0 : 'cV[ℂ]_n) i ord0 = 1
@@ -224,7 +224,7 @@ Section Spectral.
       by rewrite mulr0.
     have dl0 : diag l *m u = 0.
       apply/matrixP=> i j; rewrite mxE [RHS]mxE.
-      rewrite (bigD1 i) //= mxE eqxx big1 ?addr0; last first.
+      rewrite (bigD1 i) //= mxE eqxx big1 ?addr0.
         by move=> k /negbTE neki; rewrite mxE eq_sym neki mul0r.
       by rewrite [j]ord1; exact: key i.
     by rewrite Meq -!mulmxA -/u dl0 mulmx0.
@@ -303,7 +303,7 @@ Section Spectral.
     have hVAV : v^t* *m A *m v = ei^t* *m diag l *m ei.
       by rewrite /v -UAU trmxC_mul -!mulmxA.
     have lqf : \tr (ei^t* *m diag l *m ei) = l i.
-      rewrite diag_qform (bigD1 i) //= big1 ?addr0; last first.
+      rewrite diag_qform (bigD1 i) //= big1 ?addr0.
         move=> j /negbTE neji.
         by rewrite !mxE neji /= conjC0 mul0r mulr0.
       have del1 : (ei : 'cV[ℂ]_n) i ord0 = 1 by rewrite mxE !eqxx /=.
@@ -580,7 +580,7 @@ Section Spectral.
                 = U *m diag (fun i => \tr A - l i) *m U^t*.
       rewrite (_ : \tr A *: 1%:M - A
                 = U *m diag (fun _ => \tr A) *m U^t*
-                  - U *m diag l *m U^t*); last first.
+                  - U *m diag l *m U^t*).
         by congr (_ - _); [exact: idU | exact: Adec].
       by rewrite -mulmxBl -mulmxBr diagB.
     rewrite /psd_le decomp.

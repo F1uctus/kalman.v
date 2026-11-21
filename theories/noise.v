@@ -25,9 +25,9 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix.
-From mathcomp.algebra_tactics Require Import ring.
+From mathcomp.algebra Require Import ring_tactic field_tactic.
 From infotheo.probability Require Import fdist.
 From Kalman Require Import expectation kalman.
 

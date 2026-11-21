@@ -33,7 +33,7 @@
 *)
 
 From Stdlib Require Import BinNat QArith Qreduction Floats.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From CoqEAL Require Import refinements seqmx.
 From Kalman.seqmx Require Import support inverse riccati sim inst_Q.
 

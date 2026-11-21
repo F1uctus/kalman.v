@@ -30,7 +30,7 @@ jobs:
 
       - name: Copy paper/data JSON from Cachix-cached kalman build
         run: |
-          kalman=$(nix-build --no-out-link --argstr bundle "rocq-9.1" --argstr job "kalman")
+          kalman=$(nix-build --no-out-link --argstr bundle "rocq-9.3" --argstr job "kalman")
           mkdir -p paper/data
           rm -f paper/data/*.json
           cp "$kalman/share/kalman/paper-data/"*.json paper/data/

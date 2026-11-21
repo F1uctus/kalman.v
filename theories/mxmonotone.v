@@ -19,7 +19,7 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
@@ -220,8 +220,10 @@ Section MxSeqMonotoneCvg.
   Lemma S_diag_cvgn (i : 'I_n) :
     cvgn (fun k => (S k) i i).
   Proof.
-    suff : cvgn (fun k => \tr ((delta_mx i ord0 : 'cV[ℂ]_n)^t* *m S k *m delta_mx i ord0)).
-      by under eq_is_cvg=> k do rewrite qf_delta.
+    have qfE : (fun k => \tr ((delta_mx i ord0 : 'cV[ℂ]_n)^t* *m S k *m delta_mx i ord0))
+              = (fun k => (S k) i i).
+      by apply/funext=> k; rewrite qf_delta.
+    rewrite -qfE.
     exact: qf_seq_cvgn.
   Qed.
 
@@ -258,8 +260,7 @@ Section MxSeqMonotoneCvg.
       have step2 : a + b + 'i * (c - d) - a - b = 'i * (c - d).
         by rewrite [_ - a]addrAC [a + b - a]addrAC subrr add0r
                     [_ + 'i * _]addrC addrK.
-      rewrite (_ : a + c + d + b - a - b = c + d); last by exact: step1.
-      rewrite (_ : a + b + 'i * (c - d) - a - b = 'i * (c - d)); last by exact: step2.
+      rewrite step1 step2.
       rewrite mulrA -expr2 sqrCi mulN1r opprK.
       rewrite addrACA subrr addr0.
       by rewrite -mulr2n mulr_natl.

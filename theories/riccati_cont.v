@@ -19,10 +19,10 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
-From mathcomp.fingroup Require Import perm.
+From mathcomp.finite_group Require Import perm.
 From mathcomp Require Import order.
 From mathcomp.classical Require Import boolp classical_sets.
 From mathcomp Require Import topology normedtype.

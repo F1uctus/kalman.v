@@ -1,29 +1,14 @@
-{
+args@{
   lib,
   mkCoqDerivation,
   coq,
   rocq2typst-mathcomp,
   mathcomp-analysis,
-  version ? "0.1.0",
+  micromega-plugin,
 }:
-
-mkCoqDerivation {
-  pname = "rocq2typst-analysis";
-  opam-name = "rocq2typst-analysis";
-  owner = "F1uctus";
-  repo = "rocq2typst";
-  inherit version;
-  defaultVersion = "0.1.0";
-  release."0.1.0" = {
-    rev = "71b4026c992defd19a428ea39905adebb5fa9730";
-    sha256 = "0110zxl4xfars5dncxy8cd8fwk5gn9zby91x540akdlphrq7104m";
-  };
-  useDune = true;
-
-  propagatedBuildInputs = [ rocq2typst-mathcomp mathcomp-analysis ];
-
-  meta = {
-    description = "Mathcomp-analysis notation dictionary for rocq2typst";
-    license = lib.licenses.gpl3Plus;
-  };
-}
+let
+  source = import ../../rocq2typst-source.nix;
+in
+import (source + "/.nix/coq-overlays/rocq2typst-analysis/default.nix") (
+  args // { version = source; }
+)

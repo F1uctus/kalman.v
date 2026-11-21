@@ -5,7 +5,7 @@
 
 From HB Require Import structures.
 From Kalman Require Import mxnotation.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.

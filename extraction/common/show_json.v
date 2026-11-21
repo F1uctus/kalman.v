@@ -1,7 +1,7 @@
 (* Decimal printing of rationals (q_dec) and JSON array/object combinators *)
 Set Warnings "-all".
 From Stdlib Require Import ZArith QArith List Strings.String Strings.Ascii.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From KalmanShow Require Import show. (* string_of_Z *)
 
 Local Open Scope string_scope.

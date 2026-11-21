@@ -18,7 +18,7 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra archimedean.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
@@ -186,7 +186,7 @@ Section FrobToMxCvg.
       have abs_sq_ge0 : 0 <= `|(Pf k - L) i j| ^+ 2 by rewrite exprn_ge0 // normr_ge0.
       rewrite (ger0_norm abs_sq_ge0) in Hsq_k.
       rewrite /= subr0.
-      rewrite ger0_norm; last exact: normr_ge0.
+      rewrite (ger0_norm (normr_ge0 _)).
       have nneg : 0 <= `|(Pf k - L) i j| by exact: normr_ge0.
       have eps_ge0 : 0 <= eps by exact: ltW eps_pos.
       (*
@@ -384,7 +384,7 @@ Section Continuity.
     move=> HM HN; apply/mxcvgn_to_cvgn=> i j.
     have HMe := cvgn_to_mxcvgn HM.
     have HNe := cvgn_to_mxcvgn HN.
-    rewrite (_ : (L *m L') i j = \sum_s L i s * L' s j); last by rewrite mxE.
+    have -> : (L *m L') i j = \sum_s L i s * L' s j by rewrite mxE.
     under eq_cvg=> k do rewrite mxE.
     apply: cvgC_sum=> s _; exact: cvgC_M (HMe i s) (HNe s j).
   Qed.

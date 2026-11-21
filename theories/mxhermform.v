@@ -5,7 +5,7 @@
 
 From HB Require Import structures.
 From Kalman Require Import mxnotation mxdefinite mxloewner mxherm.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
@@ -53,9 +53,7 @@ Section PSDQuadraticForms.
   Proof.
     have del_eq : (delta_mx i ord0 : 'cV[ℂ]_n)^t* = (delta_mx ord0 i : 'rV[ℂ]_n).
       by rewrite trmx_delta map_delta_mx.
-    rewrite del_eq -rowE trace_mx11 mxE (bigD1 j)//= big1; last first.
-      by move=> k nekj; rewrite !mxE eqxx andbT (negbTE nekj) mulr0.
-    by rewrite !mxE !eqxx /= mulr1 addr0.
+    by rewrite del_eq -rowE -colE trace_mx11 !mxE.
   Qed.
 
   (* Разложение эрмитовой формы по сумме векторов. *)

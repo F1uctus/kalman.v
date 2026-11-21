@@ -9,11 +9,11 @@
  (modules kalman_typst)
  (plugins rocq-elpi.elpi)
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
-           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.finite_group mathcomp.finmap mathcomp.field mathcomp.solvable
            mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
-           Kalman Bignums Stdlib infotheo mathcomp.ssreflect
-           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
-           Interval Flocq Coquelicot
+           Kalman Bignums Stdlib infotheo
+           mathcomp.reals_stdlib
+           Interval Flocq Coquelicot micromega_plugin
            Typst.Core Typst.Mathcomp Typst.Analysis Typst.CoqEAL
            Typst.Infotheo))
 
@@ -29,3 +29,8 @@
  (name paper_data)
  (package kalman)
  (deps rocq2typst.json))
+
+(install
+ (package kalman)
+ (section share)
+ (files (rocq2typst.json as paper-data/rocq2typst.json)))

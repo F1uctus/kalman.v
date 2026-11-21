@@ -14,7 +14,7 @@
   совпадают с операторами `obsv_bound.v`, что закрепляет раздел `BridgeC`.
 *)
 
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra ssrint.
 From mathcomp Require Import order rat.
 From mathcomp.algebra Require Import sesquilinear spectral.

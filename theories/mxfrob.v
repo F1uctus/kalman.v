@@ -12,7 +12,7 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
@@ -58,13 +58,13 @@ Section Frob.
   Proof.
     rewrite frob_sqE => sum0.
     have step1 : forall j : 'I_c, \sum_i (M i j)^* * M i j = 0.
-      move=> j; move/eqP: sum0; rewrite psumr_eq0; last first.
+      move=> j; move/eqP: sum0; rewrite psumr_eq0.
         move=> j' _; apply: sumr_ge0=> i _.
         by rewrite mulrC; exact: mul_conjC_ge0.
       by move/allP=> /(_ j (mem_index_enum _)) /= /eqP.
     apply/matrixP=> i j.
     have hzero : (M i j)^* * M i j = 0.
-      move/eqP: (step1 j); rewrite psumr_eq0; last first.
+      move/eqP: (step1 j); rewrite psumr_eq0.
         by move=> i' _; rewrite mulrC; exact: mul_conjC_ge0.
       by move/allP=> /(_ i (mem_index_enum _)) /= /eqP.
     move/eqP: hzero; rewrite mulf_eq0=> /orP[].
@@ -236,8 +236,8 @@ Section Frob.
     have Wpsd : psd W := psd_frob X.
     have trEq : \tr (Fm *m M *m Fm^t*) = \tr (diag l *m W).
       rewrite Mdec.
-      rewrite (_ : Fm *m (U *m diag l *m U^t*) *m Fm^t*
-                = X *m diag l *m X^t*); last by rewrite /X trmxC_mul !mulmxA.
+      have -> : Fm *m (U *m diag l *m U^t*) *m Fm^t*
+                = X *m diag l *m X^t* by rewrite /X trmxC_mul !mulmxA.
       by rewrite mxtrace_mulC mulmxA -/W mxtrace_mulC.
     have trW : \tr W = frob_sq Fm.
       rewrite /W /X /frob_sq trmxC_mul mxtrace_mulC !mulmxA -[_ *m U *m U^t*]mulmxA.
@@ -246,7 +246,7 @@ Section Frob.
     have trSum : \tr (diag l *m W) = \sum_(i < m) l i * W i i.
       rewrite /mxtrace; apply: eq_bigr=> i _.
       rewrite mxE (bigD1 i) //=.
-      rewrite big1 ?addr0; last first.
+      rewrite big1 ?addr0.
         by move=> j neij; rewrite mxE [i == j]eq_sym (negbTE neij) mul0r.
       by rewrite mxE eqxx.
     have Wii_ge0 : forall k, 0 <= W k k.

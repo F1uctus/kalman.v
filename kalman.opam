@@ -1,5 +1,5 @@
-# This file was generated from `meta.yml`, please do not edit manually.
-# Follow the instructions on https://github.com/coq-community/templates to regenerate.
+# Package metadata follows meta.yml. Keep the renderer pins synchronized with
+# .nix/rocq2typst-source.nix when changing the renderer version.
 
 opam-version: "2.0"
 maintainer: "ilya.i.nikitin@proton.me"
@@ -22,31 +22,42 @@ CoqEAL refinements."""
 
 build: ["dune" "build" "-p" name "-j" jobs]
 depends: [
-  "dune" {>= "3.6"}
-  "coq" {>= "9.0" & < "9.2~"}
+  "coq" {>= "9.3" & < "9.4~"}
   "dune" {>= "3.21"}
   "rocq-elpi" {>= "3"}
-  "rocq-hierarchy-builder" {>= "1.9.0"}
-  "rocq-mathcomp-boot" {>= "2.5.0"}
-  "rocq-mathcomp-order" {>= "2.5.0"}
-  "rocq-mathcomp-fingroup" {>= "2.5.0"}
-  "rocq-mathcomp-field" {>= "2.5.0"}
-  "rocq-mathcomp-solvable" {>= "2.5.0"}
-  "rocq-mathcomp-finmap" {>= "2.1.0"}
-  "rocq-mathcomp-algebra" {>= "2.5.0"}
+  "rocq-hierarchy-builder" {>= "1.10.0"}
+  "rocq-mathcomp-boot" {>= "2.6.0"}
+  "rocq-mathcomp-order" {>= "2.6.0"}
+  "rocq-mathcomp-finite-group" {>= "2.6.0"}
+  "rocq-mathcomp-field" {>= "2.6.0"}
+  "rocq-mathcomp-solvable" {>= "2.6.0"}
+  "rocq-mathcomp-finmap" {>= "2.2.4"}
+  "rocq-mathcomp-algebra" {>= "2.6.0"}
   "elpi" {>= "1.17.0"}
-  "rocq-mathcomp-classical" {>= "1.16.0"}
-  "rocq-mathcomp-reals" {>= "1.16.0"}
-  "rocq-mathcomp-analysis" {>= "1.16.0"}
-  "coq-mathcomp-zify" {>= "1.6.0"}
-  "coq-infotheo" {>= "0.9.7"}
-  "rocq-bignums" {>= "9.0.0+rocq9.1"}
-  "coq-coqeal" {>= "2.1.1"}
-  "rocq2typst" {>= "0.1.0"}
-  "rocq2typst-mathcomp" {>= "0.1.0"}
-  "rocq2typst-analysis" {>= "0.1.0"}
-  "rocq2typst-coqeal" {>= "0.1.0"}
-  "rocq2typst-infotheo" {>= "0.1.0"}
+  "rocq-mathcomp-classical" {>= "1.19.0"}
+  "rocq-mathcomp-reals" {>= "1.19.0"}
+  "rocq-mathcomp-analysis" {>= "1.19.0"}
+  "rocq-micromega-plugin" {>= "1.1.1"}
+  "rocq-mathcomp-reals-stdlib" {>= "1.19.0"}
+  "coq-interval" {>= "4.11.5"}
+  "coq-flocq" {>= "4.2.2"}
+  "coq-coquelicot" {>= "3.4.5"}
+  "rocq-infotheo" {>= "0.9.9"}
+  "rocq-bignums" {>= "9.0.0+rocq9.2"}
+  "coq-coqeal" {>= "2.1.2"}
+  "rocq2typst" {>= "0.2.0"}
+  "rocq2typst-mathcomp" {>= "0.2.0"}
+  "rocq2typst-analysis" {>= "0.2.0"}
+  "rocq2typst-coqeal" {>= "0.2.0"}
+  "rocq2typst-infotheo" {>= "0.2.0"}
+]
+
+pin-depends: [
+  ["rocq2typst.0.2.0" "git+https://github.com/F1uctus/rocq2typst.git#f36a26a6d3f46f956b4b9fbee33a7766d7cc4478"]
+  ["rocq2typst-mathcomp.0.2.0" "git+https://github.com/F1uctus/rocq2typst.git#f36a26a6d3f46f956b4b9fbee33a7766d7cc4478"]
+  ["rocq2typst-analysis.0.2.0" "git+https://github.com/F1uctus/rocq2typst.git#f36a26a6d3f46f956b4b9fbee33a7766d7cc4478"]
+  ["rocq2typst-coqeal.0.2.0" "git+https://github.com/F1uctus/rocq2typst.git#f36a26a6d3f46f956b4b9fbee33a7766d7cc4478"]
+  ["rocq2typst-infotheo.0.2.0" "git+https://github.com/F1uctus/rocq2typst.git#f36a26a6d3f46f956b4b9fbee33a7766d7cc4478"]
 ]
 
 tags: [

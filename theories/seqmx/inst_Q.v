@@ -25,7 +25,7 @@
 *)
 
 From Stdlib Require Import BinNat QArith Qreduction.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From CoqEAL Require Import refinements seqmx binrat.
 From Bignums Require Import BigQ.
 From Kalman.seqmx Require Import support inverse riccati sim inst_bigQ.

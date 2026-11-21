@@ -42,7 +42,7 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
@@ -619,7 +619,7 @@ Section InputToStateStability.
     have e1 : `|v k| <= r ^+ (k - N)%N * `|v N| + η.
       by rewrite -{1}(subnKC k_ge_N); exact: tail.
     have e2 : `|(r ^+ (k - N)%N * `|v N|) - 0| < η by near: k; exact: hnear.
-    rewrite subr0 ger0_norm in e2; last first.
+    rewrite subr0 ger0_norm in e2.
       by apply: mulr_ge0; [exact: exprn_ge0 | exact: normr_ge0].
     rewrite /= subr0.
     apply: (le_lt_trans e1).

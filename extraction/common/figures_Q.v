@@ -8,7 +8,7 @@
 
 Set Warnings "-all".
 From Stdlib Require Import BinNat QArith List Strings.String Strings.Byte.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From CoqEAL Require Import refinements seqmx.
 From Kalman.seqmx Require Import
   support inverse riccati gramian closed_loop sim inst_Q.

@@ -18,7 +18,7 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral archimedean.
 From mathcomp Require Import order.
@@ -157,12 +157,13 @@ Section RiccatiUnique.
     have c2 : H *m M2 *m A2^t* = R *m P2^t* := Ht_M_Fp p2.
     have dA : A1 - A2 = P2 *m H - P1 *m H.
       by rewrite /A1 /A2 opprB addrC addrA subrK.
+    have id1 : M1 = A1 *m M1 *m A1^t* + P1 *m R *m P1^t* + G *m Q *m G^t*.
+      exact: eq_trans f1 (pred_closed_loop_id p1).
+    have id2 : M2 = A2 *m M2 *m A2^t* + P2 *m R *m P2^t* + G *m Q *m G^t*.
+      exact: eq_trans f2 (pred_closed_loop_id p2).
+    clearbody A1 A2 P1 P2.
     have dA2 : A2 - A1 = P1 *m H - P2 *m H.
       by rewrite -(opprB A1 A2) dA opprB.
-    have id1 : M1 = A1 *m M1 *m A1^t* + P1 *m R *m P1^t* + G *m Q *m G^t*.
-      by rewrite {1}f1 pred_closed_loop_id.
-    have id2 : M2 = A2 *m M2 *m A2^t* + P2 *m R *m P2^t* + G *m Q *m G^t*.
-      by rewrite {1}f2 pred_closed_loop_id.
     (*
       $"R1": "A1" "M2" "A1"† − "A1" "M2" "A2"† = "P1" R "P2"† − "P1" R "P1"†$.
     *)
@@ -196,7 +197,6 @@ Section RiccatiUnique.
     have M2e : M2 = A1 *m M2 *m A2^t*
                   + (P1 *m R *m P2^t* + G *m Q *m G^t*).
       by rewrite {1}id2 key2 -addrA.
-    clearbody A1 A2 P1 P2.
     rewrite {1}M1e {1}M2e mulmxBr mulmxBl.
     by rewrite opprD addrACA subrr addr0.
   Qed.

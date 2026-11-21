@@ -19,7 +19,7 @@
   обозначение).
 *)
 
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg matrix mxalgebra.
 
 Set Implicit Arguments.

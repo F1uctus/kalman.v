@@ -9,8 +9,8 @@
  (flags :standard -w -all)
  (modules show show_json figures figures_Q figures_F64)
  (theories elpi_elpi elpi HB mathcomp.boot mathcomp.algebra mathcomp.order
-           mathcomp.fingroup mathcomp.finmap mathcomp.field mathcomp.solvable
+           mathcomp.finite_group mathcomp.finmap mathcomp.field mathcomp.solvable
            mathcomp.classical mathcomp.reals mathcomp.analysis CoqEAL.refinements
-           Kalman Bignums Stdlib infotheo mathcomp.ssreflect
-           mathcomp.reals_stdlib mathcomp.zify mathcomp.algebra_tactics
-           Interval Flocq Coquelicot))
+           Kalman Bignums Stdlib infotheo
+           mathcomp.reals_stdlib
+           Interval Flocq Coquelicot micromega_plugin))

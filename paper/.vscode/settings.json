@@ -355,12 +355,14 @@
   "tinymist.formatterPrintWidth": 80,
   "vsrocq.args": [
     "-R",
-    "_build/default/theories",
+    "../_build/default/theories",
     "Kalman",
     "-w",
     "-notation-overridden",
     "-w",
-    "-ambiguous-paths"
+    "-ambiguous-paths",
+    "-w",
+    "-rewrite-rw"
   ],
   "vsrocq.completion.enable": true,
   "vsrocq.goals.auto": true,

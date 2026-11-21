@@ -31,6 +31,9 @@
 
 paper/data/*.json
 
+# Local opam switch exposed to VS Rocq
+paper/_opam
+
 # CertiRocq: generated C and binaries (manual build, see extraction/c)
 extraction/c/generated/
 

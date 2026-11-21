@@ -27,8 +27,8 @@
 
 Set Warnings "-notation-overridden,-coercions,-default,-ambiguous-paths".
 
-From mathcomp.boot Require Import all_boot.
-From mathcomp.fingroup Require Import perm.
+From mathcomp.boot Require Import boot.
+From mathcomp.finite_group Require Import perm.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra poly mxpoly.
 
 Set Implicit Arguments.
@@ -141,7 +141,7 @@ Proof.
   rewrite (expand_det_row _ k).
   under eq_bigr => j _ do rewrite hrow hcof.
   rewrite (bigD1 k) //.
-  rewrite big1; last first.
+  rewrite big1.
     move=> j jNk.
     have -> : (1%:M : 'M[{poly R}]_n) k j = 0
       by rewrite mxE eq_sym (negbTE jNk) mulr0n.

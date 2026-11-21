@@ -12,7 +12,7 @@
 *)
 
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra.
 From mathcomp.algebra Require Import sesquilinear spectral.
 From mathcomp Require Import order.
@@ -117,10 +117,7 @@ Section MatrixDefiniteness.
   Proof.
     have del_eq : (delta_mx i ord0 : 'cV[ℂ]_n)^t* = (delta_mx ord0 i : 'rV[ℂ]_n).
       by rewrite trmx_delta map_delta_mx.
-    rewrite del_eq -rowE trace_mx11 mxE (bigD1 i) //= big1 ?addr0; last first.
-      move=> j neji; rewrite !mxE eqxx andbT.
-      by rewrite (negbTE neji) mulr0.
-    by rewrite !mxE !eqxx /= mulr1.
+    by rewrite del_eq -rowE -colE trace_mx11 !mxE.
   Qed.
 
   (* След неотрицательно определённой матрицы неотрицателен. *)

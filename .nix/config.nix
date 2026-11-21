@@ -7,20 +7,20 @@
   attribute = "kalman";
   no-rocq-yet = true;
 
-  default-bundle = "rocq-9.1";
+  default-bundle = "rocq-9.3";
 
   bundles =
     let
       common-coq = {
-        coq.override.version = "9.1";
+        coq.override.version = "9.3";
         stdlib.job = true;
         bignums.job = true;
       };
     in
     {
-      "rocq-9.1" = {
+      "rocq-9.3" = {
         rocqPackages = {
-          rocq-core.override.version = "9.1";
+          rocq-core.override.version = "9.3";
         };
         coqPackages = common-coq;
         push-branches = [ "main" ];

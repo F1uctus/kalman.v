@@ -19,7 +19,7 @@
 
 From Stdlib.Unicode Require Import Utf8.
 From HB Require Import structures.
-From mathcomp.boot Require Import all_boot.
+From mathcomp.boot Require Import boot.
 From mathcomp.algebra Require Import ssralg ssrnum matrix mxalgebra archimedean.
 From mathcomp.algebra Require Import sesquilinear spectral mxred.
 From mathcomp Require Import order.
@@ -72,7 +72,7 @@ Section FrobUnitary.
     U \is unitarymx -> frob_sq (U *m M *m U^t*) = frob_sq M.
   Proof.
     move=> hU.
-    rewrite frob_sq_unitary_right; first exact: frob_sq_unitary_left.
+    rewrite frob_sq_unitary_right; last exact: frob_sq_unitary_left.
     by rewrite trmxC_unitary.
   Qed.
 

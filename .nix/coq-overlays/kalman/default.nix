@@ -12,7 +12,9 @@
   mathcomp-classical,
   mathcomp-reals,
   mathcomp-analysis,
+  mathcomp-reals-stdlib,
   mathcomp-infotheo,
+  micromega-plugin,
   bignums,
   coqeal,
   rocq2typst,
@@ -40,7 +42,9 @@ mkCoqDerivation {
     mathcomp-classical
     mathcomp-reals
     mathcomp-analysis
+    mathcomp-reals-stdlib
     mathcomp-infotheo
+    micromega-plugin
     bignums
     coqeal
     rocq2typst
@@ -55,12 +59,4 @@ mkCoqDerivation {
     license = lib.licenses.gpl3Plus;
   };
 
-  # `dune build -p kalman` promotes figure JSON into paper/data/; ship them so
-  # CI can copy from the Cachix-cached derivation instead of rebuilding.
-  postInstall = ''
-    if ls paper/data/*.json >/dev/null 2>&1; then
-      mkdir -p "$out/share/kalman/paper-data"
-      cp paper/data/*.json "$out/share/kalman/paper-data/"
-    fi
-  '';
 }
